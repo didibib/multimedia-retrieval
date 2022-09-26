@@ -5,11 +5,11 @@
 
 #include <pmp/visualization/MeshViewer.h>
 
-class MyViewer : public pmp::MeshViewer
+class MmrViewer : public pmp::MeshViewer
 {
 public:
     //! constructor
-    MyViewer(const char* title, int width, int height)
+    MmrViewer(const char* title, int width, int height)
         : MeshViewer(title, width, height)
     {
         set_draw_mode("Smooth Shading");
