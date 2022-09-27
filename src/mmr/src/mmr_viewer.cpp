@@ -1,11 +1,10 @@
-// Copyright 2011-2021 the Polygon Mesh Processing Library developers.
-// Distributed under a MIT-style license, see LICENSE.txt for details.
-
 #include "mmr_viewer.h"
 
 #include <imgui.h>
 
 using namespace pmp;
+
+void MmrViewer::mouse(int button, int action, int mods) {}
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 {
@@ -14,6 +13,14 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 
     switch (key)
     {
+        case GLFW_KEY_P:
+        {
+            for each (auto prop in mesh_.vertex_properties())
+            {
+                printf(prop.c_str());
+            }
+        }
+        break;
         // add your own keyboard action here
         default:
         {
@@ -21,4 +28,9 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
             break;
         }
     }
+}
+
+void MmrViewer::process_imgui() {
+    MeshViewer::process_imgui();
+    
 }
