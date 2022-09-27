@@ -6,11 +6,7 @@ class MmrViewer : public pmp::MeshViewer
 {
 public:
     //! constructor
-    MmrViewer(const char* title, int width, int height)
-        : MeshViewer(title, width, height)
-    {
-        set_draw_mode("Smooth Shading");
-    }
+    MmrViewer(const char* title, int width, int height);
 
 protected:
     //! this function handles mouse button presses
