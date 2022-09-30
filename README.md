@@ -1,6 +1,7 @@
 # MMR
 
     git clone --recursive https://github.com/pmp-library/pmp-template.git
+    git submodule update --init --recursive
 
 Configure and build:
 
