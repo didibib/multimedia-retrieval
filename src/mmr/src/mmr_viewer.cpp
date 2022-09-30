@@ -1,4 +1,5 @@
 #include "mmr_viewer.h"
+#include "Eigen_PCA.h"
 
 #include <imgui.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
