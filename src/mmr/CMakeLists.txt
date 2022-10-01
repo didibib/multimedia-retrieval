@@ -18,15 +18,21 @@ set(DATABASE
     "src/database.cpp"
 )
 
+set(NORMALIZATION
+    "include/normalization.h"
+    "src/normalization.cpp"
+)
+
 add_executable(${EXC_NAME} 
     ${ROOT_FILES}
     ${UTIL}
     ${MMR_VIEWER}
     ${DATABASE}
+    ${NORMALIZATION}
 )
 
 source_group(// FILES ${ROOT_FILES})
-source_group(util FILES ${UTIL})
+source_group(util FILES ${UTIL} ${NORMALIZATION})
 source_group(viewer FILES ${MMR_VIEWER})
 source_group(database FILES ${DATABASE})
 

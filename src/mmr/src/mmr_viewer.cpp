@@ -1,7 +1,7 @@
-#include "mmr_viewer.h"
-
 #include <imgui.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
+#include "util.h"
+#include "mmr_viewer.h"
 
 using namespace pmp;
 
@@ -13,7 +13,13 @@ MmrViewer::MmrViewer(const char* title, int width, int height)
     add_help_item("C", "Translate barycenter to origin");
 }
 
-void MmrViewer::mouse(int button, int action, int mods) {}
+void MmrViewer::draw(const std::string& drawMode)
+{
+    MeshViewer::draw(drawMode);
+
+    if (m_retrieved_db)
+        m_database.draw(projection_matrix_, modelview_matrix_, drawMode);
+}
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 {
@@ -24,17 +30,7 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
     {
         case GLFW_KEY_C:
         {
-            Point origin(0, 0, 0);
-            Point center = centroid(mesh_);
-            Point translation = origin - center;
-
-            auto points = mesh_.get_vertex_property<Point>("v:point");
-
-            for (auto v : mesh_.vertices())
-            {
-                auto vp = points[v];
-                points[v] += translation;
-            }
+            centroid
 
             update_mesh();
         }
@@ -51,5 +47,14 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 void MmrViewer::process_imgui()
 {
     MeshViewer::process_imgui();
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    if (ImGui::Button("Retrieve DB"))
+    {
+        m_database.retrieve(asset::getModel("LabeledDB_new"));
+        m_retrieved_db = true;
+    }
 }
 } // namespace mmr
