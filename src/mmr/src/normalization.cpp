@@ -49,10 +49,15 @@ void Norma::pca(SurfaceMesh& mesh) {
     cov = cov.array() / (input.rows() - 1);
     SelfAdjointEigenSolver<MatrixXf> eig(cov);
 
-    float val = eig.eigenvalues().maxCoeff();
-    Matrix3f transfer = eig.eigenvectors();
-    transfer.col(2) =
-        eig.eigenvectors().col(0).cross(eig.eigenvectors().col(1));
+    VectorXf::Index maxv, minv;
+    float val = eig.eigenvalues().maxCoeff(&maxv);
+    eig.eigenvalues().minCoeff(&minv);
+
+    Matrix3f transfer;
+    transfer.col(0) = eig.eigenvectors().col(maxv);
+    transfer.col(2) = eig.eigenvectors().col(minv);
+    transfer.col(1) =
+        eig.eigenvectors().col(minv).cross(eig.eigenvectors().col(maxv));
 
     Vector3f pos_temp;
     for (auto v : mesh.vertices())
