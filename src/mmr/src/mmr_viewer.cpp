@@ -1,16 +1,17 @@
 #include <imgui.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include "util.h"
+#include "normalization.h"
 #include "mmr_viewer.h"
 
 using namespace pmp;
+using namespace std;
 
 namespace mmr {
 MmrViewer::MmrViewer(const char* title, int width, int height)
     : MeshViewer(title, width, height)
 {
     set_draw_mode("Smooth Shading");
-    add_help_item("C", "Translate barycenter to origin");
 }
 
 void MmrViewer::draw(const std::string& drawMode)
@@ -28,6 +29,17 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 
     switch (key)
     {
+        case GLFW_KEY_C:
+        {
+            auto bb = mesh_.bounds();
+            cout << "Mesh bounds BEFORE " << bb.size() << endl;
+            Norma::lize(mesh_);
+            update_mesh();
+            bb = mesh_.bounds();
+            cout << "Mesh bounds AFTER " << bb.size() << endl;
+        }
+        break;
+
         // add your own keyboard action here
         default:
         {
