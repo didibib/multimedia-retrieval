@@ -28,13 +28,6 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 
     switch (key)
     {
-        case GLFW_KEY_C:
-        {
-            centroid
-
-            update_mesh();
-        }
-        break;
         // add your own keyboard action here
         default:
         {

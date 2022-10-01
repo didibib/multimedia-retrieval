@@ -5,8 +5,16 @@
 using namespace pmp;
 
 namespace mmr {
-namespace normalization {
-void translate(SurfaceMesh& mesh)
+
+void Norma::lize(SurfaceMesh& mesh)
+{
+    translate(mesh);
+    pca(mesh);
+    flip(mesh);
+    scale(mesh);
+}
+
+void Norma::translate(SurfaceMesh& mesh)
 {
     Point origin(0, 0, 0);
     Point center = centroid(mesh);
@@ -21,13 +29,15 @@ void translate(SurfaceMesh& mesh)
     }
 }
 
-void pca(SurfaceMesh& mesh) {}
+void Norma::pca(SurfaceMesh& mesh) {}
 
-void flip(SurfaceMesh& mesh) {}
+void Norma::flip(SurfaceMesh& mesh) {}
 
-void scale(SurfaceMesh& mesh) {
-    BoundingBox bounds = mesh.bounds();
-
+void Norma::scale(SurfaceMesh& mesh)
+{
+    BoundingBox bb = mesh.bounds();
+    Point min = bb.min();
+    Point max = bb.max();
+    Point center = bb.center();
 }
-} // namespace normalization
 } // namespace mmr
