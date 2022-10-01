@@ -5,6 +5,7 @@
 
 using namespace pmp;
 
+namespace mmr {
 MmrViewer::MmrViewer(const char* title, int width, int height)
     : MeshViewer(title, width, height)
 {
@@ -51,3 +52,4 @@ void MmrViewer::process_imgui()
 {
     MeshViewer::process_imgui();
 }
+} // namespace mmr

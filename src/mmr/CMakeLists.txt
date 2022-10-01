@@ -13,15 +13,22 @@ set(MMR_VIEWER
     "src/mmr_viewer.cpp"
 )
 
+set(DATABASE
+    "include/database.h"
+    "src/database.cpp"
+)
+
 add_executable(${EXC_NAME} 
     ${ROOT_FILES}
     ${UTIL}
     ${MMR_VIEWER}
+    ${DATABASE}
 )
 
 source_group(// FILES ${ROOT_FILES})
 source_group(util FILES ${UTIL})
 source_group(viewer FILES ${MMR_VIEWER})
+source_group(database FILES ${DATABASE})
 
 target_include_directories(${EXC_NAME} PUBLIC
     "include"
