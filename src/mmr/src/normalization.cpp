@@ -56,10 +56,9 @@ void Norma::pca(SurfaceMesh& mesh) {
     Matrix3f transfer;
     transfer.col(0) = eig.eigenvectors().col(maxv);
     transfer.col(2) = eig.eigenvectors().col(minv);
-    transfer.col(1) =
-        eig.eigenvectors().col(minv).cross(eig.eigenvectors().col(maxv));
+    transfer.col(1) = transfer.col(0).cross(transfer.col(2));
 
-    Vector3f pos_temp;
+    /*Vector3f pos_temp;
     for (auto v : mesh.vertices())
     {
         pos_temp[0] = mesh.position(v)[0];
@@ -70,7 +69,7 @@ void Norma::pca(SurfaceMesh& mesh) {
         mesh.position(v)[0] = pos_temp[0];
         mesh.position(v)[1] = pos_temp[1];
         mesh.position(v)[2] = pos_temp[2];
-    }
+    }*/
 }
 
 void Norma::flip(SurfaceMesh& mesh) {}
