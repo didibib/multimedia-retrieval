@@ -9,12 +9,12 @@ Database::Database(const std::string path) : avgVerts(0), avgFaces(0)
 }
 
 void Database::draw(const pmp::mat4& projection_matrix,
-                    const pmp::mat4& modelview_matrix,
                     const std::string& draw_mode)
 {
     for (int i = 0; i < entries.size(); i++)
     {
-        entries[i].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
+        Entry entry = entries[i];
+        entry.mesh.draw(projection_matrix, entry.getModelMatrix(), draw_mode);
     }
 }
 
@@ -43,9 +43,17 @@ void Database::retrieve(const std::string& path)
             continue;
         else if (extension.compare(".off") == 0)
         {
+            if (nModels > 0)
+                break;
             Entry entry;
             entry.label = label;
             entry.mesh.read(fileName);
+            entry.translationMatrix = pmp::translation_matrix<float>(
+                pmp::Vector<float, 3>(0.0f, 0.0f, 0.0f));
+            entry.rotationMatrix = pmp::rotation_matrix<float>(
+                pmp::Vector<float, 3>(0.0f, 0.0f, 0.0f), 0.0f);
+            entry.scaleMatrix = pmp::scaling_matrix<float>(
+                pmp::Vector<float, 3>(0.1f, 0.1f, 0.1f));
             entries.push_back(entry);
             std::cout << "Model: " << ++nModels << std::endl;
         }

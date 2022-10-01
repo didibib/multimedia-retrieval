@@ -18,7 +18,7 @@ void MmrViewer::draw(const std::string& drawMode)
     MeshViewer::draw(drawMode);
 
     if (m_retrieved_db)
-        m_database.draw(projection_matrix_, modelview_matrix_, drawMode);
+        m_database.draw(projection_matrix_, drawMode);
 }
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)
