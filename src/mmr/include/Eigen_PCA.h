@@ -11,7 +11,7 @@ void PCA_calculate(pmp::SurfaceMeshGL _mesh)
     MatrixXf in(n_vertices, 3);
     unsigned int i = 0;
     for (auto v : _mesh.vertices())
-        in.row(i++) = VectorXf(_mesh.position(v));
+        in.row(i++) = RowVectorXf(_mesh.position(v));
     MatrixXf input = in.transpose();
     RowVectorXf mean = input.colwise().mean();
     MatrixXf centered = input.rowwise() - mean;
