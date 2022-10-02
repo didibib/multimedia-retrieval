@@ -37,8 +37,15 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
             update_mesh();
             bb = mesh_.bounds();
             cout << "Mesh bounds AFTER " << bb.size() << endl;
+            //break;
         }
         break;
+        /*case GLFW_KEY_F:
+        {
+            
+            break;
+        }*/
+        
 
         // add your own keyboard action here
         default:
@@ -60,6 +67,11 @@ void MmrViewer::process_imgui()
     {
         m_database.retrieve(asset::getModel("LabeledDB_new"));
         m_retrieved_db = true;
+    }
+    if (ImGui::Button("Flip"))
+    {
+        Norma::lize(mesh_);
+        update_mesh();
     }
 }
 } // namespace mmr

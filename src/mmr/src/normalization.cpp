@@ -10,9 +10,10 @@ namespace mmr {
 void Norma::lize(SurfaceMesh& mesh)
 {
     translate(mesh);
-    pca(mesh);
+
+    //pca(mesh);
     flip(mesh);
-    scale(mesh);
+    //scale(mesh);
 }
 
 void Norma::translate(SurfaceMesh& mesh)
@@ -72,7 +73,30 @@ void Norma::pca(SurfaceMesh& mesh) {
     }*/
 }
 
-void Norma::flip(SurfaceMesh& mesh) {}
+void Norma::flip(SurfaceMesh& mesh) 
+{
+    bool doFlip = true; //todo add condition when to flip
+    if (doFlip)
+    {
+        /*Transform<float, 4, Affine> T = Transform<float, 4, Affine>::Identity();*/
+        Affine3f T = Affine3f::Identity();
+        T.rotate(Eigen::AngleAxisf( (float)M_PI, Eigen::Vector3f(1.0f, 0.0f, 0.0f)));
+        /*pmp::mat4 rotation = pmp::rotation_matrix(
+            pmp::Vector<float, 3>(1.0f, 0.0, 0.0f), 180.0f);*/
+        auto points = mesh.get_vertex_property<Point>("v:point");
+        for (auto v : mesh.vertices())
+        {
+            Vector3f p(points[v][0], points[v][1], points[v][2]);
+
+            auto result = T * p;
+
+            points[v][0] = result[0];
+            points[v][1] = result[1];
+            points[v][2] = result[2];
+        }
+            
+    }
+}
 
 void Norma::scale(SurfaceMesh& mesh)
 {
