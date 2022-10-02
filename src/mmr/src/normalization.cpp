@@ -34,13 +34,13 @@ void Norma::translate(SurfaceMesh& mesh)
 void Norma::pca(SurfaceMesh& mesh) {
     unsigned int n_vertices = mesh.n_vertices();
     MatrixXf input(3, n_vertices);
-
+    auto points = mesh.get_vertex_property<Point>("v:point");
     unsigned int i = 0;
     for (auto v : mesh.vertices())
     {
-        input.row(i)[0] = mesh.position(v)[0];
-        input.row(i)[1] = mesh.position(v)[1];
-        input.row(i++)[2] = mesh.position(v)[2];
+        input.col(i)[0] = points[v][0];
+        input.col(i)[1] = points[v][1];
+        input.col(i++)[2] = points[v][2];
     }
 
     VectorXf mean = input.rowwise().mean();
@@ -51,7 +51,7 @@ void Norma::pca(SurfaceMesh& mesh) {
     SelfAdjointEigenSolver<MatrixXf> eig(cov);
 
     VectorXf::Index maxv, minv;
-    float val = eig.eigenvalues().maxCoeff(&maxv);
+    eig.eigenvalues().maxCoeff(&maxv);
     eig.eigenvalues().minCoeff(&minv);
 
     Matrix3f transfer;
@@ -59,18 +59,16 @@ void Norma::pca(SurfaceMesh& mesh) {
     transfer.col(2) = eig.eigenvectors().col(minv);
     transfer.col(1) = transfer.col(0).cross(transfer.col(2));
 
-    /*Vector3f pos_temp;
+    Point pos_temp;
     for (auto v : mesh.vertices())
     {
-        pos_temp[0] = mesh.position(v)[0];
-        pos_temp[1] = mesh.position(v)[1];
-        pos_temp[2] = mesh.position(v)[2];
-        pos_temp *= transfer;
-        pos_temp /= val;
-        mesh.position(v)[0] = pos_temp[0];
-        mesh.position(v)[1] = pos_temp[1];
-        mesh.position(v)[2] = pos_temp[2];
-    }*/
+        Point pos_mesh(points[v]);
+        Point pos_temp{0, 0, 0};
+        for (size_t i = 0; i < 3; i++)
+            for (size_t j = 0; j < 3; j++)
+                pos_temp[i] += transfer.col(i)[j] * pos_mesh[j];
+        points[v] = pos_temp;
+    }
 }
 
 void Norma::flip(SurfaceMesh& mesh) 
