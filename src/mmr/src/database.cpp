@@ -4,8 +4,7 @@
 
 namespace mmr {
 
-int Database::avgFaces = 0;
-int Database::avgVerts = 0;
+
 Database::Database(const std::string path)
 {
     retrieve(path);
@@ -19,6 +18,15 @@ void Database::draw(const pmp::mat4& projection_matrix,
     {
         entries[i].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
     }
+}
+
+void Database::drawModel(int index, const pmp::mat4& projection_matrix,
+                         const pmp::mat4& modelview_matrix,
+                         const std::string& draw_mode)
+{
+   
+    entries[index].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
+    
 }
 
 void Database::retrieve(const std::string& path)

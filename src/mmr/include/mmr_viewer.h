@@ -18,5 +18,6 @@ protected:
 
 private:
     bool m_retrieved_db = false;
+    int m_dbIndex = 0;
 };
 } // namespace mmr

@@ -19,7 +19,7 @@ void MmrViewer::draw(const std::string& drawMode)
     MeshViewer::draw(drawMode);
 
     if (m_retrieved_db)
-        m_database.draw(projection_matrix_, modelview_matrix_, drawMode);
+        m_database.drawModel(m_dbIndex, projection_matrix_, modelview_matrix_, drawMode);
 }
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)
@@ -68,6 +68,18 @@ void MmrViewer::process_imgui()
         m_database.retrieve(asset::getModel("LabeledDB_new"));
         m_retrieved_db = true;
     }
+    if (ImGui::Button("Next") && m_retrieved_db && (m_dbIndex < m_database.getDBSize() -1))
+    {
+        
+        m_dbIndex++;
+    }
+
+    if (ImGui::Button("Previous") && m_retrieved_db &&
+        (m_dbIndex > 0))
+    {
+        m_dbIndex--;
+    }
+
     if (ImGui::Button("Flip"))
     {
         Norma::lize(mesh_);

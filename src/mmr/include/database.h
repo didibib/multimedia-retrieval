@@ -4,27 +4,36 @@
 #include "pmp/MatVec.h"
 
 namespace mmr {
-struct Entry
-{
-public:
-    pmp::SurfaceMeshGL mesh;
-    std::string label;
-};
+    struct Entry
+    {
+    public:
+        pmp::SurfaceMeshGL mesh;
+        std::string label;
+    };
 
-class Database
-{
-public:
-    Database() = default;
-    Database(const std::string path);
-    void draw(const pmp::mat4& projection_matrix,
-              const pmp::mat4& modelview_matrix,
-              const std::string& draw_mode);
-    void retrieve(const std::string& path);
-    void clear();
+    class Database
+    {
+    public:
+        Database() = default;
+        Database(const std::string path);
+        void draw(const pmp::mat4& projection_matrix,
+                  const pmp::mat4& modelview_matrix,
+                  const std::string& draw_mode);
+        void drawModel(int index, const pmp::mat4& projection_matrix,
+                  const pmp::mat4& modelview_matrix,
+                  const std::string& draw_mode);
+        void retrieve(const std::string& path);
+        void clear();
 
-private:
-    static int avgVerts;
-    static int avgFaces;
-    std::vector<Entry> entries;
-};
+        int getDBSize() { return entries.size(); }
+
+    private:
+   
+        std::vector<Entry> entries;
+
+    public:
+
+        int avgVerts = 0;
+        int avgFaces = 0;
+    };
 } // namespace mmr
