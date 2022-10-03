@@ -11,6 +11,7 @@ include(cmake/set_target_output_directories.cmake)
 project(multimedia-retrieval VERSION 1.0)
 
 set(MMR_ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
+set(MMR_EXPORT_DIR "${CMAKE_SOURCE_DIR}/export")
 
 # Use folder structure 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

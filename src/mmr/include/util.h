@@ -1,3 +1,4 @@
+#pragma once
 #include <pmp/MatVec.h>
 
 using namespace pmp;
@@ -8,26 +9,32 @@ using namespace pmp;
 namespace mmr {
 namespace util {
 
-
-
-} // namespace util
-
-namespace asset {
-inline std::string getDirectory()
+inline std::string getAssetDir()
 {
     // MMR_ASSETS_DIR is set during cmake building in root/CMakeLists.txt
     static std::string assetDir = TOSTRING(MMR_ASSETS_DIR);
     return assetDir + "/";
 }
 
+inline std::string getExportDir()
+{
+    // MMR_ASSETS_DIR is set during cmake building in root/CMakeLists.txt
+    static std::string exportDir = TOSTRING(MMR_EXPORT_DIR);
+    return exportDir + "/";
+}
+} // namespace util
+
+namespace asset {
+
 inline std::string getShader(std::string name)
 {
-    return getDirectory() + "shaders/" + name;
+    return util::getAssetDir() + "shaders/" + name;
 }
 
 inline std::string getModel(std::string name)
 {
-    return getDirectory() + "models/" + name;
+    return util::getAssetDir() + "models/" + name;
 }
+
 } // namespace asset
 } // namespace mmr

@@ -85,5 +85,22 @@ void MmrViewer::process_imgui()
         Norma::lize(mesh_);
         update_mesh();
     }
+
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::BeginMenu("Export"))
+            {
+                if (ImGui::Button("Statistics"))
+                    m_database.exportStatistics();
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+
+    ImGui::ShowDemoWindow();
 }
 } // namespace mmr

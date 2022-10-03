@@ -11,9 +11,9 @@ void Norma::lize(SurfaceMesh& mesh)
 {
     translate(mesh);
 
-    //pca(mesh);
+    pca(mesh);
     flip(mesh);
-    //scale(mesh);
+    scale(mesh);
 }
 
 void Norma::translate(SurfaceMesh& mesh)
