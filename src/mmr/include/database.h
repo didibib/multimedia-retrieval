@@ -23,7 +23,8 @@ public:
     void clear();
 
 private:
-    int avgVerts, avgFaces;
+    static int avgVerts;
+    static int avgFaces;
     std::vector<Entry> entries;
 };
 } // namespace mmr
