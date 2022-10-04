@@ -58,15 +58,15 @@ void Norma::pca(SurfaceMesh& mesh) {
     transfer.col(0) = eig.eigenvectors().col(maxv);
     transfer.col(2) = eig.eigenvectors().col(minv);
     transfer.col(1) = transfer.col(0).cross(transfer.col(2));
+    transfer.col(2) *= transfer.determinant() > 0 ? 1 : -1;
 
-    Point pos_temp;
     for (auto v : mesh.vertices())
     {
         Point pos_mesh(points[v]);
         Point pos_temp{0, 0, 0};
         for (size_t i = 0; i < 3; i++)
             for (size_t j = 0; j < 3; j++)
-                pos_temp[i] += transfer.col(i)[j] * pos_mesh[j];
+                pos_temp[i] += transfer(j,i) * pos_mesh[j];
         points[v] = pos_temp;
     }
 }
@@ -102,9 +102,13 @@ void Norma::scale(SurfaceMesh& mesh)
     Point center = bb.center();
 
     Point scale = (bb.max() - bb.min());
-    scale[0] = scale[0] > 0.0f ? 1.f / scale[0] : 1.f;
-    scale[1] = scale[0] > 0.0f ? 1.f / scale[1] : 1.f;
-    scale[2] = scale[0] > 0.0f ? 1.f / scale[2] : 1.f;
+    scale[0] = std::max(scale[0], std::max(scale[1], scale[2]));
+    scale[2] = scale[1] = scale[0] = scale[0] > 0.0f ? 1.f / scale[0] : 1.1f;
+    //scale[0] = scale[0] > 0.0f ? 1.f / scale[0] : 1.f;
+    //scale[1] = scale[1] > 0.0f ? 1.f / scale[1] : 1.f;
+    //scale[2] = scale[2] > 0.0f ? 1.f / scale[2] : 1.f;
+
+    
 
     Transform<float, 3, Affine> T = Transform<float, 3, Affine>::Identity();
     T.scale(Vector3f(scale[0], scale[1], scale[2]));
