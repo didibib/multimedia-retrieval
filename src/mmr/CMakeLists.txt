@@ -45,7 +45,7 @@ target_link_libraries(${EXC_NAME}
 )
 
 target_compile_definitions(${EXC_NAME} PUBLIC 
-    MMR_ASSETS_DIR=${MMR_ASSETS_DIR}
+    MMR_DATA_DIR=${MMR_DATA_DIR}
     MMR_EXPORT_DIR=${MMR_EXPORT_DIR}
 )
 

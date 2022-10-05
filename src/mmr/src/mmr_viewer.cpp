@@ -1,4 +1,5 @@
 #include <imgui.h>
+#include <implot.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include "util.h"
 #include "normalization.h"
@@ -18,8 +19,8 @@ void MmrViewer::draw(const std::string& drawMode)
 {
     MeshViewer::draw(drawMode);
 
-    if (m_retrieved_db)
-        m_database.drawModel(m_dbIndex, projection_matrix_, modelview_matrix_, drawMode);
+    m_database.drawModel(m_dbIndex, projection_matrix_, modelview_matrix_,
+                         drawMode);
 }
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)
@@ -40,12 +41,6 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
             //break;
         }
         break;
-        /*case GLFW_KEY_F:
-        {
-            
-            break;
-        }*/
-        
 
         // add your own keyboard action here
         default:
@@ -58,24 +53,13 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 
 void MmrViewer::process_imgui()
 {
-    MeshViewer::process_imgui();
-
-    ImGui::Spacing();
-    ImGui::Spacing();
-
-    if (ImGui::Button("Retrieve DB"))
+    /*if (ImGui::Button("Next") && m_retrieved_db &&
+        (m_dbIndex < m_database.getDBSize() - 1))
     {
-        m_database.retrieve(asset::getModel("LabeledDB_new"));
-        m_retrieved_db = true;
-    }
-    if (ImGui::Button("Next") && m_retrieved_db && (m_dbIndex < m_database.getDBSize() -1))
-    {
-        
         m_dbIndex++;
     }
 
-    if (ImGui::Button("Previous") && m_retrieved_db &&
-        (m_dbIndex > 0))
+    if (ImGui::Button("Previous") && m_retrieved_db && (m_dbIndex > 0))
     {
         m_dbIndex--;
     }
@@ -84,23 +68,15 @@ void MmrViewer::process_imgui()
     {
         Norma::lize(mesh_);
         update_mesh();
-    }
+    }*/
 
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::BeginMenu("Export"))
-            {
-                if (ImGui::Button("Statistics"))
-                    m_database.exportStatistics();
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
+        m_database.beginMenu();
         ImGui::EndMainMenuBar();
     }
 
+    ImPlot::ShowDemoWindow();
     ImGui::ShowDemoWindow();
 }
 } // namespace mmr

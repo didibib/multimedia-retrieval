@@ -27,13 +27,15 @@ void Database::drawModel(int index, const pmp::mat4& projection_matrix,
                          const pmp::mat4& modelview_matrix,
                          const std::string& draw_mode)
 {
+    if (index < 0 || index >= m_entries.size())
+        return;
     m_entries[index].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
 }
 
 void Database::retrieve(const std::string& path)
 {
     using std::filesystem::recursive_directory_iterator;
-    int nModels = 1;
+    int nModels = 0;
     int maxModels = 2;
     for (const auto& file_entry : recursive_directory_iterator(path))
     {
@@ -49,21 +51,21 @@ void Database::retrieve(const std::string& path)
             break;
         // Create entry
         Entry entry;
-        entry.label = label;
-        entry.fileName = filename;
         entry.mesh.read(path);
-        entry.nVertices = entry.mesh.n_vertices();
-        entry.nFaces = entry.mesh.n_faces();
+        entry.statistics["id"] = filename;
+        entry.statistics["label"] = label;
+        entry.statistics["n_vertices"] = entry.mesh.n_vertices();
+        entry.statistics["n_faces"] = entry.mesh.n_faces();
         m_entries.push_back(entry);
 
-        // Update statistics
+        // Update global statistics
         m_avgVerts += entry.mesh.vertices_size();
         m_avgFaces += entry.mesh.faces_size();
 
         std::cout << "Model: " << nModels++ << std::endl;
     }
-    m_avgVerts /= maxModels;
-    m_avgFaces /= maxModels;
+    m_avgVerts /= nModels;
+    m_avgFaces /= nModels;
     std::cout << "Average Vertices: " << m_avgVerts << std::endl;
     std::cout << "Average Faces: " << m_avgFaces << std::endl;
 }
@@ -89,8 +91,11 @@ void Database::exportStatistics(std::string suffix)
     for (unsigned int i = 0; i < m_entries.size(); i++)
     {
         Entry entry = m_entries[i];
-        statistics << entry.label << "," << entry.nVertices << ","
-                   << entry.nFaces << "\n";
+        for (auto const& [key, val] : entry.statistics)
+        {
+            statistics << std::any_cast<std::string>(val) << ",";
+        }
+        statistics << "\n";
     }
     statistics.close();
 }
@@ -100,7 +105,87 @@ void Database::exportMeshes(std::string folder)
     for (unsigned int i = 0; i < m_entries.size(); i++)
     {
         const Entry& entry = m_entries[i];
-        entry.mesh.write(folder + entry.fileName);
+
+        auto it = entry.statistics.find("id");
+        if (it != entry.statistics.cend())
+            entry.mesh.write(folder +std::any_cast<std::string>(it->second));        
     }
 }
+
+void Database::guiDataMenu()
+{
+    if (ImGui::Button("Import"))
+    {
+        retrieve(util::getDataDir("LabeledDB_new"));
+        m_imported = true;
+    }
+    if (m_imported && ImGui::Button("Clear"))
+    {
+        clear();
+        m_imported = false;
+    }
+
+    if (ImGui::BeginMenu("Export"))
+    {
+        if (ImGui::Button("Statistics"))
+            exportStatistics();
+        if (ImGui::Button("Meshes"))
+            exportMeshes(util::getExportDir("Meshes/"));
+
+        ImGui::EndMenu();
+    }
+
+    if (!m_viewStatistics && ImGui::Button("View"))
+        m_viewStatistics = true;
+}
+
+void Database::guiStatistics()
+{
+    if (m_entries.empty())
+        return;
+
+    ImGui::Begin(
+        "DatabaseWindow", &m_viewStatistics,
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize);
+
+    static ImGuiTableFlags flags =
+        ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable |
+        ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersV |
+        ImGuiTableFlags_ContextMenuInBody;
+
+    int columns = m_entries[0].statistics.size();
+
+    if (!ImGui::BeginTable("Statistics", columns, flags))
+        return;
+
+    for (int row = 0; row < m_entries.size(); row++)
+    {
+        ImGui::TableNextRow();
+
+        const auto& stats = m_entries[0].statistics;
+        for (auto it = stats.cbegin(); it != stats.cend(); ++it)
+        {
+            ImGui::TableSetColumnIndex(it - stats.cbegin());
+            ImGui::Text("Hello %d,%d", col, row);
+        }
+
+        for (int col = 0; col < columns; col++)
+        {
+        }
+    }
+
+    ImGui::EndTable();
+    ImGui::End();
+}
+
+void Database::beginMenu()
+{
+    if (!ImGui::BeginMenu("Database"))
+        return;
+    guiDataMenu();
+    guiStatistics();
+
+    ImGui::EndMenu();
+}
+
 } // namespace mmr
