@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
+cmake_policy(SET CMP0054 NEW)
 
 # Check if project is build in seperate folder
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
@@ -10,7 +11,7 @@ include(cmake/set_target_output_directories.cmake)
 
 project(multimedia-retrieval VERSION 1.0)
 
-set(MMR_ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
+set(MMR_DATA_DIR "${CMAKE_SOURCE_DIR}/data")
 set(MMR_EXPORT_DIR "${CMAKE_SOURCE_DIR}/export")
 
 # Use folder structure 
@@ -42,12 +43,14 @@ set_target_properties(update_mappings PROPERTIES FOLDER ${GLFW_VENDOR_FILTER})
 set(PMP_EXTERNAL "pmp/external")
 set_target_properties(glew PROPERTIES FOLDER ${PMP_EXTERNAL})
 set_target_properties(imgui PROPERTIES FOLDER ${PMP_EXTERNAL})
+set_target_properties(implot PROPERTIES FOLDER ${PMP_EXTERNAL})
 set_target_properties(rply PROPERTIES FOLDER ${PMP_EXTERNAL})
 set_target_properties(stb_image PROPERTIES FOLDER ${PMP_EXTERNAL})
 
 # add include directories
 include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/src)
 include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/imgui)
+include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/implot)
 include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/eigen)
 include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/glfw/include)
 include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/glew/include)

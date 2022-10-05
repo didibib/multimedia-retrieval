@@ -9,32 +9,18 @@ using namespace pmp;
 namespace mmr {
 namespace util {
 
-inline std::string getAssetDir()
+inline std::string getDataDir(std::string suffix = "")
 {
     // MMR_ASSETS_DIR is set during cmake building in root/CMakeLists.txt
-    static std::string assetDir = TOSTRING(MMR_ASSETS_DIR);
-    return assetDir + "/";
+    static std::string dataDir = TOSTRING(MMR_DATA_DIR);
+    return dataDir + "/" + suffix;
 }
 
-inline std::string getExportDir()
+inline std::string getExportDir(std::string suffix = "")
 {
     // MMR_ASSETS_DIR is set during cmake building in root/CMakeLists.txt
     static std::string exportDir = TOSTRING(MMR_EXPORT_DIR);
-    return exportDir + "/";
+    return exportDir + "/" + suffix;
 }
 } // namespace util
-
-namespace asset {
-
-inline std::string getShader(std::string name)
-{
-    return util::getAssetDir() + "shaders/" + name;
-}
-
-inline std::string getModel(std::string name)
-{
-    return util::getAssetDir() + "models/" + name;
-}
-
-} // namespace asset
 } // namespace mmr
