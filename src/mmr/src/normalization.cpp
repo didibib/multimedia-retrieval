@@ -10,7 +10,6 @@ namespace mmr {
 void Norma::lize(SurfaceMesh& mesh)
 {
     translate(mesh);
-
     pca(mesh);
     flip(mesh);
     scale(mesh);

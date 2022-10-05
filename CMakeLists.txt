@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
+cmake_policy(SET CMP0054 NEW)
 
 # Check if project is build in seperate folder
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)

@@ -18,7 +18,6 @@ MmrViewer::MmrViewer(const char* title, int width, int height)
 void MmrViewer::draw(const std::string& drawMode)
 {
     MeshViewer::draw(drawMode);
-
     m_database.drawModel(m_dbIndex, projection_matrix_, modelview_matrix_,
                          drawMode);
 }
@@ -72,11 +71,11 @@ void MmrViewer::process_imgui()
 
     if (ImGui::BeginMainMenuBar())
     {
-        m_database.beginMenu();
+        m_database.guiBeginMenu();
         ImGui::EndMainMenuBar();
     }
 
-    ImPlot::ShowDemoWindow();
-    ImGui::ShowDemoWindow();
+    //ImPlot::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
 }
 } // namespace mmr
