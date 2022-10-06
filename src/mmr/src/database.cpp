@@ -38,6 +38,7 @@ void Database::drawModel(int index, const pmp::mat4& projection_matrix,
 {
     if (index < 0 || index >= m_entries.size())
         return;
+
     m_entries[index].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
 }
 
@@ -63,10 +64,11 @@ void Database::import(const std::string& path)
         // Create entry
         Entry entry(filename, label, path);
         m_entries.push_back(entry);
+        m_labels.insert(label);
 
         // Update global statistics
-        m_avgVerts += entry.mesh.vertices_size();
-        m_avgFaces += entry.mesh.faces_size();
+        m_avgVerts += entry.mesh.n_vertices();
+        m_avgFaces += entry.mesh.n_faces();
 
         std::cout << "Model: " << nModels++ << std::endl;
     }
@@ -108,11 +110,12 @@ void Database::exportStatistics(std::string suffix)
     Entry entry = m_entries[0];
     for (auto const& [key, val] : entry.statistics)
         statistics << key << ",";
+    statistics << "\n";
 
     // Fill columns
     for (unsigned int i = 0; i < m_entries.size(); i++)
         for (auto const& [key, val] : m_entries[i].statistics)
-            statistics << Entry::to_string(val) << ",";
+            statistics << Entry::toString(val) << ",";
     statistics << "\n";
 
     statistics.close();

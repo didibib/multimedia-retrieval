@@ -5,13 +5,14 @@
 namespace mmr {
 class DbGui
 {
-    static void guiStatistics(Database& db);
-    static void guiHistogram(Database& db);
-    static void guiAlgorithms(Database& db, const int& index);
-    static void guiDataMenu(Database& db);
-   
+    static void window(Database& db);
+    static void statistics(Database& db);
+    static void histogram(Database& db);
+    static void algorithms(Database& db, const int& index);
+    static bool m_showHistogram;
+
 public:
 
-    static void guiBeginMenu(Database& db);
+    static void beginMenu(Database& db);
 };
 } // namespace mmr

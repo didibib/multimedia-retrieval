@@ -4,6 +4,7 @@
 #include "pmp/MatVec.h"
 #include <map>
 #include <any>
+#include <set>
 #include <variant>
 #include <ostream>
 
@@ -20,9 +21,9 @@ struct Entry
         std::string operator()(const std::string& value) { return value; }
         std::string operator()(const pmp::Point& value)
         {
-            std::string x = "x: " + std::to_string(value[0]) + "\n";
-            std::string y = "y: " + std::to_string(value[1]) + "\n";
-            std::string z = "z: " + std::to_string(value[2]) + "\n";
+            std::string x = std::to_string(value[0]) + "/";
+            std::string y = std::to_string(value[1]) + "/";
+            std::string z = std::to_string(value[2]);
             return std::string(x + y + z);
         }
     };
@@ -40,20 +41,19 @@ public:
 
     using AnyType = std::variant<int, float, std::string, pmp::Point>;
     std::unordered_map<std::string, AnyType> statistics;
-    static std::string to_string(const AnyType& input)
+    static std::string toString(const AnyType& input)
     {
         return std::visit(AnyGet{}, input);
     }
 
     void updateStatistics();
 
-    static int column_index(std::string key)
+    static int columnIndex(std::string key)
     {
         static std::map<std::string, int> order{
             {"id", 0}, {"label", 1}, {"n_vertices", 2},
             {"n_faces", 3},  {"centroid", 4}, {"bb_center", 5},
             {"bb_min", 6}, {"bb_max", 7}};
-
         return order[key];
     }
 };
@@ -71,13 +71,14 @@ public:
                    const std::string& draw_mode);
     void clear();
 
-    int getDBSize() { return m_entries.size(); }
+    int getDbSize() { return m_entries.size(); }
     int getAvgVerts() { return m_avgVerts; }
     int getAvgFaces() { return m_avgFaces; }
     int getLabelCount() { return m_avgFaces; }
 
 private:
     std::vector<Entry> m_entries;
+    std::set<std::string> m_labels;
 
     int m_avgVerts = 0;
     int m_avgFaces = 0;
@@ -88,7 +89,6 @@ private:
 
     bool m_imported = false;
     bool m_showStatistics = false;
-    bool m_showHistogram = false;
     std::vector<bool*> m_columnSelected;
 
     int m_columns = 0;

@@ -8,12 +8,12 @@
 #include <pmp/algorithms/Triangulation.h>
 
 namespace mmr {
-void DbGui::guiStatistics(Database& db)
+void DbGui::window(Database& db)
 {
-    if (db.m_entries.empty())
+    if (!db.m_showStatistics)
         return;
 
-    if (!db.m_showStatistics)
+    if (db.m_entries.empty())
         return;
 
     if (!ImGui::Begin("Statistics", &db.m_showStatistics))
@@ -21,6 +21,14 @@ void DbGui::guiStatistics(Database& db)
         ImGui::End();
         return;
     }
+    
+    statistics(db);
+
+    ImGui::End();
+}
+
+void DbGui::statistics( Database& db )
+{
     static ImGuiTableFlags flags =
         ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable |
         ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuter |
@@ -36,7 +44,7 @@ void DbGui::guiStatistics(Database& db)
     const auto& stats = db.m_entries[0].statistics;
     for (auto it = stats.cbegin(); it != stats.cend(); ++it)
     {
-        int index = Entry::column_index(it->first);
+        int index = Entry::columnIndex(it->first);
         ImGui::TableSetColumnIndex(index);
         ImGui::PushID(index);
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
@@ -54,31 +62,33 @@ void DbGui::guiStatistics(Database& db)
         const auto& stats = db.m_entries[row].statistics;
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
         {
-            int index = Entry::column_index(it->first);
+            int index = Entry::columnIndex(it->first);
             ImGui::TableSetColumnIndex(index);
-            ImGui::Selectable(Entry::to_string(it->second).c_str(),
+            ImGui::Selectable(Entry::toString(it->second).c_str(),
                               db.m_columnSelected[index]);
             if (index != 0)
                 continue;
 
-            guiAlgorithms(db, row);
+            algorithms(db, row);
         }
     }
 
     ImGui::EndTable();
     ImGui::PopStyleVar();
-    ImGui::End();
 }
 
-void DbGui::guiHistogram(Database& db)
+void DbGui::histogram(Database& db)
 {
+    if (!m_showHistogram)
+        return;
+
     for (const auto& b : db.m_columnSelected)
     {
         if (!(*b))
             continue;
     }
 
-    if (!ImGui::Begin("Histogram", &db.m_showHistogram))
+    if (!ImGui::Begin("Histogram", &m_showHistogram))
     {
         ImGui::End();
         return;
@@ -102,7 +112,7 @@ void DbGui::guiHistogram(Database& db)
     ImGui::End();
 }
 
-void DbGui::guiAlgorithms(Database& db, const int& index)
+void DbGui::algorithms(Database& db, const int& index)
 {
     if (ImGui::BeginPopupContextItem())
     {
@@ -121,8 +131,14 @@ void DbGui::guiAlgorithms(Database& db, const int& index)
         ImGui::SetTooltip("Right-click to edit");
 }
 
-void DbGui::guiDataMenu(Database& db)
+void DbGui::beginMenu(Database& db)
 {
+    window(db);
+    histogram(db);
+
+    if (!ImGui::BeginMenu("Database"))
+        return;
+    
     if (ImGui::MenuItem("Import"))
         db.import(util::getDataDir("LabeledDB_new"));
 
@@ -146,16 +162,6 @@ void DbGui::guiDataMenu(Database& db)
 
             ImGui::EndMenu();
         }
-}
-
-void DbGui::guiBeginMenu(Database& db)
-{
-    guiStatistics(db);
-    //guiHistogram(db);
-
-    if (!ImGui::BeginMenu("Database"))
-        return;
-    guiDataMenu(db);
 
     ImGui::EndMenu();
 }
