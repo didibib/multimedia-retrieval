@@ -14,7 +14,7 @@ protected:
     void keyboard(int key, int code, int action, int mod) override;
     void process_imgui() override;
 
-    Database m_database;
+    Database db;
 
 private:
     bool m_retrieved_db = false;

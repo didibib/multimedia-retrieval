@@ -16,6 +16,8 @@ set(MMR_VIEWER
 set(DATABASE
     "include/database.h"
     "src/database.cpp"
+    "include/database_gui.h"
+    "src/database_gui.cpp"
 )
 
 set(NORMALIZATION

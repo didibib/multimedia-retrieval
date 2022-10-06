@@ -4,6 +4,7 @@
 #include "util.h"
 #include "normalization.h"
 #include "mmr_viewer.h"
+#include "database_gui.h"
 
 using namespace pmp;
 using namespace std;
@@ -18,7 +19,7 @@ MmrViewer::MmrViewer(const char* title, int width, int height)
 void MmrViewer::draw(const std::string& drawMode)
 {
     MeshViewer::draw(drawMode);
-    m_database.drawModel(m_dbIndex, projection_matrix_, modelview_matrix_,
+    db.drawModel(m_dbIndex, projection_matrix_, modelview_matrix_,
                          drawMode);
 }
 
@@ -53,7 +54,7 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 void MmrViewer::process_imgui()
 {
     /*if (ImGui::Button("Next") && m_retrieved_db &&
-        (m_dbIndex < m_database.getDBSize() - 1))
+        (m_dbIndex < m_db.getDBSize() - 1))
     {
         m_dbIndex++;
     }
@@ -71,7 +72,7 @@ void MmrViewer::process_imgui()
 
     if (ImGui::BeginMainMenuBar())
     {
-        m_database.guiBeginMenu();
+        DbGui::guiBeginMenu(db);
         ImGui::EndMainMenuBar();
     }
 

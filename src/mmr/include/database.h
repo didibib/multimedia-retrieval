@@ -64,7 +64,6 @@ public:
     Database() = default;
     Database(const std::string path);
     void import(const std::string& path);
-    void guiBeginMenu();
     void draw(const pmp::mat4& projection_matrix,
               const pmp::mat4& modelview_matrix, const std::string& draw_mode);
     void drawModel(int index, const pmp::mat4& projection_matrix,
@@ -85,16 +84,14 @@ private:
 
     void exportStatistics(std::string suffix = "");
     void exportMeshes(std::string folder);
-    void guiDataMenu();
-    void guiStatistics();
-    void guiHistogram();
-    void guiAlgorithms(const int& index);
+    
 
     bool m_imported = false;
     bool m_showStatistics = false;
     bool m_showHistogram = false;
+    std::vector<bool*> m_columnSelected;
 
     int m_columns = 0;
-    std::vector<bool*> m_columnSelected;
+    friend class DbGui;
 };
 } // namespace mmr
