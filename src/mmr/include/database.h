@@ -64,11 +64,7 @@ public:
     Database() = default;
     Database(const std::string path);
     void import(const std::string& path);
-    void draw(const pmp::mat4& projection_matrix,
-              const pmp::mat4& modelview_matrix, const std::string& draw_mode);
-    void drawModel(int index, const pmp::mat4& projection_matrix,
-                   const pmp::mat4& modelview_matrix,
-                   const std::string& draw_mode);
+    Entry* get(int index);
     void clear();
 
     int getDbSize() { return m_entries.size(); }

@@ -7,8 +7,8 @@ class DbGui
 {
     static void window(Database& db);
     static void statistics(Database& db);
+    static void algorithms(Database& db, const int& row, const int& column);
     static void histogram(Database& db);
-    static void algorithms(Database& db, const int& index);
     static bool m_showHistogram;
 
 public:

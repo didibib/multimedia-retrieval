@@ -8,6 +8,9 @@
 #include <pmp/algorithms/Triangulation.h>
 
 namespace mmr {
+
+bool DbGui::m_showHistogram = false;
+
 void DbGui::window(Database& db)
 {
     if (!db.m_showStatistics)
@@ -16,18 +19,29 @@ void DbGui::window(Database& db)
     if (db.m_entries.empty())
         return;
 
-    if (!ImGui::Begin("Statistics", &db.m_showStatistics))
+    if (!ImGui::Begin("Statistics", &db.m_showStatistics,
+                      ImGuiWindowFlags_MenuBar))
     {
         ImGui::End();
         return;
     }
-    
+
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::MenuItem("Histogram", nullptr))
+        {
+            DbGui::m_showHistogram = true;
+        }
+        ImGui::EndMenuBar();
+    }
+
     statistics(db);
+    //histogram(db);
 
     ImGui::End();
 }
 
-void DbGui::statistics( Database& db )
+void DbGui::statistics(Database& db)
 {
     static ImGuiTableFlags flags =
         ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable |
@@ -66,10 +80,7 @@ void DbGui::statistics( Database& db )
             ImGui::TableSetColumnIndex(index);
             ImGui::Selectable(Entry::toString(it->second).c_str(),
                               db.m_columnSelected[index]);
-            if (index != 0)
-                continue;
-
-            algorithms(db, row);
+            algorithms(db, row, index);
         }
     }
 
@@ -77,42 +88,7 @@ void DbGui::statistics( Database& db )
     ImGui::PopStyleVar();
 }
 
-void DbGui::histogram(Database& db)
-{
-    if (!m_showHistogram)
-        return;
-
-    for (const auto& b : db.m_columnSelected)
-    {
-        if (!(*b))
-            continue;
-    }
-
-    if (!ImGui::Begin("Histogram", &m_showHistogram))
-    {
-        ImGui::End();
-        return;
-    }
-
-    static ImPlotHistogramFlags hist_flags = ImPlotHistogramFlags_Density;
-    ImGui::CheckboxFlags("Cumulative", (unsigned int*)&hist_flags,
-                         ImPlotHistogramFlags_Cumulative);
-
-    if (ImPlot::BeginPlot("Statistics"))
-    {
-        ImPlot::SetupAxes(NULL, NULL, ImPlotAxisFlags_AutoFit,
-                          ImPlotAxisFlags_AutoFit);
-        ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
-        //
-        //ImPlot::PlotHistogram("")
-        //
-        ImPlot::EndPlot();
-    }
-
-    ImGui::End();
-}
-
-void DbGui::algorithms(Database& db, const int& index)
+void DbGui::algorithms(Database& db, const int& index, const int& column)
 {
     if (ImGui::BeginPopupContextItem())
     {
@@ -131,6 +107,50 @@ void DbGui::algorithms(Database& db, const int& index)
         ImGui::SetTooltip("Right-click to edit");
 }
 
+void DbGui::histogram(Database& db)
+{
+    if (!DbGui::m_showHistogram)
+        return;
+
+    for (const auto& b : db.m_columnSelected)
+    {
+        if (!(*b))
+            continue;
+    }
+
+    if (!ImGui::Begin("Histogram", &DbGui::m_showHistogram))
+    {
+        ImGui::End();
+        return;
+    }
+
+    static ImPlotHistogramFlags hist_flags = ImPlotHistogramFlags_Density;
+    ImGui::CheckboxFlags("Cumulative", (unsigned int*)&hist_flags,
+                         ImPlotHistogramFlags_Cumulative);
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(200);
+    static float rmin;
+    ImGui::DragFloat2("##Range", &rmin, 0.1f, -3, 13);
+    ImGui::SameLine();
+    ImGui::CheckboxFlags("Exclude Outliers", (unsigned int*)&hist_flags,
+                         ImPlotHistogramFlags_NoOutliers);
+
+    if (ImPlot::BeginPlot("##Statistics"))
+    {
+        ImPlot::SetupAxes(NULL, NULL, ImPlotAxisFlags_AutoFit,
+                          ImPlotAxisFlags_AutoFit);
+        ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
+
+        /*ImPlot::PlotHistogram();
+        ImPlot::PlotLine();*/
+
+        ImPlot::EndPlot();
+    }
+
+    ImGui::End();
+}
+
 void DbGui::beginMenu(Database& db)
 {
     window(db);
@@ -138,7 +158,7 @@ void DbGui::beginMenu(Database& db)
 
     if (!ImGui::BeginMenu("Database"))
         return;
-    
+
     if (ImGui::MenuItem("Import"))
         db.import(util::getDataDir("LabeledDB_new"));
 

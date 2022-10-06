@@ -24,29 +24,21 @@ Database::Database(const std::string path)
     import(path);
 }
 
-void Database::draw(const pmp::mat4& projection_matrix,
-                    const pmp::mat4& modelview_matrix,
-                    const std::string& draw_mode)
-{
-    for (int i = 0; i < m_entries.size(); i++)
-        m_entries[i].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
-}
-
-void Database::drawModel(int index, const pmp::mat4& projection_matrix,
-                         const pmp::mat4& modelview_matrix,
-                         const std::string& draw_mode)
+Entry* Database::get(int index)
 {
     if (index < 0 || index >= m_entries.size())
-        return;
+        return nullptr;
 
-    m_entries[index].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
+    return &m_entries[index];
+
+    //m_entries[index].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
 }
 
 void Database::import(const std::string& path)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 2;
+    int maxModels = 5;
     for (const auto& file_entry : recursive_directory_iterator(path))
     {
         std::string path = file_entry.path().string();
@@ -60,7 +52,8 @@ void Database::import(const std::string& path)
             continue;
 
         if (nModels > maxModels)
-            break;
+            return;
+
         // Create entry
         Entry entry(filename, label, path);
         m_entries.push_back(entry);
@@ -128,7 +121,8 @@ void Database::exportMeshes(std::string folder)
         const Entry& entry = m_entries[i];
         auto it = entry.statistics.find("id");
         if (it != entry.statistics.cend())
-            entry.mesh.write(folder + std::any_cast<std::string>(it->second));
+            entry.mesh.write(util::getExportDir() + folder +
+                             std::any_cast<std::string>(it->second));
     }
 }
 

@@ -20,8 +20,15 @@ void MmrViewer::draw(const std::string& drawMode)
 {
     MeshViewer::draw(drawMode);
     
-    db.drawModel(m_dbIndex, projection_matrix_, modelview_matrix_,
-                         drawMode);
+    Entry* entry = db.get(m_dbIndex);
+    if (entry == nullptr)
+        return;
+
+    BoundingBox& bb = entry->mesh.bounds();
+    set_scene(bb.center(), bb.size() * .5f);
+
+    entry->mesh.draw(projection_matrix_, modelview_matrix_,
+                                drawMode);
 }
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)
@@ -78,6 +85,6 @@ void MmrViewer::process_imgui()
     }
 
     //ImPlot::ShowDemoWindow();
-    ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
 }
 } // namespace mmr
