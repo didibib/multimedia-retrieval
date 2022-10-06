@@ -42,13 +42,13 @@ void Database::import(const std::string& path)
 
         // Create entry
         Entry entry(filename, label, path);
-        m_entries.push_back(entry);
-        m_labels.insert(label);
 
         // Update global statistics
         m_avgVerts += entry.mesh.n_vertices();
         m_avgFaces += entry.mesh.n_faces();
 
+        m_labels.insert(label);
+        m_entries.push_back(std::move(entry));
         std::cout << "Model: " << nModels++ << std::endl;
     }
     m_avgVerts /= nModels;

@@ -9,7 +9,6 @@
 
 namespace mmr {
 
-
 void DbGui::window(Database& db)
 {
     if (!DbGui::m_showStatistics)
@@ -45,8 +44,8 @@ void DbGui::statisticsTable(Database& db)
     static ImGuiTableFlags flags =
         ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable |
         ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuter |
-        ImGuiTableFlags_BordersV | ImGuiTableFlags_ContextMenuInBody |
-        ImGuiTableFlags_Hideable | ImGuiTableFlags_RowBg;
+        ImGuiTableFlags_BordersV | ImGuiTableFlags_Hideable |
+        ImGuiTableFlags_RowBg;
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(5, 5));
 
     if (!ImGui::BeginTable("Statistics", db.m_columns, flags))
@@ -170,7 +169,7 @@ void DbGui::beginMenu(Database& db)
         }
 
     if (!m_showStatistics && db.m_imported)
-        if (ImGui::MenuItem("View"))
+        if (ImGui::MenuItem("Statistics"))
             m_showStatistics = true;
 
     if (db.m_imported)
