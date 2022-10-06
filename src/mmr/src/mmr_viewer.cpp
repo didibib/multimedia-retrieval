@@ -11,24 +11,31 @@ using namespace std;
 
 namespace mmr {
 MmrViewer::MmrViewer(const char* title, int width, int height)
-    : MeshViewer(title, width, height)
+    : MeshViewer(title, width, height), m_dbGui(db)
 {
     set_draw_mode("Smooth Shading");
+    m_selectedEntry = m_dbGui.getSelectedEntry();
 }
 
 void MmrViewer::draw(const std::string& drawMode)
-{
-    MeshViewer::draw(drawMode);
-    
-    Entry* entry = db.get(m_dbIndex);
+{    
+    static Entry* entry = nullptr;
+    if (entry == nullptr || m_selectedEntry != m_dbGui.getSelectedEntry())
+    {
+        entry = db.get(m_dbGui.getSelectedEntry());
+
+        if (entry == nullptr)
+            return;
+
+        m_selectedEntry = m_dbGui.getSelectedEntry();
+        BoundingBox& bb = entry->mesh.bounds();
+        set_scene(bb.center(), bb.size() * .5f);
+    }
+
     if (entry == nullptr)
         return;
 
-    BoundingBox& bb = entry->mesh.bounds();
-    set_scene(bb.center(), bb.size() * .5f);
-
-    entry->mesh.draw(projection_matrix_, modelview_matrix_,
-                                drawMode);
+    entry->mesh.draw(projection_matrix_, modelview_matrix_, drawMode);
 }
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)
@@ -40,12 +47,6 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
     {
         case GLFW_KEY_C:
         {
-            auto bb = mesh_.bounds();
-            cout << "Mesh bounds BEFORE " << bb.size() << endl;
-            Norma::lize(mesh_);
-            update_mesh();
-            bb = mesh_.bounds();
-            cout << "Mesh bounds AFTER " << bb.size() << endl;
             //break;
         }
         break;
@@ -80,7 +81,7 @@ void MmrViewer::process_imgui()
 
     if (ImGui::BeginMainMenuBar())
     {
-        DbGui::beginMenu(db);
+        m_dbGui.beginMenu(db);
         ImGui::EndMainMenuBar();
     }
 

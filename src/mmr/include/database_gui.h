@@ -5,15 +5,19 @@
 namespace mmr {
 class DbGui
 {
-    static void window(Database& db);
-    static void statistics(Database& db);
-    static void algorithms(Database& db, const int& row, const int& column);
-    static void histogram(Database& db);
-    static bool m_showHistogram;
-    static bool m_showStatistics;
+    void window(Database& db);
+    void statisticsTable(Database& db);
+    void algorithmsPopup(Database& db, const int& row, const int& column);
+    void histogram(Database& db);
+
+    bool m_showHistogram = false;
+    bool m_showStatistics = false;
+    int m_selectedEntry = 0;
+    Database& m_db;
 
 public:
-
-    static void beginMenu(Database& db);
+    DbGui(Database& db) : m_db(db) {}
+    int getSelectedEntry() { return m_selectedEntry; }
+    void beginMenu(Database& db);
 };
 } // namespace mmr

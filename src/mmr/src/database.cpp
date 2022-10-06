@@ -4,20 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <pmp/algorithms/DifferentialGeometry.h>
 
 namespace mmr {
-void Entry::updateStatistics()
-{
-    statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
-    statistics["n_faces"] = static_cast<int>(mesh.n_faces());
-    statistics["centroid"] = pmp::centroid(mesh);
-
-    BoundingBox bb = mesh.bounds();
-    statistics["bb_center"] = bb.center();
-    statistics["bb_min"] = bb.min();
-    statistics["bb_max"] = bb.max();
-}
 
 Database::Database(const std::string path)
 {
@@ -92,18 +80,19 @@ void Database::exportStatistics(std::string suffix)
     std::ofstream statistics;
     statistics.open(util::getExportDir() + filename + ".csv");
 
-    // Fill headers
-    Entry entry = m_entries[0];
-    for (auto const& [key, val] : entry.statistics)
+    // Headers
+    for (auto const& [key, val] : m_entries[0].statistics)
         statistics << key << ",";
     statistics << "\n";
 
-    // Fill columns
+    // Rows
     for (unsigned int i = 0; i < m_entries.size(); i++)
+    {
+        // Columns
         for (auto const& [key, val] : m_entries[i].statistics)
             statistics << Entry::toString(val) << ",";
-    statistics << "\n";
-
+        statistics << "\n";
+    }
     statistics.close();
 }
 
@@ -118,6 +107,4 @@ void Database::exportMeshes(std::string folder)
                              std::any_cast<std::string>(it->second));
     }
 }
-
-
 } // namespace mmr

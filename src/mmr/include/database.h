@@ -1,16 +1,20 @@
 #pragma once
 
 #include "pmp/visualization/SurfaceMeshGL.h"
+#include <pmp/algorithms/DifferentialGeometry.h>
 #include "pmp/MatVec.h"
 #include <map>
 #include <any>
 #include <set>
 #include <variant>
 #include <ostream>
+#include <optional>
 
 // TODO: Seperatie GUI features from the database
 
 namespace mmr {
+
+#define N_DB_HEADERS 8
 
 struct Entry
 {
@@ -21,14 +25,41 @@ struct Entry
         std::string operator()(const std::string& value) { return value; }
         std::string operator()(const pmp::Point& value)
         {
-            std::string x = std::to_string(value[0]) + "/";
-            std::string y = std::to_string(value[1]) + "/";
+            // https://stackoverflow.com/questions/566052/can-you-encode-cr-lf-in-into-csv-files
+            std::string x = std::to_string(value[0]) + "\n";
+            std::string y = std::to_string(value[1]) + "\n";
             std::string z = std::to_string(value[2]);
-            return std::string(x + y + z);
+            return std::string("\"" + x + y + z + "\"");
         }
     };
 
 public:
+    using AnyType = std::variant<int, float, std::string, pmp::Point>;
+    std::map<std::string, AnyType> statistics;
+    static std::string toString(const AnyType& input)
+    {
+        return std::visit(AnyGet{}, input);
+    }
+
+    static std::vector<std::string> getHeaders()
+    {
+        static std::vector<std::string> headers = {
+            "id",       "label",     "n_vertices", "n_faces",
+            "centroid", "bb_center", "bb_min",     "bb_max"};
+        return headers;
+    }
+
+    static int columnIndex(std::string key)
+    {
+        auto headers = getHeaders();
+        for (int i = 0; i < headers.size(); i++)
+        {
+            if (headers[i] == key)
+                return i;
+        }
+        return 0;
+    }
+
     Entry(std::string id, std::string label, std::string path)
     {
         mesh.read(path);
@@ -37,35 +68,31 @@ public:
         updateStatistics();
     }
 
+    void updateStatistics()
+    {
+        statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
+        statistics["n_faces"] = static_cast<int>(mesh.n_faces());
+        statistics["centroid"] = pmp::centroid(mesh);
+
+        pmp::BoundingBox bb = mesh.bounds();
+        statistics["bb_center"] = bb.center();
+        statistics["bb_min"] = bb.min();
+        statistics["bb_max"] = bb.max();
+    }
+
     pmp::SurfaceMeshGL mesh;
-
-    using AnyType = std::variant<int, float, std::string, pmp::Point>;
-    std::unordered_map<std::string, AnyType> statistics;
-    static std::string toString(const AnyType& input)
-    {
-        return std::visit(AnyGet{}, input);
-    }
-
-    void updateStatistics();
-
-    static int columnIndex(std::string key)
-    {
-        static std::map<std::string, int> order = {
-            {"id", 0},      {"label", 1},    {"n_vertices", 2},
-            {"n_faces", 3}, {"centroid", 4}, {"bb_center", 5},
-            {"bb_min", 6},  {"bb_max", 7}};
-
-        return order[key];
-    }
 };
 
 class Database
 {
+    friend class DbGui;
 public:
     Database() = default;
     Database(const std::string path);
     void import(const std::string& path);
     Entry* get(int index);
+    /*void draw(int index, const pmp::mat4& projectionMatrix,
+              const pmp::mat4& modelviewMatrix, const std::string& drawMode);*/
     void clear();
 
     int getDbSize() { return m_entries.size(); }
@@ -85,9 +112,7 @@ private:
 
     bool m_imported = false;
     // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
-    bool m_columnSelected[8] = {false};
-
+    bool m_columnSelected[N_DB_HEADERS] = {false};
     int m_columns = 0;
-    friend class DbGui;
 };
 } // namespace mmr
