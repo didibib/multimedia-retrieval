@@ -10,16 +10,17 @@
 namespace mmr {
 
 bool DbGui::m_showHistogram = false;
+bool DbGui::m_showStatistics = false;
 
 void DbGui::window(Database& db)
 {
-    if (!db.m_showStatistics)
+    if (!DbGui::m_showStatistics)
         return;
 
     if (db.m_entries.empty())
         return;
 
-    if (!ImGui::Begin("Statistics", &db.m_showStatistics,
+    if (!ImGui::Begin("Statistics", &DbGui::m_showStatistics,
                       ImGuiWindowFlags_MenuBar))
     {
         ImGui::End();
@@ -60,27 +61,24 @@ void DbGui::statistics(Database& db)
     {
         int index = Entry::columnIndex(it->first);
         ImGui::TableSetColumnIndex(index);
-        ImGui::PushID(index);
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-        ImGui::Checkbox("##checkall", db.m_columnSelected[index]);
-        ImGui::PopStyleVar();
-        ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
         ImGui::TableHeader((it->first).c_str());
-        ImGui::PopID();
     }
 
     // Fill table
     for (int row = 0; row < db.m_entries.size(); row++)
     {
         ImGui::TableNextRow();
+
         const auto& stats = db.m_entries[row].statistics;
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
         {
-            int index = Entry::columnIndex(it->first);
-            ImGui::TableSetColumnIndex(index);
+            int col = Entry::columnIndex(it->first);
+            ImGui::TableSetColumnIndex(col);
             ImGui::Selectable(Entry::toString(it->second).c_str(),
-                              db.m_columnSelected[index]);
-            algorithms(db, row, index);
+                              &db.m_columnSelected[col],
+                              ImGuiSelectableFlags_SpanAllColumns);
+
+            algorithms(db, row, col);
         }
     }
 
@@ -111,12 +109,6 @@ void DbGui::histogram(Database& db)
 {
     if (!DbGui::m_showHistogram)
         return;
-
-    for (const auto& b : db.m_columnSelected)
-    {
-        if (!(*b))
-            continue;
-    }
 
     if (!ImGui::Begin("Histogram", &DbGui::m_showHistogram))
     {
@@ -160,17 +152,22 @@ void DbGui::beginMenu(Database& db)
         return;
 
     if (ImGui::MenuItem("Import"))
+    {
         db.import(util::getDataDir("LabeledDB_new"));
+        DbGui::m_showStatistics = true;
+    }
 
     if (db.m_imported)
         if (ImGui::MenuItem("Clear"))
         {
             db.clear();
             db.m_imported = false;
+            DbGui::m_showStatistics = false;
         }
-    if (!db.m_showStatistics && db.m_imported)
+
+    if (!DbGui::m_showStatistics && db.m_imported)
         if (ImGui::MenuItem("View"))
-            db.m_showStatistics = true;
+            DbGui::m_showStatistics = true;
 
     if (db.m_imported)
         if (ImGui::BeginMenu("Export..."))

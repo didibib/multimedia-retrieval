@@ -50,10 +50,11 @@ public:
 
     static int columnIndex(std::string key)
     {
-        static std::map<std::string, int> order{
-            {"id", 0}, {"label", 1}, {"n_vertices", 2},
-            {"n_faces", 3},  {"centroid", 4}, {"bb_center", 5},
-            {"bb_min", 6}, {"bb_max", 7}};
+        static std::map<std::string, int> order = {
+            {"id", 0},      {"label", 1},    {"n_vertices", 2},
+            {"n_faces", 3}, {"centroid", 4}, {"bb_center", 5},
+            {"bb_min", 6},  {"bb_max", 7}};
+
         return order[key];
     }
 };
@@ -81,11 +82,10 @@ private:
 
     void exportStatistics(std::string suffix = "");
     void exportMeshes(std::string folder);
-    
 
     bool m_imported = false;
-    bool m_showStatistics = false;
-    std::vector<bool*> m_columnSelected;
+    // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
+    bool m_columnSelected[8] = {false};
 
     int m_columns = 0;
     friend class DbGui;

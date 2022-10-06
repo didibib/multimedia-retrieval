@@ -30,8 +30,6 @@ Entry* Database::get(int index)
         return nullptr;
 
     return &m_entries[index];
-
-    //m_entries[index].mesh.draw(projection_matrix, modelview_matrix, draw_mode);
 }
 
 void Database::import(const std::string& path)
@@ -52,7 +50,7 @@ void Database::import(const std::string& path)
             continue;
 
         if (nModels > maxModels)
-            return;
+            break;
 
         // Create entry
         Entry entry(filename, label, path);
@@ -74,12 +72,7 @@ void Database::import(const std::string& path)
         return;
 
     m_imported = true;
-    m_showStatistics = true;
     m_columns = m_entries[0].statistics.size();
-    m_columnSelected.clear();
-    m_columnSelected.reserve(m_columns);
-    for (int i = 0; i < 10; ++i)
-        m_columnSelected.emplace_back(new bool(false));
 }
 
 void Database::clear()

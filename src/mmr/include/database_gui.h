@@ -10,6 +10,7 @@ class DbGui
     static void algorithms(Database& db, const int& row, const int& column);
     static void histogram(Database& db);
     static bool m_showHistogram;
+    static bool m_showStatistics;
 
 public:
 
