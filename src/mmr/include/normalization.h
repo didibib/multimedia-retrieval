@@ -4,6 +4,7 @@
 namespace mmr {
 class Norma
 {
+public:
     // Translate barycenter to origin
     static void translate(pmp::SurfaceMesh& mesh);
     // Compute Principal axes and align with coordinate frame
@@ -13,7 +14,6 @@ class Norma
     // Scale to unit sized cube
     static void scale(pmp::SurfaceMesh& mesh);
 
-public:
     static void lize(pmp::SurfaceMesh& mesh);
 };
 } // namespace mmr

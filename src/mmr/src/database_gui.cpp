@@ -6,6 +6,7 @@
 #include <pmp/algorithms/Subdivision.h>
 #include <pmp/algorithms/Smoothing.h>
 #include <pmp/algorithms/Triangulation.h>
+#include "normalization.h"
 
 namespace mmr {
 
@@ -24,14 +25,14 @@ void DbGui::window(Database& db)
         return;
     }
 
-    if (ImGui::BeginMenuBar())
+    /*if (ImGui::BeginMenuBar())
     {
         if (ImGui::MenuItem("Histogram", nullptr))
         {
             DbGui::m_showHistogram = true;
         }
         ImGui::EndMenuBar();
-    }
+    }*/
 
     statisticsTable(db);
     //histogram(db);
@@ -99,6 +100,15 @@ void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
         {
             pmp::Subdivision(entry.mesh).quad_tri();
             entry.updateStatistics();
+        }
+        if (ImGui::Button("Flip"))
+        {
+            Norma::flip(entry.mesh);
+            entry.updateStatistics();
+        }
+        if (ImGui::Button("Export"))
+        {
+            entry.write();
         }
 
         ImGui::EndPopup();

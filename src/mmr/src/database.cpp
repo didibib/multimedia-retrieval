@@ -1,5 +1,4 @@
 #include "database.h"
-#include "util.h"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -41,6 +40,10 @@ void Database::import(const std::string& path)
             break;
 
         // Create entry
+
+        if (filename != "cube.ply")
+            continue;
+
         Entry entry(filename, label, path);
 
         // Update global statistics

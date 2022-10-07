@@ -9,6 +9,7 @@
 #include <variant>
 #include <ostream>
 #include <optional>
+#include "util.h"
 
 // TODO: Seperatie GUI features from the database
 
@@ -62,6 +63,7 @@ public:
 
     Entry(std::string id, std::string label, std::string path)
     {
+        original_path = path;
         mesh.read(path);
         statistics["id"] = id;
         statistics["label"] = label;
@@ -80,12 +82,21 @@ public:
         statistics["bb_max"] = bb.max();
     }
 
+    void write(std::string folder = "")
+    {
+        std::string filename = Entry::toString(statistics["id"]);
+        mesh.write(util::getExportDir(folder) + filename);
+    }
+
+public:
     pmp::SurfaceMeshGL mesh;
+    std::string original_path;
 };
 
 class Database
 {
     friend class DbGui;
+
 public:
     Database() = default;
     Database(const std::string path);

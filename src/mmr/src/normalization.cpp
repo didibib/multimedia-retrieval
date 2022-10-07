@@ -30,7 +30,8 @@ void Norma::translate(SurfaceMesh& mesh)
     }
 }
 
-void Norma::pca(SurfaceMesh& mesh) {
+void Norma::pca(SurfaceMesh& mesh)
+{
     unsigned int n_vertices = mesh.n_vertices();
     MatrixXf input(3, n_vertices);
     auto points = mesh.get_vertex_property<Point>("v:point");
@@ -65,33 +66,44 @@ void Norma::pca(SurfaceMesh& mesh) {
         Point pos_temp{0, 0, 0};
         for (size_t i = 0; i < 3; i++)
             for (size_t j = 0; j < 3; j++)
-                pos_temp[i] += transfer(j,i) * pos_mesh[j];
+                pos_temp[i] += transfer(j, i) * pos_mesh[j];
         points[v] = pos_temp;
     }
 }
 
-void Norma::flip(SurfaceMesh& mesh) 
+void Norma::flip(SurfaceMesh& mesh)
 {
-    bool doFlip = true; //todo add condition when to flip
-    if (doFlip)
+    auto points = mesh.get_vertex_property<Point>("v:point");
+
+    // Sum f_i
+    float flip_x = 0;
+    float flip_y = 0;
+    float flip_z = 0;
+    for (auto f : mesh.faces())
     {
-        /*Transform<float, 4, Affine> T = Transform<float, 4, Affine>::Identity();*/
-        Affine3f T = Affine3f::Identity();
-        T.rotate(Eigen::AngleAxisf( (float)M_PI, Eigen::Vector3f(1.0f, 0.0f, 0.0f)));
-        /*pmp::mat4 rotation = pmp::rotation_matrix(
-            pmp::Vector<float, 3>(1.0f, 0.0, 0.0f), 180.0f);*/
-        auto points = mesh.get_vertex_property<Point>("v:point");
-        for (auto v : mesh.vertices())
+        Point center(0);
+        int vertices = 0;
+        for (auto v : mesh.vertices(f))
         {
-            Vector3f p(points[v][0], points[v][1], points[v][2]);
-
-            auto result = T * p;
-
-            points[v][0] = result[0];
-            points[v][1] = result[1];
-            points[v][2] = result[2];
+            center += points[v];
+            vertices++;
         }
-            
+        center /= vertices;
+
+        int sign_x = center[0] >= 0 ? 1 : -1;
+        int sign_y = center[1] >= 0 ? 1 : -1;
+        int sign_z = center[2] >= 0 ? 1 : -1;
+        flip_x += sign_x * center[0] * center[0];
+        flip_y += sign_y * center[1] * center[1];
+        flip_z += sign_z * center[2] * center[2];
+    }
+
+    // Flip
+    for (auto v : mesh.vertices())
+    {
+        points[v][0] *= flip_x >= 0 ? 1 : -1;
+        points[v][1] *= flip_y >= 0 ? 1 : -1;
+        points[v][2] *= flip_z >= 0 ? 1 : -1;
     }
 }
 
@@ -102,12 +114,7 @@ void Norma::scale(SurfaceMesh& mesh)
 
     Point scale = (bb.max() - bb.min());
     scale[0] = std::max(scale[0], std::max(scale[1], scale[2]));
-    scale[2] = scale[1] = scale[0] = scale[0] > 0.0f ? 1.f / scale[0] : 1.1f;
-    //scale[0] = scale[0] > 0.0f ? 1.f / scale[0] : 1.f;
-    //scale[1] = scale[1] > 0.0f ? 1.f / scale[1] : 1.f;
-    //scale[2] = scale[2] > 0.0f ? 1.f / scale[2] : 1.f;
-
-    
+    scale[2] = scale[1] = scale[0] = scale[0] > 0.0f ? 1.f / scale[0] : 1.0f;
 
     Transform<float, 3, Affine> T = Transform<float, 3, Affine>::Identity();
     T.scale(Vector3f(scale[0], scale[1], scale[2]));
