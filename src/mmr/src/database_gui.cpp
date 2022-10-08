@@ -25,17 +25,36 @@ void DbGui::window(Database& db)
         return;
     }
 
-    /*if (ImGui::BeginMenuBar())
+    if (ImGui::BeginMenuBar())
     {
-        if (ImGui::MenuItem("Histogram", nullptr))
+        if (ImGui::MenuItem("Normalize all"))
         {
-            DbGui::m_showHistogram = true;
+            int i = 0;
+            for (auto& e : db.m_entries)
+            {
+                Normalization::all_steps(e.mesh);
+                e.updateStatistics();
+                printf("%i\n", i++);
+            }
+            printf("Finished normalizing!\n");
         }
+
+        if (ImGui::MenuItem("Remesh all"))
+        {
+            int i = 0;
+            for (auto& e : db.m_entries)
+            {
+                Normalization::remesh(e.mesh);
+                e.updateStatistics();
+                printf("%i\n", i++);
+            }
+            printf("Finished remeshing!\n");
+        }
+
         ImGui::EndMenuBar();
-    }*/
+    }
 
     statisticsTable(db);
-    //histogram(db);
 
     ImGui::End();
 }
@@ -228,8 +247,25 @@ void DbGui::beginMenu(Database& db)
         {
             if (ImGui::MenuItem("Statistics"))
                 db.exportStatistics();
-            if (ImGui::MenuItem("Meshes"))
-                db.exportMeshes(util::getExportDir("Meshes/"));
+            if (ImGui::BeginMenu("Meshes"))
+            {
+                if (ImGui::MenuItem("As .off"))
+                {
+                    for (auto& entry : db.m_entries)
+                    {
+                        entry.write(".off");
+                    }
+                }
+                if (ImGui::MenuItem("As .ply"))
+                {
+                    for (auto& entry : db.m_entries)
+                    {
+                        entry.write(".ply");
+                    }
+                    printf("Finished exporting!\n");
+                }
+                ImGui::EndMenu();
+            }
 
             ImGui::EndMenu();
         }

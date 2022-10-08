@@ -11,7 +11,7 @@ namespace mmr {
 
 void Normalization::all_steps(SurfaceMesh& mesh)
 {
-    //remesh(mesh);
+    remesh(mesh);
     translate(mesh);
     pca_pose(mesh);
     flip(mesh);
@@ -20,16 +20,10 @@ void Normalization::all_steps(SurfaceMesh& mesh)
 
 void Normalization::remesh( SurfaceMesh& mesh )
 {
-    static int target = 10000;
-
-    if (mesh.n_vertices() < target)
+    if (mesh.n_vertices() < 10000)
     {
-        pmp::Subdivision(mesh).quad_tri();
+        pmp::Subdivision(mesh).loop();
         remesh(mesh);
-    }
-    else if (mesh.n_vertices() > target)
-    {
-        pmp::Decimation(mesh).decimate(target);
     }
 }
 

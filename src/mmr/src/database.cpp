@@ -35,8 +35,11 @@ void Database::import(const std::string& path)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        if (nModels > maxModels)
-            break;
+        /*if (nModels > maxModels)
+            break;*/
+
+        /*if (filename != "256.off")
+            continue;*/
 
         // Create entry
         Entry entry(filename, label, path);
@@ -58,7 +61,6 @@ void Database::import(const std::string& path)
     std::cout << "Average Vertices: " << m_avgVerts << std::endl;
     std::cout << "Average Faces: " << m_avgFaces << std::endl;
 
-
     m_imported = true;
     m_columns = m_entries[0].statistics.size();
 }
@@ -68,7 +70,7 @@ void Database::clear()
     m_entries.clear();
 }
 
-void Database::exportStatistics(std::string suffix)
+void Database::exportStatistics(std::string suffix) const
 {
     if (m_entries.size() == 0)
         return;
@@ -96,15 +98,9 @@ void Database::exportStatistics(std::string suffix)
     statistics.close();
 }
 
-void Database::exportMeshes(std::string folder)
+void Database::exportMeshes(std::string extension, std::string folder)
 {
-    for (unsigned int i = 0; i < m_entries.size(); i++)
-    {
-        const Entry& entry = m_entries[i];
-        auto it = entry.statistics.find("id");
-        if (it != entry.statistics.cend())
-            entry.mesh.write(util::getExportDir() + folder +
-                             std::any_cast<std::string>(it->second));
-    }
+    for (auto& e : m_entries)
+        e.write(extension, folder);
 }
 } // namespace mmr

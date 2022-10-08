@@ -16,7 +16,6 @@
 
 namespace mmr {
 
-
 struct Entry
 {
     struct AnyGet
@@ -36,7 +35,6 @@ struct Entry
 
 public:
     using AnyType = std::variant<int, float, std::string, pmp::Point>;
-    std::map<std::string, AnyType> statistics;
     static std::string toString(const AnyType& input)
     {
         return std::visit(AnyGet{}, input);
@@ -90,41 +88,35 @@ public:
         updateStatistics();
     }
 
-    void write(std::string extension, std::string folder = "")
+    const void write(std::string extension, std::string folder = "")
     {
         std::filesystem::path filename =
             Entry::toString(statistics["filename"]);
         filename.replace_extension(extension);
 
-        mesh.write(util::getExportDir(folder) + filename.string());
+        std::string label = toString(statistics["label"]);
+        std::string path = util::getExportDir(folder) + "/" + label;
+
+        mesh.write(path + "/" + filename.string());
     }
 
-    std::string checkFaceType( )
+    std::string checkFaceType()
     {
-        bool tri = false;
-        bool quad = false;
         std::string type = "";
-        for (const auto& f : mesh.faces())
+        if (mesh.is_triangle_mesh())
         {
-            int v = mesh.valence(f);
-            if (!tri && v == 3)
-            {
-                type += "tri";
-                tri = true;
-            }
-            if (!quad && v == 4)
-            {
-                type += "quad";
-                quad = true;
-            }
-
-            if (tri && quad)
-                return type;
+            type += "tri";
         }
+        if (mesh.is_quad_mesh())
+        {
+            type += "quad";
+        }
+
         return type;
     }
 
 public:
+    std::map<std::string, AnyType> statistics;
     pmp::SurfaceMeshGL mesh;
     std::string original_path;
 };
@@ -154,8 +146,8 @@ private:
     int m_avgVerts = 0;
     int m_avgFaces = 0;
 
-    void exportStatistics(std::string suffix = "");
-    void exportMeshes(std::string folder);
+    void exportStatistics(std::string suffix = "") const;
+    void exportMeshes(std::string extension, std::string folder);
 
     bool m_imported = false;
     // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
