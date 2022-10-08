@@ -22,7 +22,7 @@ void Database::import(const std::string& path)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 100;
+    int maxModels = 5;
     for (const auto& file_entry : recursive_directory_iterator(path))
     {
         std::string path = file_entry.path().string();
@@ -39,7 +39,6 @@ void Database::import(const std::string& path)
             break;
 
         // Create entry
-
         Entry entry(filename, label, path);
 
         // Update global statistics

@@ -11,7 +11,7 @@ namespace mmr {
 
 void Normalization::all_steps(SurfaceMesh& mesh)
 {
-    remesh(mesh);
+    //remesh(mesh);
     translate(mesh);
     pca_pose(mesh);
     flip(mesh);

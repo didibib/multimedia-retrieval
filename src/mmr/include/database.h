@@ -16,7 +16,6 @@
 
 namespace mmr {
 
-#define N_DB_HEADERS 8
 
 struct Entry
 {
@@ -45,8 +44,9 @@ public:
 
     static std::vector<std::string> getHeaders()
     {
+#define N_DB_HEADERS 9
         static std::vector<std::string> headers = {
-            "filename", "label",     "n_vertices", "n_faces",
+            "filename", "label",     "n_vertices", "n_faces", "face_type",
             "centroid", "bb_center", "bb_min",     "bb_max"};
         return headers;
     }
@@ -75,6 +75,7 @@ public:
     {
         statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
         statistics["n_faces"] = static_cast<int>(mesh.n_faces());
+        statistics["face_type"] = checkFaceType();
         statistics["centroid"] = pmp::centroid(mesh);
 
         pmp::BoundingBox bb = mesh.bounds();
@@ -96,6 +97,31 @@ public:
         filename.replace_extension(extension);
 
         mesh.write(util::getExportDir(folder) + filename.string());
+    }
+
+    std::string checkFaceType( )
+    {
+        bool tri = false;
+        bool quad = false;
+        std::string type = "";
+        for (const auto& f : mesh.faces())
+        {
+            int v = mesh.valence(f);
+            if (!tri && v == 3)
+            {
+                type += "tri";
+                tri = true;
+            }
+            if (!quad && v == 4)
+            {
+                type += "quad";
+                quad = true;
+            }
+
+            if (tri && quad)
+                return type;
+        }
+        return type;
     }
 
 public:
