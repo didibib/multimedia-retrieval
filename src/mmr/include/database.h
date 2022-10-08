@@ -1,15 +1,16 @@
 #pragma once
 
-#include "pmp/visualization/SurfaceMeshGL.h"
+#include "util.h"
+#include <pmp/visualization/SurfaceMeshGL.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
-#include "pmp/MatVec.h"
+#include <pmp/MatVec.h>
 #include <map>
 #include <any>
 #include <set>
 #include <variant>
 #include <ostream>
 #include <optional>
-#include "util.h"
+#include <filesystem>
 
 // TODO: Seperatie GUI features from the database
 
@@ -45,7 +46,7 @@ public:
     static std::vector<std::string> getHeaders()
     {
         static std::vector<std::string> headers = {
-            "id",       "label",     "n_vertices", "n_faces",
+            "filename", "label",     "n_vertices", "n_faces",
             "centroid", "bb_center", "bb_min",     "bb_max"};
         return headers;
     }
@@ -61,11 +62,11 @@ public:
         return 0;
     }
 
-    Entry(std::string id, std::string label, std::string path)
+    Entry(std::string filename, std::string label, std::string path)
     {
         original_path = path;
         mesh.read(path);
-        statistics["id"] = id;
+        statistics["filename"] = filename;
         statistics["label"] = label;
         updateStatistics();
     }
@@ -82,10 +83,19 @@ public:
         statistics["bb_max"] = bb.max();
     }
 
-    void write(std::string folder = "")
+    void reload()
     {
-        std::string filename = Entry::toString(statistics["id"]);
-        mesh.write(util::getExportDir(folder) + filename);
+        mesh.read(original_path);
+        updateStatistics();
+    }
+
+    void write(std::string extension, std::string folder = "")
+    {
+        std::filesystem::path filename =
+            Entry::toString(statistics["filename"]);
+        filename.replace_extension(extension);
+
+        mesh.write(util::getExportDir(folder) + filename.string());
     }
 
 public:

@@ -1,5 +1,4 @@
 #include "database.h"
-#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -23,7 +22,7 @@ void Database::import(const std::string& path)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 5;
+    int maxModels = 100;
     for (const auto& file_entry : recursive_directory_iterator(path))
     {
         std::string path = file_entry.path().string();
@@ -41,9 +40,6 @@ void Database::import(const std::string& path)
 
         // Create entry
 
-        if (filename != "cube.ply")
-            continue;
-
         Entry entry(filename, label, path);
 
         // Update global statistics
@@ -54,13 +50,15 @@ void Database::import(const std::string& path)
         m_entries.push_back(std::move(entry));
         std::cout << "Model: " << nModels++ << std::endl;
     }
+
+    if (nModels == 0)
+        return;
+
     m_avgVerts /= nModels;
     m_avgFaces /= nModels;
     std::cout << "Average Vertices: " << m_avgVerts << std::endl;
     std::cout << "Average Faces: " << m_avgFaces << std::endl;
 
-    if (nModels == 0)
-        return;
 
     m_imported = true;
     m_columns = m_entries[0].statistics.size();

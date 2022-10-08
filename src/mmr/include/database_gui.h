@@ -9,6 +9,7 @@ class DbGui
     void statisticsTable(Database& db);
     void algorithmsPopup(Database& db, const int& row, const int& column);
     void histogram(Database& db);
+    void normalizationMenu(Entry& entry);
 
     bool m_showHistogram = false;
     bool m_showStatistics = false;

@@ -90,25 +90,27 @@ void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
     {
         Entry& entry = db.m_entries[index];
 
-        if (ImGui::Button("View"))
+        if (ImGui::MenuItem("View"))
         {
             m_selectedEntry = index;
         }
+        if (ImGui::MenuItem("Reload"))
+        {
+            entry.reload();
+        }
+        ImGui::Separator();
+        normalizationMenu(entry);
+
         ImGui::Separator();
 
-        if (ImGui::Button("Subdivision"))
+        if (ImGui::BeginMenu("Export"))
         {
-            pmp::Subdivision(entry.mesh).quad_tri();
-            entry.updateStatistics();
-        }
-        if (ImGui::Button("Flip"))
-        {
-            Norma::flip(entry.mesh);
-            entry.updateStatistics();
-        }
-        if (ImGui::Button("Export"))
-        {
-            entry.write();
+            if (ImGui::MenuItem("As .off"))
+                entry.write(".off");
+            if (ImGui::MenuItem("As .ply"))
+                entry.write(".ply");
+
+            ImGui::EndMenu();
         }
 
         ImGui::EndPopup();
@@ -116,6 +118,45 @@ void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
 
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Right-click to...");
+}
+
+void DbGui::normalizationMenu(Entry& entry)
+{
+    if (ImGui::BeginMenu("Normalization"))
+    {
+        if (ImGui::MenuItem("All steps"))
+        {
+            Normalization::all_steps(entry.mesh);
+            entry.updateStatistics();
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Remesh"))
+        {
+            Normalization::remesh(entry.mesh);
+            entry.updateStatistics();
+        }
+        if (ImGui::MenuItem("Translate"))
+        {
+            Normalization::translate(entry.mesh);
+            entry.updateStatistics();
+        }
+        if (ImGui::MenuItem("PCA Pose"))
+        {
+            Normalization::pca_pose(entry.mesh);
+            entry.updateStatistics();
+        }
+        if (ImGui::MenuItem("Flip"))
+        {
+            Normalization::flip(entry.mesh);
+            entry.updateStatistics();
+        }
+        if (ImGui::MenuItem("Scale"))
+        {
+            Normalization::scale(entry.mesh);
+            entry.updateStatistics();
+        }
+        ImGui::EndMenu();
+    }
 }
 
 void DbGui::histogram(Database& db)

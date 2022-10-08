@@ -1,21 +1,39 @@
+#include "normalization.h"
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <pmp/MatVec.h>
-#include "normalization.h"
+#include <pmp/algorithms/Subdivision.h>
+#include <pmp/algorithms/Decimation.h>
 
 using namespace pmp;
 using namespace Eigen;
 
 namespace mmr {
 
-void Norma::lize(SurfaceMesh& mesh)
+void Normalization::all_steps(SurfaceMesh& mesh)
 {
+    remesh(mesh);
     translate(mesh);
-    pca(mesh);
+    pca_pose(mesh);
     flip(mesh);
     scale(mesh);
 }
 
-void Norma::translate(SurfaceMesh& mesh)
+void Normalization::remesh( SurfaceMesh& mesh )
+{
+    static int target = 10000;
+
+    if (mesh.n_vertices() < target)
+    {
+        pmp::Subdivision(mesh).quad_tri();
+        remesh(mesh);
+    }
+    else if (mesh.n_vertices() > target)
+    {
+        pmp::Decimation(mesh).decimate(target);
+    }
+}
+
+void Normalization::translate(SurfaceMesh& mesh)
 {
     Point origin(0, 0, 0);
     Point center = centroid(mesh);
@@ -30,7 +48,7 @@ void Norma::translate(SurfaceMesh& mesh)
     }
 }
 
-void Norma::pca(SurfaceMesh& mesh)
+void Normalization::pca_pose(SurfaceMesh& mesh)
 {
     unsigned int n_vertices = mesh.n_vertices();
     MatrixXf input(3, n_vertices);
@@ -71,7 +89,7 @@ void Norma::pca(SurfaceMesh& mesh)
     }
 }
 
-void Norma::flip(SurfaceMesh& mesh)
+void Normalization::flip(SurfaceMesh& mesh)
 {
     auto points = mesh.get_vertex_property<Point>("v:point");
 
@@ -107,7 +125,7 @@ void Norma::flip(SurfaceMesh& mesh)
     }
 }
 
-void Norma::scale(SurfaceMesh& mesh)
+void Normalization::scale(SurfaceMesh& mesh)
 {
     BoundingBox bb = mesh.bounds();
     Point center = bb.center();

@@ -2,18 +2,21 @@
 #include "pmp/SurfaceMesh.h"
 
 namespace mmr {
-class Norma
+class Normalization
 {
 public:
+    // Subdivide low density meshes (>10000)
+    // Decimate high density meshes (>50000)
+    static void remesh(pmp::SurfaceMesh& mesh);
     // Translate barycenter to origin
     static void translate(pmp::SurfaceMesh& mesh);
     // Compute Principal axes and align with coordinate frame
-    static void pca(pmp::SurfaceMesh& mesh);
+    static void pca_pose(pmp::SurfaceMesh& mesh);
     // Flip based on moment test
     static void flip(pmp::SurfaceMesh& mesh);
     // Scale to unit sized cube
     static void scale(pmp::SurfaceMesh& mesh);
 
-    static void lize(pmp::SurfaceMesh& mesh);
+    static void all_steps(pmp::SurfaceMesh& mesh);
 };
 } // namespace mmr
