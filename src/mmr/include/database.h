@@ -141,7 +141,7 @@ public:
         Eigen::VectorXf::Index maxv, minv;
         eig.eigenvalues().maxCoeff(&maxv);
         eig.eigenvalues().minCoeff(&minv);
-        return eig.eigenvalues()[maxv] / eig.eigenvalues()[minv];
+        return eig.eigenvalues()[minv] / eig.eigenvalues()[maxv];
     }
 
 public:
