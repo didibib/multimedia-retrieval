@@ -69,8 +69,8 @@ void Normalization::pca_pose(SurfaceMesh& mesh)
 
     Matrix3f transfer;
     transfer.col(0) = eig.eigenvectors().col(maxv);
-    transfer.col(2) = eig.eigenvectors().col(minv);
-    transfer.col(1) = transfer.col(0).cross(transfer.col(2));
+    transfer.col(1) = eig.eigenvectors().col(3 - minv - maxv);
+    transfer.col(2) = transfer.col(0).cross(transfer.col(1));
 
     for (auto v : mesh.vertices())
     {

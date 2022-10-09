@@ -42,10 +42,11 @@ public:
 
     static std::vector<std::string> getHeaders()
     {
-#define N_DB_HEADERS 9
+#define N_DB_HEADERS 12
         static std::vector<std::string> headers = {
             "filename", "label",     "n_vertices", "n_faces", "face_type",
-            "centroid", "bb_center", "bb_min",     "bb_max",  "area"};
+            "centroid", "bb_center", "bb_min",     "bb_max",  "area",
+            "volume",   "eccentricity"};
         return headers;
     }
 
@@ -81,6 +82,8 @@ public:
         statistics["bb_min"] = bb.min();
         statistics["bb_max"] = bb.max();
         statistics["area"] = surface_area(mesh);
+        statistics["volume"] = volume(mesh);
+        statistics["eccentricity"] = eccentricity();
     }
 
     void reload()
@@ -114,6 +117,31 @@ public:
         }
 
         return type;
+    }
+
+    Scalar eccentricity()
+    {
+        unsigned int n_vertices = mesh.n_vertices();
+        Point center = centroid(mesh);
+        Eigen::MatrixXf input(3, n_vertices);
+        auto points = mesh.get_vertex_property<Point>("v:point");
+        unsigned int i = 0;
+        for (auto v : mesh.vertices())
+        {
+            input.col(i)[0] = points[v][0] - center[0];
+            input.col(i)[1] = points[v][1] - center[1];
+            input.col(i++)[2] = points[v][2] - center[2];
+        }
+
+        Eigen::VectorXf mean = input.rowwise().mean();
+        Eigen::MatrixXf centered = input.colwise() - mean;
+        Eigen::MatrixXf cov = centered * centered.adjoint();
+        cov = cov.array() / (input.rows() - 1);
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXf> eig(cov);
+        Eigen::VectorXf::Index maxv, minv;
+        eig.eigenvalues().maxCoeff(&maxv);
+        eig.eigenvalues().minCoeff(&minv);
+        return eig.eigenvalues()[maxv] / eig.eigenvalues()[minv];
     }
 
 public:
