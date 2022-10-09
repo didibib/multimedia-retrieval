@@ -45,14 +45,15 @@ void Normalization::translate(SurfaceMesh& mesh)
 void Normalization::pca_pose(SurfaceMesh& mesh)
 {
     unsigned int n_vertices = mesh.n_vertices();
+    Point center = centroid(mesh);
     MatrixXf input(3, n_vertices);
     auto points = mesh.get_vertex_property<Point>("v:point");
     unsigned int i = 0;
     for (auto v : mesh.vertices())
     {
-        input.col(i)[0] = points[v][0];
-        input.col(i)[1] = points[v][1];
-        input.col(i++)[2] = points[v][2];
+        input.col(i)[0] = points[v][0] - center[0];
+        input.col(i)[1] = points[v][1] - center[1];
+        input.col(i++)[2] = points[v][2] - center[2];
     }
 
     VectorXf mean = input.rowwise().mean();
@@ -70,7 +71,6 @@ void Normalization::pca_pose(SurfaceMesh& mesh)
     transfer.col(0) = eig.eigenvectors().col(maxv);
     transfer.col(2) = eig.eigenvectors().col(minv);
     transfer.col(1) = transfer.col(0).cross(transfer.col(2));
-    transfer.col(2) *= transfer.determinant() > 0 ? 1 : -1;
 
     for (auto v : mesh.vertices())
     {

@@ -45,7 +45,7 @@ public:
 #define N_DB_HEADERS 9
         static std::vector<std::string> headers = {
             "filename", "label",     "n_vertices", "n_faces", "face_type",
-            "centroid", "bb_center", "bb_min",     "bb_max"};
+            "centroid", "bb_center", "bb_min",     "bb_max",  "area"};
         return headers;
     }
 
@@ -80,6 +80,7 @@ public:
         statistics["bb_center"] = bb.center();
         statistics["bb_min"] = bb.min();
         statistics["bb_max"] = bb.max();
+        statistics["area"] = surface_area(mesh);
     }
 
     void reload()
