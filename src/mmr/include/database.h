@@ -44,9 +44,9 @@ public:
     {
 #define N_DB_HEADERS 12
         static std::vector<std::string> headers = {
-            "filename", "label",     "n_vertices", "n_faces", "face_type",
-            "centroid", "bb_center", "bb_min",     "bb_max",  "area",
-            "volume",   "eccentricity"};
+            "filename", "label",        "n_vertices", "n_faces",        "face_type",
+            "centroid", "bb_center",    "bb_min",     "bb_max",         "area",
+            "volume",   "compactness",  "sphericity", "eccentricity"};
         return headers;
     }
 
@@ -83,6 +83,8 @@ public:
         statistics["bb_max"] = bb.max();
         statistics["area"] = surface_area(mesh);
         statistics["volume"] = volume(mesh);
+        statistics["compactness"] = compactness();
+        statistics["sphericity"] = (1 / compactness());
         statistics["eccentricity"] = eccentricity();
     }
 
@@ -141,7 +143,17 @@ public:
         Eigen::VectorXf::Index maxv, minv;
         eig.eigenvalues().maxCoeff(&maxv);
         eig.eigenvalues().minCoeff(&minv);
-        return eig.eigenvalues()[minv] / eig.eigenvalues()[maxv];
+        Scalar ecc = eig.eigenvalues()[minv] / eig.eigenvalues()[maxv];
+        ecc *= ecc > 0 ? 1.f : -1.f;
+        return ecc;
+    }
+
+    Scalar compactness()
+    {
+        auto S = surface_area(mesh);
+        auto V = volume(mesh);
+        Scalar comp = pow(S, 3) / (pow(V, 2) * 36 * M_PI);
+        return comp;
     }
 
 public:
