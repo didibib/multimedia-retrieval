@@ -42,11 +42,12 @@ public:
 
     static std::vector<std::string> getHeaders()
     {
-#define N_DB_HEADERS 12
+#define N_DB_HEADERS 16
         static std::vector<std::string> headers = {
-            "filename", "label",        "n_vertices", "n_faces",        "face_type",
-            "centroid", "bb_center",    "bb_min",     "bb_max",         "area",
-            "volume",   "compactness",  "sphericity", "eccentricity"};
+            "filename",         "label",    "n_vertices",   "n_faces",      "face_type",
+            "centroid",         "bb_center","bb_min",       "bb_max",       "bb_volume",
+            "rectangularity",   "area",     "volume",       "compactness",  "sphericity",
+            "eccentricity"};
         return headers;
     }
 
@@ -81,6 +82,8 @@ public:
         statistics["bb_center"] = bb.center();
         statistics["bb_min"] = bb.min();
         statistics["bb_max"] = bb.max();
+        statistics["bb_volume"] = bb.size();
+        statistics["rectangularity"] = (volume(mesh) / bb.size());
         statistics["area"] = surface_area(mesh);
         statistics["volume"] = volume(mesh);
         statistics["compactness"] = compactness();
