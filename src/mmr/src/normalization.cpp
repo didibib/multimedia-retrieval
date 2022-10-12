@@ -71,16 +71,9 @@ void Normalization::pca_pose(SurfaceMesh& mesh)
     transfer.col(0) = eig.eigenvectors().col(maxv);
     transfer.col(1) = eig.eigenvectors().col(3 - minv - maxv);
     transfer.col(2) = transfer.col(0).cross(transfer.col(1));
-
+    mat3 T = transfer.transpose();
     for (auto v : mesh.vertices())
-    {
-        Point pos_mesh(points[v]);
-        Point pos_temp{0, 0, 0};
-        for (size_t i = 0; i < 3; i++)
-            for (size_t j = 0; j < 3; j++)
-                pos_temp[i] += transfer(j, i) * pos_mesh[j];
-        points[v] = pos_temp;
-    }
+        points[v] = T * points[v];
 }
 
 void Normalization::flip(SurfaceMesh& mesh)
