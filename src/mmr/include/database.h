@@ -33,6 +33,19 @@ struct Entry
         }
     };
 
+    std::string checkFaceType()
+    {
+        if (mesh.is_triangle_mesh())
+        {
+            return "tri";
+        }
+        if (mesh.is_quad_mesh())
+        {
+            return "quad";
+        }
+        return "";
+    }
+
 public:
     using AnyType = std::variant<int, float, std::string, pmp::Point>;
     static std::string toString(const AnyType& input)
@@ -42,22 +55,12 @@ public:
 
     static std::vector<std::string> getHeaders()
     {
-#define N_DB_HEADERS 9
+#define N_DB_HEADERS 8
         static std::vector<std::string> headers = {
-            "filename", "label",     "n_vertices", "n_faces", "face_type",
-            "centroid", "bb_center", "bb_min",     "bb_max"};
+            "filename",    "label",       "n_vertices",
+            "n_faces",     "face_type",   "distance_to_origin",
+            "bb_distance", "surface_area"};
         return headers;
-    }
-
-    static int columnIndex(std::string key)
-    {
-        auto headers = getHeaders();
-        for (int i = 0; i < headers.size(); i++)
-        {
-            if (headers[i] == key)
-                return i;
-        }
-        return 0;
     }
 
     Entry(std::string filename, std::string label, std::string path)
@@ -74,12 +77,12 @@ public:
         statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
         statistics["n_faces"] = static_cast<int>(mesh.n_faces());
         statistics["face_type"] = checkFaceType();
-        statistics["centroid"] = pmp::centroid(mesh);
+        statistics["distance_to_origin"] =
+            pmp::distance(pmp::centroid(mesh), pmp::vec3(0, 0, 0));
 
         pmp::BoundingBox bb = mesh.bounds();
-        statistics["bb_center"] = bb.center();
-        statistics["bb_min"] = bb.min();
-        statistics["bb_max"] = bb.max();
+        statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
+        statistics["surface_area"] = pmp::surface_area(mesh);
     }
 
     void reload()
@@ -98,21 +101,6 @@ public:
         std::string path = util::getExportDir(folder) + "/" + label;
 
         mesh.write(path + "/" + filename.string());
-    }
-
-    std::string checkFaceType()
-    {
-        std::string type = "";
-        if (mesh.is_triangle_mesh())
-        {
-            type += "tri";
-        }
-        if (mesh.is_quad_mesh())
-        {
-            type += "quad";
-        }
-
-        return type;
     }
 
 public:

@@ -10,6 +10,7 @@ class DbGui
     void algorithmsPopup(Database& db, const int& row, const int& column);
     void histogram(Database& db);
     void normalizationMenu(Entry& entry);
+    int columnIndex(std::string key);
 
     bool m_showHistogram = false;
     bool m_showStatistics = false;

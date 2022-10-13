@@ -25,16 +25,23 @@ set(NORMALIZATION
     "src/normalization.cpp"
 )
 
+set(DESCRIPTORS
+    "include/descriptors.h"
+    "src/descriptors.cpp"
+)
+
 add_executable(${EXC_NAME} 
     ${ROOT_FILES}
     ${UTIL}
     ${MMR_VIEWER}
     ${DATABASE}
     ${NORMALIZATION}
+    ${DESCRIPTORS}
 )
 
 source_group(// FILES ${ROOT_FILES})
-source_group(util FILES ${UTIL} ${NORMALIZATION})
+source_group(util FILES ${UTIL})
+source_group(pipeline FILES ${NORMALIZATION} ${DESCRIPTORS})
 source_group(viewer FILES ${MMR_VIEWER})
 source_group(database FILES ${DATABASE})
 

@@ -32,7 +32,7 @@ void DbGui::window(Database& db)
             int i = 0;
             for (auto& e : db.m_entries)
             {
-                Normalization::all_steps(e.mesh);
+                Normalize::all_steps(e.mesh);
                 e.updateStatistics();
                 printf("%i\n", i++);
             }
@@ -44,11 +44,59 @@ void DbGui::window(Database& db)
             int i = 0;
             for (auto& e : db.m_entries)
             {
-                Normalization::remesh(e.mesh);
+                Normalize::remesh(e.mesh);
                 e.updateStatistics();
                 printf("%i\n", i++);
             }
             printf("Finished remeshing!\n");
+        }
+
+        if (ImGui::MenuItem("Translate all"))
+        {
+            int i = 0;
+            for (auto& e : db.m_entries)
+            {
+                Normalize::translate(e.mesh);
+                e.updateStatistics();
+                printf("%i\n", i++);
+            }
+            printf("Finished translating!\n");
+        }
+
+        if (ImGui::MenuItem("PCA Pose all"))
+        {
+            int i = 0;
+            for (auto& e : db.m_entries)
+            {
+                Normalize::pca_pose(e.mesh);
+                e.updateStatistics();
+                printf("%i\n", i++);
+            }
+            printf("Finished PCA Posing !\n");
+        }
+
+        if (ImGui::MenuItem("Flip Moment all"))
+        {
+            int i = 0;
+            for (auto& e : db.m_entries)
+            {
+                Normalize::flip(e.mesh);
+                e.updateStatistics();
+                printf("%i\n", i++);
+            }
+            printf("Finished flipping !\n");
+        }
+
+        if (ImGui::MenuItem("Scale all"))
+        {
+            int i = 0;
+            for (auto& e : db.m_entries)
+            {
+                Normalize::scale(e.mesh);
+                e.updateStatistics();
+                printf("%i\n", i++);
+            }
+            printf("Finished scaling !\n");
         }
 
         ImGui::EndMenuBar();
@@ -76,7 +124,7 @@ void DbGui::statisticsTable(Database& db)
     const auto& stats = db.m_entries[0].statistics;
     for (auto it = stats.cbegin(); it != stats.cend(); ++it)
     {
-        int index = Entry::columnIndex(it->first);
+        int index = columnIndex(it->first);
         ImGui::TableSetColumnIndex(index);
         ImGui::TableHeader((it->first).c_str());
     }
@@ -89,7 +137,7 @@ void DbGui::statisticsTable(Database& db)
         const auto& stats = db.m_entries[row].statistics;
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
         {
-            int col = Entry::columnIndex(it->first);
+            int col = columnIndex(it->first);
             ImGui::TableSetColumnIndex(col);
             ImGui::Selectable(Entry::toString(it->second).c_str(),
                               &db.m_columnSelected[col],
@@ -101,6 +149,17 @@ void DbGui::statisticsTable(Database& db)
 
     ImGui::EndTable();
     ImGui::PopStyleVar();
+}
+
+int DbGui::columnIndex(std::string key)
+{
+    auto headers = Entry::getHeaders();
+    for (int i = 0; i < headers.size(); i++)
+    {
+        if (headers[i] == key)
+            return i;
+    }
+    return 0;
 }
 
 void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
@@ -145,33 +204,33 @@ void DbGui::normalizationMenu(Entry& entry)
     {
         if (ImGui::MenuItem("All steps"))
         {
-            Normalization::all_steps(entry.mesh);
+            Normalize::all_steps(entry.mesh);
             entry.updateStatistics();
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Remesh"))
         {
-            Normalization::remesh(entry.mesh);
+            Normalize::remesh(entry.mesh);
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("Translate"))
         {
-            Normalization::translate(entry.mesh);
+            Normalize::translate(entry.mesh);
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("PCA Pose"))
         {
-            Normalization::pca_pose(entry.mesh);
+            Normalize::pca_pose(entry.mesh);
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("Flip"))
         {
-            Normalization::flip(entry.mesh);
+            Normalize::flip(entry.mesh);
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("Scale"))
         {
-            Normalization::scale(entry.mesh);
+            Normalize::scale(entry.mesh);
             entry.updateStatistics();
         }
         ImGui::EndMenu();

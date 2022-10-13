@@ -75,7 +75,7 @@ void MmrViewer::process_imgui()
 
     if (ImGui::Button("Flip"))
     {
-        Normalization::all_steps(mesh_);
+        Normalize::all_steps(mesh_);
         update_mesh();
     }*/
 

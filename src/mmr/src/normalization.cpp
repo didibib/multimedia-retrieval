@@ -9,7 +9,7 @@ using namespace Eigen;
 
 namespace mmr {
 
-void Normalization::all_steps(SurfaceMesh& mesh)
+void Normalize::all_steps(SurfaceMesh& mesh)
 {
     remesh(mesh);
     translate(mesh);
@@ -18,7 +18,7 @@ void Normalization::all_steps(SurfaceMesh& mesh)
     scale(mesh);
 }
 
-void Normalization::remesh( SurfaceMesh& mesh )
+void Normalize::remesh( SurfaceMesh& mesh )
 {
     if (mesh.n_vertices() < 10000)
     {
@@ -27,7 +27,7 @@ void Normalization::remesh( SurfaceMesh& mesh )
     }
 }
 
-void Normalization::translate(SurfaceMesh& mesh)
+void Normalize::translate(SurfaceMesh& mesh)
 {
     Point origin(0, 0, 0);
     Point center = centroid(mesh);
@@ -42,7 +42,7 @@ void Normalization::translate(SurfaceMesh& mesh)
     }
 }
 
-void Normalization::pca_pose(SurfaceMesh& mesh)
+void Normalize::pca_pose(SurfaceMesh& mesh)
 {
     unsigned int n_vertices = mesh.n_vertices();
     MatrixXf input(3, n_vertices);
@@ -83,7 +83,7 @@ void Normalization::pca_pose(SurfaceMesh& mesh)
     }
 }
 
-void Normalization::flip(SurfaceMesh& mesh)
+void Normalize::flip(SurfaceMesh& mesh)
 {
     auto points = mesh.get_vertex_property<Point>("v:point");
 
@@ -119,7 +119,7 @@ void Normalization::flip(SurfaceMesh& mesh)
     }
 }
 
-void Normalization::scale(SurfaceMesh& mesh)
+void Normalize::scale(SurfaceMesh& mesh)
 {
     BoundingBox bb = mesh.bounds();
     Point center = bb.center();

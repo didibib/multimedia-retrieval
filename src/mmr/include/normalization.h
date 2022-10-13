@@ -2,11 +2,10 @@
 #include "pmp/SurfaceMesh.h"
 
 namespace mmr {
-class Normalization
+class Normalize
 {
 public:
-    // Subdivide low density meshes (>10000)
-    // Decimate high density meshes (>50000)
+    // Subdivide low vertices meshes (<10000)
     static void remesh(pmp::SurfaceMesh& mesh);
     // Translate barycenter to origin
     static void translate(pmp::SurfaceMesh& mesh);
