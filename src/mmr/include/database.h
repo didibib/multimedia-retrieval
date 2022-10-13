@@ -55,11 +55,12 @@ public:
 
     static std::vector<std::string> getHeaders()
     {
-#define N_DB_HEADERS 8
+#define N_DB_HEADERS 14
         static std::vector<std::string> headers = {
-            "filename",    "label",       "n_vertices",
-            "n_faces",     "face_type",   "distance_to_origin",
-            "bb_distance", "surface_area"};
+            "filename",         "label",    "n_vertices",   "n_faces",      "face_type",
+            "bb_distance", "distance_to_origin",       "bb_volume",
+            "rectangularity",   "area",     "volume",       "compactness",  "sphericity",
+            "eccentricity"};
         return headers;
     }
 
@@ -83,6 +84,13 @@ public:
         pmp::BoundingBox bb = mesh.bounds();
         statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
         statistics["surface_area"] = pmp::surface_area(mesh);
+        statistics["bb_volume"] = bb.size();
+        statistics["rectangularity"] = (volume(mesh) / bb.size());
+        statistics["area"] = surface_area(mesh);
+        statistics["volume"] = volume(mesh);
+        statistics["compactness"] = compactness();
+        statistics["sphericity"] = (1 / compactness());
+        statistics["eccentricity"] = eccentricity();
     }
 
     void reload()
@@ -103,6 +111,41 @@ public:
         mesh.write(path + "/" + filename.string());
     }
 
+    }
+
+    Scalar eccentricity()
+    {
+        unsigned int n_vertices = mesh.n_vertices();
+        Point center = centroid(mesh);
+        Eigen::MatrixXf input(3, n_vertices);
+        auto points = mesh.get_vertex_property<Point>("v:point");
+        unsigned int i = 0;
+        for (auto v : mesh.vertices())
+        {
+            input.col(i)[0] = points[v][0] - center[0];
+            input.col(i)[1] = points[v][1] - center[1];
+            input.col(i++)[2] = points[v][2] - center[2];
+        }
+
+        Eigen::VectorXf mean = input.rowwise().mean();
+        Eigen::MatrixXf centered = input.colwise() - mean;
+        Eigen::MatrixXf cov = centered * centered.adjoint();
+        cov = cov.array() / (input.rows() - 1);
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXf> eig(cov);
+        Eigen::VectorXf::Index maxv, minv;
+        eig.eigenvalues().maxCoeff(&maxv);
+        eig.eigenvalues().minCoeff(&minv);
+        Scalar ecc = eig.eigenvalues()[minv] / eig.eigenvalues()[maxv];
+        ecc *= ecc > 0 ? 1.f : -1.f;
+        return ecc;
+    }
+
+    Scalar compactness()
+    {
+        auto S = surface_area(mesh);
+        auto V = volume(mesh);
+        Scalar comp = pow(S, 3) / (pow(V, 2) * 36 * M_PI);
+        return comp;
 public:
     std::map<std::string, AnyType> statistics;
     pmp::SurfaceMeshGL mesh;

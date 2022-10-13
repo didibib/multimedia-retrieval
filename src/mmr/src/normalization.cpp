@@ -45,14 +45,15 @@ void Normalize::translate(SurfaceMesh& mesh)
 void Normalize::pca_pose(SurfaceMesh& mesh)
 {
     unsigned int n_vertices = mesh.n_vertices();
+    Point center = centroid(mesh);
     MatrixXf input(3, n_vertices);
     auto points = mesh.get_vertex_property<Point>("v:point");
     unsigned int i = 0;
     for (auto v : mesh.vertices())
     {
-        input.col(i)[0] = points[v][0];
-        input.col(i)[1] = points[v][1];
-        input.col(i++)[2] = points[v][2];
+        input.col(i)[0] = points[v][0] - center[0];
+        input.col(i)[1] = points[v][1] - center[1];
+        input.col(i++)[2] = points[v][2] - center[2];
     }
 
     VectorXf mean = input.rowwise().mean();
@@ -68,19 +69,11 @@ void Normalize::pca_pose(SurfaceMesh& mesh)
 
     Matrix3f transfer;
     transfer.col(0) = eig.eigenvectors().col(maxv);
-    transfer.col(2) = eig.eigenvectors().col(minv);
-    transfer.col(1) = transfer.col(0).cross(transfer.col(2));
-    transfer.col(2) *= transfer.determinant() > 0 ? 1 : -1;
-
+    transfer.col(1) = eig.eigenvectors().col(3 - minv - maxv);
+    transfer.col(2) = transfer.col(0).cross(transfer.col(1));
+    mat3 T = transfer.transpose();
     for (auto v : mesh.vertices())
-    {
-        Point pos_mesh(points[v]);
-        Point pos_temp{0, 0, 0};
-        for (size_t i = 0; i < 3; i++)
-            for (size_t j = 0; j < 3; j++)
-                pos_temp[i] += transfer(j, i) * pos_mesh[j];
-        points[v] = pos_temp;
-    }
+        points[v] = T * points[v];
 }
 
 void Normalize::flip(SurfaceMesh& mesh)
