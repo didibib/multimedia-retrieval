@@ -110,8 +110,7 @@ public:
 
         mesh.write(path + "/" + filename.string());
     }
-
-    }
+   
 
     Scalar eccentricity()
     {
@@ -146,6 +145,8 @@ public:
         auto V = volume(mesh);
         Scalar comp = pow(S, 3) / (pow(V, 2) * 36 * M_PI);
         return comp;
+    }
+
 public:
     std::map<std::string, AnyType> statistics;
     pmp::SurfaceMeshGL mesh;
