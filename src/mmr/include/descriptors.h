@@ -14,7 +14,8 @@ public:
 class Descriptor
 {
 public:
-
+    static pmp::Scalar eccentricity(pmp::SurfaceMesh& mesh);
+    static pmp::Scalar compactness(pmp::SurfaceMesh& mesh);
     static Histogram A3(pmp::SurfaceMesh& mesh);
 };
 
