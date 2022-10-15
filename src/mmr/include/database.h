@@ -56,13 +56,13 @@ public:
 
     static std::vector<std::string> getHeaders()
     {
-#define N_DB_HEADERS 14
+#define N_DB_HEADERS 15
         static std::vector<std::string> headers = {
-            "filename",    "label",       "n_vertices",
-            "n_faces",     "face_type",   "distance_to_origin",
-            "bb_distance", "bb_volume",   "rectangularity",
-            "area",        "volume",      "compactness",
-            "sphericity",  "eccentricity"};
+            "filename",       "label",      "n_vertices",
+            "n_faces",        "face_type",  "distance_to_origin",
+            "bb_distance",    "bb_volume",  "surface_area",
+            "rectangularity", "area",       "volume",
+            "compactness",    "sphericity", "eccentricity"};
         return headers;
     }
 
@@ -86,9 +86,9 @@ public:
         pmp::BoundingBox bb = mesh.bounds();
         statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
         statistics["surface_area"] = pmp::surface_area(mesh);
-        statistics["bb_volume"] = ((bb.max()[0] - bb.min()[0]) *
-                                  (bb.max()[1] - bb.min()[1]) *
-                                  (bb.max()[2] - bb.min()[2]));
+        statistics["bb_volume"] =
+            ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
+             (bb.max()[2] - bb.min()[2]));
         statistics["rectangularity"] =
             (volume(mesh) /
              ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
