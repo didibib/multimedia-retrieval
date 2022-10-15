@@ -25,10 +25,5 @@ inline std::string getExportDir(std::string suffix = "")
     return exportDir + "/" + suffix;
 }
 
-std::mt19937::result_type seed =
-    std::chrono::high_resolution_clock::now().time_since_epoch().count();
-auto randomTargetIdx = std::bind(std::uniform_int_distribution<int>(0, TARGET_VALUE - 1),
-                        std::mt19937(seed));
-
 } // namespace util
 } // namespace mmr
