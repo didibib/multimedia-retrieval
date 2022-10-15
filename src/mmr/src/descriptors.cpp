@@ -40,6 +40,52 @@ pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
     return ecc;
 }
 
+Histogram Descriptor::D1(pmp::SurfaceMesh& mesh)
+{
+    size_t mesh_size(mesh.vertices_size());
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh_size - 1),
+                  std::mt19937(seed));
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    auto center = centroid(mesh);
+    std::vector<Scalar>* D1 = new std::vector<float>();
+    D1->reserve(TARGET_VALUE);
+    for (size_t i = 0; i < TARGET_VALUE; i++)
+    {
+        size_t v = random();
+        D1->push_back(distance(center, points[Vertex(v)]));
+    }
+    return Histogram(*D1, 10, sqrt(1/2));
+}
+
+Histogram Descriptor::D2(pmp::SurfaceMesh& mesh)
+{
+    size_t mesh_size(mesh.vertices_size());
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh_size - 1),
+                  std::mt19937(seed));
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    auto center = centroid(mesh);
+    std::vector<Scalar>* D2 = new std::vector<float>();
+    D2->reserve(TARGET_VALUE);
+
+    for (size_t i = 0; i < TARGET_VALUE; i++)
+    {
+        size_t v1 = random();
+        for (size_t j = 0; j < TARGET_VALUE; j++)
+        {
+            size_t v2 = random();
+            D2->push_back(distance(points[Vertex(v1)], points[Vertex(v2)]));
+        }
+    }
+    return Histogram(*D2, 10, sqrt(2));
+}
+
+
 pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
 {
     auto S = surface_area(mesh);

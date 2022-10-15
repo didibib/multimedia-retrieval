@@ -28,6 +28,8 @@ class Descriptor
 public:
     static pmp::Scalar eccentricity(pmp::SurfaceMesh& mesh);
     static pmp::Scalar compactness(pmp::SurfaceMesh& mesh);
+    static Histogram D1(pmp::SurfaceMesh& mesh);
+    static Histogram D2(pmp::SurfaceMesh& mesh);
     static Histogram A3(pmp::SurfaceMesh& mesh);
 };
 
