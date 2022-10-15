@@ -237,56 +237,26 @@ void DbGui::normalizationMenu(Entry& entry)
     }
 }
 
-void DbGui::histogram(Database& db)
-{
-    if (!DbGui::m_showHistogram)
-        return;
-
-    if (!ImGui::Begin("Histogram", &m_showHistogram))
-    {
-        ImGui::End();
-        return;
-    }
-
-    static ImPlotHistogramFlags hist_flags = ImPlotHistogramFlags_Density;
-    ImGui::CheckboxFlags("Cumulative", (unsigned int*)&hist_flags,
-                         ImPlotHistogramFlags_Cumulative);
-
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(200);
-    static float rmin;
-    ImGui::DragFloat2("##Range", &rmin, 0.1f, -3, 13);
-    ImGui::SameLine();
-    ImGui::CheckboxFlags("Exclude Outliers", (unsigned int*)&hist_flags,
-                         ImPlotHistogramFlags_NoOutliers);
-
-    if (ImPlot::BeginPlot("##Statistics"))
-    {
-        ImPlot::SetupAxes(NULL, NULL, ImPlotAxisFlags_AutoFit,
-                          ImPlotAxisFlags_AutoFit);
-        ImPlot::SetNextFillStyle(IMPLOT_AUTO_COL, 0.5f);
-
-        /*ImPlot::PlotHistogram();
-        ImPlot::PlotLine();*/
-
-        ImPlot::EndPlot();
-    }
-
-    ImGui::End();
-}
-
 void DbGui::beginMenu(Database& db)
 {
     window(db);
-    histogram(db);
 
     if (!ImGui::BeginMenu("Database"))
         return;
 
-    if (ImGui::MenuItem("Import"))
+    if (ImGui::BeginMenu("Import"))
     {
-        db.import(util::getDataDir("LabeledDB_new"));
-        m_showStatistics = true;
+        if (ImGui::MenuItem("LabeledDB_new"))
+        {
+            db.import(util::getDataDir("LabeledDB_new"));
+            m_showStatistics = true;
+        }
+        if (ImGui::MenuItem("Normalized"))
+        {
+            db.import(util::getExportDir("Normalized"));
+            m_showStatistics = true;
+        }
+        ImGui::EndMenu();
     }
 
     if (db.m_imported)

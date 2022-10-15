@@ -8,7 +8,6 @@ class DbGui
     void window(Database& db);
     void statisticsTable(Database& db);
     void algorithmsPopup(Database& db, const int& row, const int& column);
-    void histogram(Database& db);
     void normalizationMenu(Entry& entry);
     int columnIndex(std::string key);
 
