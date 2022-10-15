@@ -11,7 +11,6 @@
 #include <variant>
 #include <ostream>
 #include <optional>
-#include <filesystem>
 
 // TODO: Seperatie GUI features from the database
 
@@ -115,10 +114,7 @@ public:
         filename.replace_extension(extension);
 
         std::string label = toString(statistics["label"]);
-        std::string path = util::getExportDir(folder) + "/" + label;
-
-        namespace fs = std::filesystem;
-        fs::create_directories(path);
+        std::string path = util::getExportDir(folder + "/" + label);
 
         mesh.write(path + "/" + filename.string());
     }

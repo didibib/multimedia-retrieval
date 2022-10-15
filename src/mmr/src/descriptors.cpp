@@ -1,23 +1,51 @@
 #include "descriptors.h"
 #include "settings.h"
+#include "util.h"
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <random>
 #include <chrono>
+#include <fstream>
 
 namespace mmr {
-Histogram::Histogram(std::vector<float>& values, float min_value,
-                     float max_value,
-                     int num_bins)
+
+Histogram::Histogram(std::string name_, std::vector<float>& values,
+                     float min_value, float max_value, int num_bins)
 {
+    name = name_;
     m_minValue = min_value;
     m_maxValue = max_value;
     m_numBins = num_bins;
     m_binWidth = static_cast<float>(m_maxValue - m_minValue) / (m_numBins - 1);
 
     histogram.resize(m_numBins);
+    m_bins.resize(m_numBins);
+
+    for (size_t i = 0; i < m_numBins; i++)
+        m_bins[i] = i * m_binWidth;
 
     create(values);
     normalize();
+}
+
+void Histogram::save(std::string filename)
+{
+    std::ofstream fout;
+    fout.open(util::getExportDir("histogram/data/") + filename);
+
+    /*[0]*/ fout << name << "\n";
+    /*[1]*/ fout << m_minValue << "\n";
+    /*[2]*/ fout << m_maxValue << "\n";
+    /*[3]*/ fout << m_binWidth << "\n";
+
+    for (size_t i = 0; i < m_bins.size(); i++)
+        /*[4]*/ fout << m_bins[i] << " ";
+
+    fout << "\n";
+
+    for (size_t i = 0; i < histogram.size(); i++)
+        /*[5]*/ fout << histogram[i] << " ";
+
+    fout.close();
 }
 
 void Histogram::create(std::vector<float>& values)
@@ -30,14 +58,15 @@ void Histogram::create(std::vector<float>& values)
     }
 }
 
-void Histogram::normalize() {
+void Histogram::normalize()
+{
     float maxValue = 0;
     for (unsigned int i = 0; i < histogram.size(); i++)
         if (histogram[i] > maxValue)
             maxValue = histogram[i];
 
     for (unsigned int i = 0; i < histogram.size(); i++)
-        histogram[i] /= maxValue;    
+        histogram[i] /= maxValue;
 }
 
 pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
@@ -67,7 +96,6 @@ pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
     return ecc;
 }
 
-
 pmp::Scalar Descriptor::diameter(pmp::SurfaceMesh& mesh)
 {
     size_t n_vertices = mesh.n_vertices();
@@ -94,60 +122,6 @@ pmp::Scalar Descriptor::diameter(pmp::SurfaceMesh& mesh)
         }
     }
     return maxDiameter;
-}
-
-Histogram Descriptor::D1(pmp::SurfaceMesh& mesh)
-{
-    std::mt19937::result_type seed =
-        std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    auto random =
-        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
-                  std::mt19937(seed));
-    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
-    auto center = centroid(mesh);
-    std::vector<float>* D1 = new std::vector<float>();
-    D1->reserve(param::TARGET_VALUE);
-    for (size_t i = 0; i < param::TARGET_VALUE; i++)
-    {
-        size_t v = random();
-        D1->push_back(distance(center, points[pmp::Vertex(v)]));
-    }
-    return Histogram(*D1, 0, sqrt(1 / 2), param::BIN_SIZE);
-}
-
-Histogram Descriptor::D2(pmp::SurfaceMesh& mesh)
-{
-    std::mt19937::result_type seed =
-        std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    auto random =
-        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
-                  std::mt19937(seed));
-
-    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
-    auto center = centroid(mesh);
-    std::vector<float>* D2 = new std::vector<float>();
-    D2->reserve(param::TARGET_VALUE);
-
-    for (size_t i = 0; i < param::TARGET_VALUE; i++)
-    {
-        size_t v1 = random();
-        for (size_t j = 0; j < param::TARGET_VALUE; j++)
-        {
-            size_t v2 = random();
-            while (v2 == v1)
-                v2 = random();
-
-            D2->push_back(distance(points[pmp::Vertex(v1)], points[pmp::Vertex(v2)]));
-        }
-    }
-    return Histogram(*D2, 0, sqrt(2), param::BIN_SIZE);
-}
-
-pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
-{
-    auto S = surface_area(mesh);
-    auto V = volume(mesh);
-    return (S * S * S) / (V * V * 36 * M_PI);
 }
 
 Histogram Descriptor::A3(pmp::SurfaceMesh& mesh)
@@ -196,6 +170,62 @@ Histogram Descriptor::A3(pmp::SurfaceMesh& mesh)
         angles->push_back(angle);
     }
 
-    return Histogram(*angles, 0, max_value, param::BIN_SIZE);
+    return Histogram("A3", *angles, 0, max_value, param::BIN_SIZE);
 }
+
+Histogram Descriptor::D1(pmp::SurfaceMesh& mesh)
+{
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
+                  std::mt19937(seed));
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    auto center = centroid(mesh);
+    std::vector<float>* D1 = new std::vector<float>();
+    D1->reserve(param::TARGET_VALUE);
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
+    {
+        size_t v = random();
+        D1->push_back(distance(center, points[pmp::Vertex(v)]));
+    }
+    return Histogram("D1", *D1, 0, sqrt(1 / 2), param::BIN_SIZE);
+}
+
+Histogram Descriptor::D2(pmp::SurfaceMesh& mesh)
+{
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
+                  std::mt19937(seed));
+
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    auto center = centroid(mesh);
+    std::vector<float>* D2 = new std::vector<float>();
+    D2->reserve(param::TARGET_VALUE);
+
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
+    {
+        size_t v1 = random();
+        for (size_t j = 0; j < param::TARGET_VALUE; j++)
+        {
+            size_t v2 = random();
+            while (v2 == v1)
+                v2 = random();
+
+            D2->push_back(
+                distance(points[pmp::Vertex(v1)], points[pmp::Vertex(v2)]));
+        }
+    }
+    return Histogram("D2", *D2, 0, sqrt(2), param::BIN_SIZE);
+}
+
+pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
+{
+    auto S = surface_area(mesh);
+    auto V = volume(mesh);
+    return (S * S * S) / (V * V * 36 * M_PI);
+}
+
 } // namespace mmr
