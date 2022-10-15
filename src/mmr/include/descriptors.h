@@ -12,7 +12,7 @@ class Histogram
     float m_maxValue = 0;
     int m_numBins = 0;
     float m_binWidth = 0;
-    std::vector<float> m_labels;
+    std::vector<float> m_bins;
 
 public:
     Histogram(std::string name, std::vector<float>& values, float min_value, float max_value,

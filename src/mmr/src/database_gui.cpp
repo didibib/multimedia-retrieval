@@ -288,7 +288,7 @@ void DbGui::beginMenu(Database& db)
         }
         if (ImGui::MenuItem("Normalized"))
         {
-            db.import(util::getExportDir("Normalized"));
+            db.import(util::getExportDir("normalized"));
             m_showStatistics = true;
         }
         ImGui::EndMenu();

@@ -31,7 +31,9 @@ void Histogram::save(std::string filename)
 {
     std::ofstream fout;
     fout.open(util::getExportDir("histogram/data/") + filename);
-
+    // 
+    // !! If you add data or change the order of lines, you also need update the python file !!
+    //  
     /*[0]*/ fout << name << "\n";
     /*[1]*/ fout << m_minValue << "\n";
     /*[2]*/ fout << m_maxValue << "\n";
