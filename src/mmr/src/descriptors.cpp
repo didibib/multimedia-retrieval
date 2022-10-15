@@ -40,6 +40,35 @@ pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
     return ecc;
 }
 
+
+pmp::Scalar Descriptor::diameter(pmp::SurfaceMesh& mesh)
+{
+    unsigned int n_vertices = mesh.n_vertices();
+    pmp::Point center = pmp::centroid(mesh);
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    float maxDiameter = 0.0f;
+    float maxDistCentroid = 0.0f;
+    for (auto v : mesh.vertices())
+    {
+        float distCentroid = pmp::distance(points[v], center);
+
+        /*if (distCentroid > maxDistCentroid)
+            maxDistCentroid = distCentroid;
+        else
+            continue;*/
+
+        for (auto u : mesh.vertices())
+        {
+            if (v == u)
+                continue;
+            float dist = pmp::distance(points[v], points[u]);
+            if (dist > maxDiameter)
+                maxDiameter = dist;
+        }
+    }
+    return maxDiameter;
+}
+
 Histogram Descriptor::D1(pmp::SurfaceMesh& mesh)
 {
     size_t mesh_size(mesh.vertices_size());

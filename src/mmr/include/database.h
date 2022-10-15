@@ -56,13 +56,13 @@ public:
 
     static std::vector<std::string> getHeaders()
     {
-#define N_DB_HEADERS 15
+#define N_DB_HEADERS 16
         static std::vector<std::string> headers = {
             "filename",       "label",      "n_vertices",
             "n_faces",        "face_type",  "distance_to_origin",
             "bb_distance",    "bb_volume",  "surface_area",
             "rectangularity", "area",       "volume",
-            "compactness",    "sphericity", "eccentricity"};
+            "compactness",    "sphericity", "eccentricity", "diameter"};
         return headers;
     }
 
@@ -99,6 +99,7 @@ public:
         statistics["compactness"] = compactness;
         statistics["sphericity"] = (1 / compactness);
         statistics["eccentricity"] = Descriptor::eccentricity(mesh);
+        statistics["diameter"] = Descriptor::diameter(mesh);
     }
 
     void reload()
