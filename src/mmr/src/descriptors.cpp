@@ -5,11 +5,24 @@
 #include <chrono>
 
 namespace mmr {
-Histogram::Histogram(std::vector<float>& values, int bins, int max_value) {
-
+Histogram::Histogram(std::vector<float>& values, int num_bins, int min_value,
+                     int max_value)
+{
+    m_numBins = num_bins;
+    m_minValue = min_value;
+    m_maxValue = max_value;
+    m_binWidth = (max_value - min_value) / num_bins;
+    create(values);
 }
 
-void Histogram::create() {}
+void Histogram::create(std::vector<float>& values)
+{
+    for (unsigned int i = 0; i < values.size(); i++)
+    {
+        int index = static_cast<int>((values[i] - m_minValue) / m_binWidth);
+        histogram[index]++;
+    }
+}
 
 void Histogram::normalize() {}
 
@@ -57,7 +70,7 @@ Histogram Descriptor::D1(pmp::SurfaceMesh& mesh)
         size_t v = random();
         D1->push_back(distance(center, points[Vertex(v)]));
     }
-    return Histogram(*D1, 10, sqrt(1/2));
+    return Histogram(*D1, 10, 0, sqrt(1 / 2));
 }
 
 Histogram Descriptor::D2(pmp::SurfaceMesh& mesh)
@@ -82,9 +95,8 @@ Histogram Descriptor::D2(pmp::SurfaceMesh& mesh)
             D2->push_back(distance(points[Vertex(v1)], points[Vertex(v2)]));
         }
     }
-    return Histogram(*D2, 10, sqrt(2));
+    return Histogram(*D2, 10, 0, sqrt(2));
 }
-
 
 pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
 {
@@ -97,8 +109,9 @@ Histogram Descriptor::A3(pmp::SurfaceMesh& mesh)
 {
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    auto random = std::bind(std::uniform_int_distribution<int>(0, TARGET_VALUE - 1),
-                            std::mt19937(seed));
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
+                  std::mt19937(seed));
 
     auto points = mesh.get_vertex_property<pmp::Point>("v:point");
 
@@ -146,6 +159,6 @@ Histogram Descriptor::A3(pmp::SurfaceMesh& mesh)
         }
     }
 
-    return Histogram(*angles, 10, max_value);
+    return Histogram(*angles, 10, 0, max_value);
 }
 } // namespace mmr

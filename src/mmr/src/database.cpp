@@ -35,8 +35,8 @@ void Database::import(const std::string& path)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        /*if (nModels > maxModels)
-            break;*/
+        if (nModels > maxModels)
+            break;
 
         /*if (filename != "256.off")
             continue;*/

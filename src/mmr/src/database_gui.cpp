@@ -12,7 +12,7 @@ namespace mmr {
 
 void DbGui::window(Database& db)
 {
-    if (!DbGui::m_showStatistics)
+    if (!m_showStatistics)
         return;
 
     if (db.m_entries.empty())
@@ -27,6 +27,8 @@ void DbGui::window(Database& db)
 
     if (ImGui::BeginMenuBar())
     {
+        exportMenu(db);
+
         if (ImGui::MenuItem("Normalize all"))
         {
             int i = 0;
@@ -109,6 +111,9 @@ void DbGui::window(Database& db)
 
 void DbGui::statisticsTable(Database& db)
 {
+    if (db.m_entries.size() == 0)
+        return;
+
     static ImGuiTableFlags flags =
         ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable |
         ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuter |
@@ -160,6 +165,36 @@ int DbGui::columnIndex(std::string key)
             return i;
     }
     return 0;
+}
+
+void DbGui::exportMenu(Database& db)
+{
+    if (ImGui::BeginMenu("Export..."))
+    {
+        if (ImGui::MenuItem("Statistics"))
+            db.exportStatistics();
+        if (ImGui::BeginMenu("Meshes"))
+        {
+            if (ImGui::MenuItem("As .off"))
+            {
+                for (auto& entry : db.m_entries)
+                {
+                    entry.write(".off", "Meshes");
+                }
+            }
+            if (ImGui::MenuItem("As .ply"))
+            {
+                for (auto& entry : db.m_entries)
+                {
+                    entry.write(".ply", "Meshes");
+                }
+                printf("Finished exporting!\n");
+            }
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenu();
+    }
 }
 
 void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
@@ -260,6 +295,7 @@ void DbGui::beginMenu(Database& db)
     }
 
     if (db.m_imported)
+    {
         if (ImGui::MenuItem("Clear"))
         {
             db.clear();
@@ -267,37 +303,9 @@ void DbGui::beginMenu(Database& db)
             m_showStatistics = false;
         }
 
-    if (!m_showStatistics && db.m_imported)
         if (ImGui::MenuItem("Statistics"))
             m_showStatistics = true;
-
-    if (db.m_imported)
-        if (ImGui::BeginMenu("Export..."))
-        {
-            if (ImGui::MenuItem("Statistics"))
-                db.exportStatistics();
-            if (ImGui::BeginMenu("Meshes"))
-            {
-                if (ImGui::MenuItem("As .off"))
-                {
-                    for (auto& entry : db.m_entries)
-                    {
-                        entry.write(".off");
-                    }
-                }
-                if (ImGui::MenuItem("As .ply"))
-                {
-                    for (auto& entry : db.m_entries)
-                    {
-                        entry.write(".ply");
-                    }
-                    printf("Finished exporting!\n");
-                }
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenu();
-        }
+    }
 
     ImGui::EndMenu();
 }

@@ -6,21 +6,16 @@
 namespace mmr {
 class Histogram
 {
-    struct Bin
-    {
-        pmp::vec2 range;
-        float value;    
-    };
-
-    void create();
+    void create(std::vector<float>& values);
     void normalize();
+    int m_minValue = 0;
     int m_maxValue = 0;
-    int m_binSize = 0;
+    int m_numBins = 0;
+    int m_binWidth = 0;
 
 public:
-    Histogram(std::vector<float>& values, int bins, int max_value);
-
-    std::vector<Bin> histogram;
+    Histogram(std::vector<float>& values, int num_bins, int min_value, int max_value);
+    std::vector<float> histogram;
 };
 
 class Descriptor

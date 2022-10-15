@@ -116,6 +116,9 @@ public:
         std::string label = toString(statistics["label"]);
         std::string path = util::getExportDir(folder) + "/" + label;
 
+        namespace fs = std::filesystem;
+        fs::create_directories(path);
+
         mesh.write(path + "/" + filename.string());
     }
 
