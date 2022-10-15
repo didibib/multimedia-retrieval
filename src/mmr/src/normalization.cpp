@@ -1,5 +1,5 @@
 #include "normalization.h"
-#include "util.h"
+#include "settings.h"
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <pmp/MatVec.h>
 #include <pmp/algorithms/Subdivision.h>
@@ -21,7 +21,7 @@ void Normalize::all_steps(SurfaceMesh& mesh)
 
 void Normalize::remesh( SurfaceMesh& mesh )
 {
-    if (mesh.n_vertices() < TARGET_VALUE)
+    if (mesh.n_vertices() < param::TARGET_VALUE)
     {
         pmp::Subdivision(mesh).loop();
         remesh(mesh);
@@ -45,7 +45,7 @@ void Normalize::translate(SurfaceMesh& mesh)
 
 void Normalize::pca_pose(SurfaceMesh& mesh)
 {
-    unsigned int n_vertices = mesh.n_vertices();
+    size_t n_vertices = mesh.n_vertices();
     Point center = centroid(mesh);
     MatrixXf input(3, n_vertices);
     auto points = mesh.get_vertex_property<Point>("v:point");
@@ -88,7 +88,7 @@ void Normalize::flip(SurfaceMesh& mesh)
     for (auto f : mesh.faces())
     {
         Point center(0);
-        int vertices = 0;
+        Scalar vertices = 0;
         for (auto v : mesh.vertices(f))
         {
             center += points[v];

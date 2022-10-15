@@ -8,13 +8,14 @@ class Histogram
 {
     void create(std::vector<float>& values);
     void normalize();
-    int m_minValue = 0;
-    int m_maxValue = 0;
+    float m_minValue = 0;
+    float m_maxValue = 0;
     int m_numBins = 0;
-    int m_binWidth = 0;
+    float m_binWidth = 0;
 
 public:
-    Histogram(std::vector<float>& values, int num_bins, int min_value, int max_value);
+    Histogram(std::vector<float>& values, float min_value, float max_value,
+              int num_bins);
     std::vector<float> histogram;
 };
 

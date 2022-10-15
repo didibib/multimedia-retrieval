@@ -142,17 +142,16 @@ public:
               const pmp::mat4& modelviewMatrix, const std::string& drawMode);*/
     void clear();
 
-    int getDbSize() { return m_entries.size(); }
-    int getAvgVerts() { return m_avgVerts; }
-    int getAvgFaces() { return m_avgFaces; }
-    int getLabelCount() { return m_avgFaces; }
+    size_t getDbSize() { return m_entries.size(); }
+    size_t getAvgVerts() { return m_avgVerts; }
+    size_t getAvgFaces() { return m_avgFaces; }
 
 private:
     std::vector<Entry> m_entries;
     std::set<std::string> m_labels;
 
-    int m_avgVerts = 0;
-    int m_avgFaces = 0;
+    size_t m_avgVerts = 0;
+    size_t m_avgFaces = 0;
 
     void exportStatistics(std::string suffix = "") const;
     void exportMeshes(std::string extension, std::string folder);
@@ -160,6 +159,6 @@ private:
     bool m_imported = false;
     // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
     bool m_columnSelected[N_DB_HEADERS] = {false};
-    int m_columns = 0;
+    size_t m_columns = 0;
 };
 } // namespace mmr

@@ -7,8 +7,6 @@ using namespace pmp;
 #define TOSTRING(x) STRINGIFY(x)
 
 namespace mmr {
-#define TARGET_VALUE 5000
-
 namespace util {
 
 inline std::string getDataDir(std::string suffix = "")

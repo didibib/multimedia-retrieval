@@ -6,6 +6,7 @@ set(ROOT_FILES
 
 set(UTIL 
     "include/util.h"
+    "include/settings.h"
 )
 
 set(MMR_VIEWER 
@@ -30,6 +31,11 @@ set(DESCRIPTORS
     "src/descriptors.cpp"
 )
 
+set(FEATURE_VECTOR
+    "include/feature_vector.h"
+    "src/feature_vector.cpp"
+)
+
 add_executable(${EXC_NAME} 
     ${ROOT_FILES}
     ${UTIL}
@@ -37,11 +43,12 @@ add_executable(${EXC_NAME}
     ${DATABASE}
     ${NORMALIZATION}
     ${DESCRIPTORS}
+    ${FEATURE_VECTOR}
 )
 
 source_group(// FILES ${ROOT_FILES})
 source_group(util FILES ${UTIL})
-source_group(pipeline FILES ${NORMALIZATION} ${DESCRIPTORS})
+source_group(pipeline FILES ${NORMALIZATION} ${DESCRIPTORS} ${FEATURE_VECTOR})
 source_group(viewer FILES ${MMR_VIEWER})
 source_group(database FILES ${DATABASE})
 

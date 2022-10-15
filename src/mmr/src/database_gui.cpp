@@ -121,7 +121,7 @@ void DbGui::statisticsTable(Database& db)
         ImGuiTableFlags_RowBg;
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(5, 5));
 
-    if (!ImGui::BeginTable("Statistics", db.m_columns, flags))
+    if (!ImGui::BeginTable("Statistics", static_cast<int>(db.m_columns), flags))
         return;
 
     // Setup headers
