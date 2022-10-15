@@ -86,8 +86,13 @@ public:
         pmp::BoundingBox bb = mesh.bounds();
         statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
         statistics["surface_area"] = pmp::surface_area(mesh);
-        statistics["bb_volume"] = bb.size();
-        statistics["rectangularity"] = (volume(mesh) / bb.size());
+        statistics["bb_volume"] = ((bb.max()[0] - bb.min()[0]) *
+                                  (bb.max()[1] - bb.min()[1]) *
+                                  (bb.max()[2] - bb.min()[2]));
+        statistics["rectangularity"] =
+            (volume(mesh) /
+             ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
+              (bb.max()[2] - bb.min()[2])));
         statistics["area"] = surface_area(mesh);
         statistics["volume"] = volume(mesh);
         Scalar compactness = Descriptor::compactness(mesh);
