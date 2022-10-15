@@ -1,4 +1,5 @@
 #include "normalization.h"
+#include "util.h"
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <pmp/MatVec.h>
 #include <pmp/algorithms/Subdivision.h>
@@ -20,7 +21,7 @@ void Normalize::all_steps(SurfaceMesh& mesh)
 
 void Normalize::remesh( SurfaceMesh& mesh )
 {
-    if (mesh.n_vertices() < 10000)
+    if (mesh.n_vertices() < TARGET_VALUE)
     {
         pmp::Subdivision(mesh).loop();
         remesh(mesh);
