@@ -107,7 +107,10 @@ Histogram Descriptor::D2(pmp::SurfaceMesh& mesh)
         size_t v1 = random();
         for (size_t j = 0; j < TARGET_VALUE; j++)
         {
+           
             size_t v2 = random();
+            while (v1 == v2)
+                v2 = random();
             D2->push_back(distance(points[Vertex(v1)], points[Vertex(v2)]));
         }
     }
@@ -133,14 +136,14 @@ Histogram Descriptor::D3(pmp::SurfaceMesh& mesh)
         size_t r1 = random();
         for (size_t j = 0; j < TARGET_VALUE; j++)
         {
-            if (i == j)
-                continue;
             size_t r2 = random();
+            while (r1 == r2)
+                r2 = random();
             for (size_t k = 0; k < TARGET_VALUE; k++)
             {
-                if (i == k || j == k)
-                    continue;
                 size_t r3 = random();
+                while (r3 == r1 || r3 == r2)
+                    r3 = random();
                 Point v1 = points[Vertex(r1)];
                 Point v2 = points[Vertex(r2)];
                 Point v3 = points[Vertex(r3)];
@@ -177,19 +180,20 @@ Histogram Descriptor::D4(pmp::SurfaceMesh& mesh)
         size_t r1 = random();
         for (size_t j = 0; j < TARGET_VALUE; j++)
         {
-            if (i == j)
-                continue;
             size_t r2 = random();
+            while (r1 == r2)
+                r2 = random();
+            
             for (size_t k = 0; k < TARGET_VALUE; k++)
             {
-                if (i == k || j == k)
-                    continue;
                 size_t r3 = random();
+                while (r3 == r1 || r3 == r2)
+                    r3 = random();
                 for (size_t u = 0; u < TARGET_VALUE; u++)
                 {
-                    if (i == u || j == u || k == u)
-                        continue;
                     size_t r4 = random();
+                    while (r4 == r1 || r4 == r2 || r4 == r3)
+                        r4 = random();
                     Point v1 = points[Vertex(r1)];
                     Point v2 = points[Vertex(r2)];
                     Point v3 = points[Vertex(r3)];
