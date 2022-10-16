@@ -155,7 +155,7 @@ Histogram Descriptor::D3(pmp::SurfaceMesh& mesh)
 
         }
     }
-    return Histogram(*D3, 10, sqrt(2.83f));
+    return Histogram(*D3, 10, sqrt(0.73f));
 }
 
 
@@ -199,13 +199,13 @@ Histogram Descriptor::D4(pmp::SurfaceMesh& mesh)
                     verts.row(1) << v2[0], v2[1], v2[2], 1;
                     verts.row(2) << v3[0], v3[1], v3[2], 1;
                     verts.row(3) << v4[0], v4[1], v4[2], 1;
-                    D4->push_back(abs(verts.determinant()) / 6);
+                    D4->push_back(cbrt(abs(verts.determinant()) / 6));
                 }
                 
             }
         }
     }
-    return Histogram(*D4, 10, cbrt(8));
+    return Histogram(*D4, 10, 1);
 }
 
 pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
