@@ -62,30 +62,10 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 
 void MmrViewer::process_imgui()
 {
-    /*if (ImGui::Button("Next") && m_retrieved_db &&
-        (m_dbIndex < m_db.getDbSize() - 1))
-    {
-        m_dbIndex++;
-    }
-
-    if (ImGui::Button("Previous") && m_retrieved_db && (m_dbIndex > 0))
-    {
-        m_dbIndex--;
-    }
-
-    if (ImGui::Button("Flip"))
-    {
-        Normalize::all_steps(mesh_);
-        update_mesh();
-    }*/
-
     if (ImGui::BeginMainMenuBar())
     {
-        m_dbGui.beginMenu(db);
+        m_dbGui.beginGui(db);
         ImGui::EndMainMenuBar();
     }
-
-    //ImPlot::ShowDemoWindow();
-    //ImGui::ShowDemoWindow();
 }
 } // namespace mmr

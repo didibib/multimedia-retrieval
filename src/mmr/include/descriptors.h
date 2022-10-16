@@ -1,6 +1,7 @@
 #pragma once
 
-#include "pmp/SurfaceMesh.h"
+#include "database.h"
+#include <pmp/SurfaceMesh.h>
 #include <vector>
 
 namespace mmr {
@@ -13,24 +14,24 @@ class Histogram
     int m_numBins = 0;
     float m_binWidth = 0;
     std::vector<float> m_bins;
+    std::string name;
 
 public:
     Histogram(std::string name, std::vector<float>& values, float min_value, float max_value,
               int num_bins);
-    void save(std::string);
+    void save();
     std::vector<float> histogram;
-    std::string name;
 };
 
 class Descriptor
 {
 public:
-    static pmp::Scalar eccentricity(pmp::SurfaceMesh& mesh);
-    static pmp::Scalar compactness(pmp::SurfaceMesh& mesh);
-    static pmp::Scalar diameter(pmp::SurfaceMesh& mesh);
-    static Histogram A3(pmp::SurfaceMesh& mesh);
-    static Histogram D1(pmp::SurfaceMesh& mesh);
-    static Histogram D2(pmp::SurfaceMesh& mesh);
+    static void histograms(Database& db);
+    static pmp::Scalar eccentricity(pmp::SurfaceMesh& entry);
+    static pmp::Scalar compactness(pmp::SurfaceMesh& entry);
+    static pmp::Scalar diameter(pmp::SurfaceMesh& entry);
+    static Histogram A3(Entry& entry);
+    static Histogram D1(Entry& entry);
+    static Histogram D2(Entry& entry);
 };
-
 } // namespace mmr

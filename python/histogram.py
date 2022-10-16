@@ -31,13 +31,16 @@ def read_data(path):
 for f in files:
     path = os.path.join(full_data_path, f)
     dict = read_data(path)
-    plt.hist(
-        x=dict['bins'], 
-        weights=dict['data'],
-        label=dict['name'],
-        rwidth=.9
-        )
+    plt.plot(dict['bins'], dict['data'])
+
+    # plt.hist(
+    #     x=dict['bins'], 
+    #     weights=dict['data'],
+    #     label=dict['name'],
+    #     rwidth=.9
+    #     )
     plt.xlabel('bins')
     plt.ylabel('normalized count')
-    plt.legend()
     plt.savefig(full_img_path + dict['name'] + '.png')
+    plt.clf();
+

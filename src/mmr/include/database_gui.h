@@ -7,8 +7,9 @@ class DbGui
 {
     void window(Database& db);
     void statisticsTable(Database& db);
-    void algorithmsPopup(Database& db, const int& row, const int& column);
-    void normalizationMenu(Entry& entry);
+    void rightClickEntry(Database& db, const int& row, const int& column);
+    void normalizeEntry(Entry& entry);
+    void normalizeAll(Database& db);
     int columnIndex(std::string key);
     void exportMenu(Database& db);
 
@@ -20,6 +21,6 @@ class DbGui
 public:
     DbGui(Database& db) : m_db(db) {}
     int getSelectedEntry() { return m_selectedEntry; }
-    void beginMenu(Database& db);
+    void beginGui(Database& db);
 };
 } // namespace mmr
