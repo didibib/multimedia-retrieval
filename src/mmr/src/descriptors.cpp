@@ -248,10 +248,9 @@ Histogram Descriptor::D2(Entry& entry)
         size_t v2 = random();
         while (v2 == v1)
             v2 = random();
-
-        float d = distance(points[pmp::Vertex(v1)], points[pmp::Vertex(v2)]);
-        D2->push_back(d);
-        if (d > maxValue)
+        Point p1 = points[pmp::Vertex(v1)];
+        Point p2 = points[pmp::Vertex(v2)];
+        D2->push_back(distance(p1, p2));
             maxValue = d;
     }
     std::string name = Entry::toString(entry.statistics["filename"]);
