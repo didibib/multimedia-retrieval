@@ -32,6 +32,8 @@ public:
     static Histogram D1(pmp::SurfaceMesh& mesh);
     static Histogram D2(pmp::SurfaceMesh& mesh);
     static Histogram A3(pmp::SurfaceMesh& mesh);
+    static Histogram D3(pmp::SurfaceMesh& mesh);
+    static Histogram D4(pmp::SurfaceMesh& mesh);
 };
 
 } // namespace mmr
