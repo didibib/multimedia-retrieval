@@ -210,15 +210,12 @@ Histogram Descriptor::D2(pmp::SurfaceMesh& mesh)
     for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
         size_t v1 = random();
-        for (size_t j = 0; j < param::TARGET_VALUE; j++)
-        {
-            size_t v2 = random();
-            while (v2 == v1)
-                v2 = random();
-
-            D2->push_back(
-                distance(points[pmp::Vertex(v1)], points[pmp::Vertex(v2)]));
-        }
+        size_t v2 = random();
+        while (v2 == v1)
+            v2 = random();
+        Point p1 = points[pmp::Vertex(v1)];
+        Point p2 = points[pmp::Vertex(v2)];
+        D2->push_back(distance(p1, p2));
     }
     return Histogram("D2", *D2, 0, sqrt(2), param::BIN_SIZE);
 }
