@@ -10,7 +10,6 @@
 #include "normalization.h"
 
 namespace mmr {
-
 void DbGui::beginGui(Database& db)
 {
     window(db);
@@ -163,7 +162,6 @@ void DbGui::exportMenu(Database& db)
             }
             ImGui::EndMenu();
         }
-
         ImGui::EndMenu();
     }
 }

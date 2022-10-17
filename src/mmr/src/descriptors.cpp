@@ -7,12 +7,10 @@
 #include <fstream>
 
 namespace mmr {
-
 Histogram::Histogram(std::string name_, std::vector<float>& values,
                      float min_value, float max_value, int num_bins)
 {
     std::filesystem::path p = name_;
-
     name = p.replace_extension().string();
     m_minValue = min_value;
     m_maxValue = max_value;
@@ -64,13 +62,12 @@ void Histogram::create(std::vector<float>& values)
 
 void Histogram::normalize()
 {
-    float maxValue = 0;
+    float sum = 0;
     for (unsigned int i = 0; i < histogram.size(); i++)
-        if (histogram[i] > maxValue)
-            maxValue = histogram[i];
+            sum += histogram[i];
 
     for (unsigned int i = 0; i < histogram.size(); i++)
-        histogram[i] /= maxValue;
+        histogram[i] /= sum;
 }
 
 // DESCRIPTOR ================================================================================
@@ -163,7 +160,6 @@ Histogram Descriptor::A3(Entry& entry)
     // Use pointers to create create data on heap
     std::vector<float>* angles = new std::vector<float>();
     angles->reserve(param::TARGET_VALUE);
-    int max_value = 0;
 
     for (unsigned int i = 0; i < param::TARGET_VALUE; i++)
     {
@@ -190,14 +186,11 @@ Histogram Descriptor::A3(Entry& entry)
 
         float angle = acos(dot / (u_mag * v_mag));
 
-        if (angle > max_value)
-            max_value = angle;
-
         angles->push_back(angle);
     }
 
     std::string name = Entry::toString(entry.statistics["filename"]);
-    return Histogram(name + "_A3", *angles, 0, max_value, param::BIN_SIZE);
+    return Histogram(name + "_A3", *angles, 0, param::A3_MAX_VALUE, param::BIN_SIZE);
 }
 
 Histogram Descriptor::D1(Entry& entry)
@@ -213,17 +206,14 @@ Histogram Descriptor::D1(Entry& entry)
     auto center = centroid(mesh);
     std::vector<float>* D1 = new std::vector<float>();
     D1->reserve(param::TARGET_VALUE);
-    float maxValue = 0;
     for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
         size_t v = random();
         float d = distance(center, points[pmp::Vertex(v)]);
         D1->push_back(d);
-        if (d > maxValue)
-            maxValue = d;
     }
     std::string name = Entry::toString(entry.statistics["filename"]);
-    return Histogram(name + "_D1", *D1, 0, maxValue, param::BIN_SIZE);
+    return Histogram(name + "_D1", *D1, 0, param::D1_MAX_VALUE, param::BIN_SIZE);
 }
 
 Histogram Descriptor::D2(Entry& entry)
@@ -241,7 +231,6 @@ Histogram Descriptor::D2(Entry& entry)
     std::vector<float>* D2 = new std::vector<float>();
     D2->reserve(param::TARGET_VALUE);
 
-    float maxValue = 0;
     for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
         size_t v1 = random();
@@ -253,10 +242,8 @@ Histogram Descriptor::D2(Entry& entry)
         Point p2 = points[pmp::Vertex(v2)];
         float d = distance(p1, p2);
         D2->push_back(d);
-        if (d > maxValue)
-            maxValue = d;
     }
     std::string name = Entry::toString(entry.statistics["filename"]);
-    return Histogram(name + "_D2", *D2, 0, maxValue, param::BIN_SIZE);
+    return Histogram(name + "_D2", *D2, 0, param::D2_MAX_VALUE, param::BIN_SIZE);
 }
 } // namespace mmr
