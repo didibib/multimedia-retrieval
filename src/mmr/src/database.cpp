@@ -94,7 +94,7 @@ void Database::import(const std::string& path)
         if (nModels > maxModels)
             break;
 
-        /*if (filename != "256.off")
+        /*if (m_filename != "256.off")
             continue;*/
 
         // Create entry

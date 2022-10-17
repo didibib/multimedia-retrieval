@@ -20,11 +20,12 @@ def read_data(path):
     
     dict = {
         'name' : lines[0].replace('\n', ''),
-        'min_value' : float(lines[1]),
-        'max_value' : float(lines[2]),
-        'bin_width' : float(lines[3]),
-        'bins' : [float(i) for i in lines[4].split()],
-        'data' : [float(i) for i in lines[5].split()]
+        'label' : lines[1].replace('\n', ''),
+        'min_value' : float(lines[2]),
+        'max_value' : float(lines[3]),
+        'bin_width' : float(lines[4]),
+        'bins' : [float(i) for i in lines[5].split()],
+        'data' : [float(i) for i in lines[6].split()]
     }
     return dict
 

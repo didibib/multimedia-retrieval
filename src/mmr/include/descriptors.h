@@ -14,10 +14,12 @@ class Histogram
     int m_numBins = 0;
     float m_binWidth = 0;
     std::vector<float> m_bins;
-    std::string name;
+
+    std::string m_filename;
+    Entry& m_entry;
 
 public:
-    Histogram(std::string name, std::vector<float>& values, float min_value, float max_value,
+    Histogram(Entry& entry, std::string tag, std::vector<float>& values, float min_value, float max_value,
               int num_bins);
     void save();
     std::vector<float> histogram;
