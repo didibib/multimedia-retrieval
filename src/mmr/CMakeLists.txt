@@ -64,7 +64,3 @@ target_compile_definitions(${EXC_NAME} PUBLIC
     MMR_DATA_DIR=${MMR_DATA_DIR}
     MMR_EXPORT_DIR=${MMR_EXPORT_DIR}
 )
-
-if (EMSCRIPTEN)
-    set_target_properties(myviewer PROPERTIES LINK_FLAGS "--shell-file ${PROJECT_SOURCE_DIR}/external/pmp-library/src/apps/data/shell.html --preload-file ${PROJECT_SOURCE_DIR}/external/pmp-library/external/pmp-data/off/bunny.off@input.off")
-endif()

@@ -78,7 +78,7 @@ void Database::import(const std::string& path)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 3;
+    int maxModels = 1;
     for (const auto& file_entry : recursive_directory_iterator(path))
     {
         std::string path = file_entry.path().string();

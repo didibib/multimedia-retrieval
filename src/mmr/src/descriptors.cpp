@@ -7,11 +7,13 @@
 #include <fstream>
 
 namespace mmr {
-Histogram::Histogram(Entry& entry, std::string tag,
-                     std::vector<float>& values, float min_value, float max_value, int num_bins)
+Histogram::Histogram(Entry& entry, std::string descriptor,
+                     std::vector<float>& values, float min_value,
+                     float max_value, int num_bins)
     : m_entry(entry)
 {
-    m_filename = Entry::toString(entry.statistics["filename"]) + tag;
+    m_filename = Entry::toString(entry.statistics["filename"]) + "_" + descriptor;
+    m_descriptor = descriptor;
     m_minValue = min_value;
     m_maxValue = max_value;
     m_numBins = num_bins;
@@ -29,25 +31,28 @@ Histogram::Histogram(Entry& entry, std::string tag,
 
 void Histogram::save()
 {
+    std::string label = Entry::toString(m_entry.statistics["label"]);
     std::ofstream fout;
-    fout.open(util::getExportDir("histogram/data/") + m_filename + ".txt");
+    fout.open(util::getExportDir("histogram/data/" + label + "/" +
+                                 m_descriptor + "/") +
+              m_filename + ".txt");
     //
     // !! If you add data or change the order of lines, you also need update the python file !!
     //
     /*[0]*/ fout << m_filename << "\n";
-    std::string label = Entry::toString(m_entry.statistics["label"]);
     /*[1]*/ fout << label << "\n";
-    /*[2]*/ fout << m_minValue << "\n";
-    /*[3]*/ fout << m_maxValue << "\n";
-    /*[4]*/ fout << m_binWidth << "\n";
+    /*[2]*/ fout << m_descriptor << "\n";
+    /*[3]*/ fout << m_minValue << "\n";
+    /*[4]*/ fout << m_maxValue << "\n";
+    /*[5]*/ fout << m_binWidth << "\n";
 
     for (size_t i = 0; i < m_bins.size(); i++)
-        /*[5]*/ fout << m_bins[i] << " ";
+        /*[6]*/ fout << m_bins[i] << " ";
 
     fout << "\n";
 
     for (size_t i = 0; i < histogram.size(); i++)
-        /*[6]*/ fout << histogram[i] << " ";
+        /*[7]*/ fout << histogram[i] << " ";
 
     fout.close();
 }
@@ -77,6 +82,7 @@ void Histogram::normalize()
 
 void Descriptor::histograms(Database& db)
 {
+    printf("Creating histograms...\n");
     for (size_t i = 0; i < db.m_entries.size(); i++)
     {
         Entry& entry = db.m_entries[i];
@@ -84,6 +90,7 @@ void Descriptor::histograms(Database& db)
         D1(entry).save();
         D2(entry).save();
     }
+    printf("Histograms saved\n");
 }
 
 pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
@@ -191,7 +198,7 @@ Histogram Descriptor::A3(Entry& entry)
         angles->push_back(angle);
     }
 
-    return Histogram(entry, "_A3", *angles, 0, param::A3_MAX_VALUE,
+    return Histogram(entry, "A3", *angles, 0, param::A3_MAX_VALUE,
                      param::BIN_SIZE);
 }
 
@@ -215,7 +222,7 @@ Histogram Descriptor::D1(Entry& entry)
         D1->push_back(d);
     }
     std::string name = Entry::toString(entry.statistics["filename"]);
-    return Histogram(entry, "_D1", *D1, 0, param::D1_MAX_VALUE,
+    return Histogram(entry, "D1", *D1, 0, param::D1_MAX_VALUE,
                      param::BIN_SIZE);
 }
 
@@ -246,7 +253,7 @@ Histogram Descriptor::D2(Entry& entry)
         float d = distance(p1, p2);
         D2->push_back(d);
     }
-    return Histogram(entry, "_D2", *D2, 0, param::D2_MAX_VALUE,
+    return Histogram(entry, "D2", *D2, 0, param::D2_MAX_VALUE,
                      param::BIN_SIZE);
 }
 } // namespace mmr
