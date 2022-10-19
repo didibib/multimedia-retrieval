@@ -51,7 +51,7 @@ public:
     {
         return std::visit(AnyGet{}, input);
     }
-    Entry(std::string filename, std::string label, std::string path);
+    Entry(std::string filename, std::string label, std::string path, std::string db);
 
 #define N_DB_HEADERS 16
     static std::vector<std::string> getHeaders();
@@ -80,6 +80,7 @@ public:
     std::map<std::string, AnyType> statistics;
     pmp::SurfaceMeshGL mesh;
     std::string original_path;
+    std::string db_name;
 };
 
 class Database
@@ -99,6 +100,7 @@ public:
     size_t getDbSize() { return m_entries.size(); }
     size_t getAvgVerts() { return m_avgVerts; }
     size_t getAvgFaces() { return m_avgFaces; }
+    std::string name;
 
 private:
     std::vector<Entry> m_entries;

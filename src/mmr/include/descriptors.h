@@ -24,6 +24,7 @@ public:
               int num_bins);
     void save();
     std::vector<float> histogram;
+
 };
 
 class Descriptor

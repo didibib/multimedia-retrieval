@@ -18,12 +18,15 @@ std::vector<std::string> Entry::getHeaders()
     return headers;
 }
 
-Entry::Entry(std::string filename, std::string label, std::string path) {
+Entry::Entry(std::string filename, std::string label, std::string path,
+             std::string db)
+{
     original_path = path;
     mesh.read(path);
     std::filesystem::path p = filename;
     statistics["filename"] = p.replace_extension().string();
     statistics["label"] = label;
+    db_name = db;
     updateStatistics();
 }
 
@@ -74,12 +77,15 @@ Entry* Database::get(int index)
     return &m_entries[index];
 }
 
-void Database::import(const std::string& path)
+void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
     int maxModels = 1;
-    for (const auto& file_entry : recursive_directory_iterator(path))
+    std::filesystem::path p = path_;
+    name = p.filename().string();
+
+    for (const auto& file_entry : recursive_directory_iterator(path_))
     {
         std::string path = file_entry.path().string();
         std::string filename = file_entry.path().filename().string();
@@ -91,14 +97,14 @@ void Database::import(const std::string& path)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        if (nModels > maxModels)
+        /*if (nModels > maxModels)
             break;
 
-        /*if (m_filename != "256.off")
+        if (filename != "360.off")
             continue;*/
 
         // Create entry
-        Entry entry(filename, label, path);
+        Entry entry(filename, label, path, name);
 
         // Update global statistics
         m_avgVerts += entry.mesh.n_vertices();
