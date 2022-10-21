@@ -30,6 +30,8 @@ public:
 class Descriptor
 {
 public:
+
+
     static void histograms(Database& db);
     static pmp::Scalar eccentricity(pmp::SurfaceMesh& entry);
     static pmp::Scalar compactness(pmp::SurfaceMesh& entry);
@@ -37,5 +39,8 @@ public:
     static Histogram A3(Entry& entry);
     static Histogram D1(Entry& entry);
     static Histogram D2(Entry& entry);
+    static Histogram D3(Entry& entry);
+    static Histogram D4(Entry& entry);
+
 };
 } // namespace mmr
