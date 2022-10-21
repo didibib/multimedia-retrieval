@@ -1,39 +1,46 @@
 #pragma once
 
-#include "pmp/SurfaceMesh.h"
+#include "database.h"
+#include <pmp/SurfaceMesh.h>
 #include <vector>
 
 namespace mmr {
 class Histogram
 {
-    struct Bin
-    {
-        pmp::vec2 range;
-        float value;    
-    };
-
-    void create();
+    void create(std::vector<float>& values);
     void normalize();
-    int m_maxValue = 0;
-    int m_binSize = 0;
+    float m_minValue = 0;
+    float m_maxValue = 0;
+    int m_numBins = 0;
+    float m_binWidth = 0;
+    std::vector<float> m_bins;
+
+    std::string m_filename;
+    std::string m_descriptor;
+    Entry& m_entry;
 
 public:
-    Histogram(std::vector<float>& values, int bins, int max_value);
+    Histogram(Entry& entry, std::string descriptor, std::vector<float>& values, float min_value, float max_value,
+              int num_bins);
+    void save();
+    std::vector<float> histogram;
 
-    std::vector<Bin> histogram;
 };
 
 class Descriptor
 {
 public:
-    static pmp::Scalar eccentricity(pmp::SurfaceMesh& mesh);
-    static pmp::Scalar compactness(pmp::SurfaceMesh& mesh);
-    static pmp::Scalar diameter(pmp::SurfaceMesh& mesh);
-    static Histogram D1(pmp::SurfaceMesh& mesh);
-    static Histogram D2(pmp::SurfaceMesh& mesh);
-    static Histogram A3(pmp::SurfaceMesh& mesh);
-    static Histogram D3(pmp::SurfaceMesh& mesh);
-    static Histogram D4(pmp::SurfaceMesh& mesh);
-};
 
+
+    static void histograms(Database& db);
+    static pmp::Scalar eccentricity(pmp::SurfaceMesh& entry);
+    static pmp::Scalar compactness(pmp::SurfaceMesh& entry);
+    static pmp::Scalar diameter(pmp::SurfaceMesh& entry);
+    static Histogram A3(Entry& entry);
+    static Histogram D1(Entry& entry);
+    static Histogram D2(Entry& entry);
+    static Histogram D3(Entry& entry);
+    static Histogram D4(Entry& entry);
+
+};
 } // namespace mmr

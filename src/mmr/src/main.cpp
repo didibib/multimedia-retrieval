@@ -1,5 +1,6 @@
 #include "mmr_viewer.h"
 #include "util.h"
+#include "descriptors.h"
 
 using namespace mmr;
 

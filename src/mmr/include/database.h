@@ -1,7 +1,6 @@
 #pragma once
 
 #include "util.h"
-#include "descriptors.h"
 #include <pmp/visualization/SurfaceMeshGL.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <pmp/MatVec.h>
@@ -11,7 +10,6 @@
 #include <variant>
 #include <ostream>
 #include <optional>
-#include <filesystem>
 
 // TODO: Seperatie GUI features from the database
 
@@ -53,54 +51,12 @@ public:
     {
         return std::visit(AnyGet{}, input);
     }
+    Entry(std::string filename, std::string label, std::string path, std::string db);
 
-    static std::vector<std::string> getHeaders()
-    {
 #define N_DB_HEADERS 16
-        static std::vector<std::string> headers = {
-            "filename",       "label",      "n_vertices",
-            "n_faces",        "face_type",  "distance_to_origin",
-            "bb_distance",    "bb_volume",  "surface_area",
-            "rectangularity", "area",       "volume",
-            "compactness",    "sphericity", "eccentricity", "diameter"};
-        return headers;
-    }
+    static std::vector<std::string> getHeaders();
 
-    Entry(std::string filename, std::string label, std::string path)
-    {
-        original_path = path;
-        mesh.read(path);
-        statistics["filename"] = filename;
-        statistics["label"] = label;
-        updateStatistics();
-    }
-
-    void updateStatistics()
-    {
-        statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
-        statistics["n_faces"] = static_cast<int>(mesh.n_faces());
-        statistics["face_type"] = checkFaceType();
-        statistics["distance_to_origin"] =
-            pmp::distance(pmp::centroid(mesh), pmp::vec3(0, 0, 0));
-
-        pmp::BoundingBox bb = mesh.bounds();
-        statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
-        statistics["surface_area"] = pmp::surface_area(mesh);
-        statistics["bb_volume"] =
-            ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
-             (bb.max()[2] - bb.min()[2]));
-        statistics["rectangularity"] =
-            (volume(mesh) /
-             ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
-              (bb.max()[2] - bb.min()[2])));
-        statistics["area"] = surface_area(mesh);
-        statistics["volume"] = volume(mesh);
-        Scalar compactness = Descriptor::compactness(mesh);
-        statistics["compactness"] = compactness;
-        statistics["sphericity"] = (1 / compactness);
-        statistics["eccentricity"] = Descriptor::eccentricity(mesh);
-        statistics["diameter"] = Descriptor::diameter(mesh);
-    }
+    void updateStatistics();
 
     void reload()
     {
@@ -115,7 +71,7 @@ public:
         filename.replace_extension(extension);
 
         std::string label = toString(statistics["label"]);
-        std::string path = util::getExportDir(folder) + "/" + label;
+        std::string path = util::getExportDir(folder + "/" + label);
 
         mesh.write(path + "/" + filename.string());
     }
@@ -124,11 +80,13 @@ public:
     std::map<std::string, AnyType> statistics;
     pmp::SurfaceMeshGL mesh;
     std::string original_path;
+    std::string db_name;
 };
 
 class Database
 {
     friend class DbGui;
+    friend class Descriptor;
 
 public:
     Database() = default;
@@ -139,17 +97,17 @@ public:
               const pmp::mat4& modelviewMatrix, const std::string& drawMode);*/
     void clear();
 
-    int getDbSize() { return m_entries.size(); }
-    int getAvgVerts() { return m_avgVerts; }
-    int getAvgFaces() { return m_avgFaces; }
-    int getLabelCount() { return m_avgFaces; }
+    size_t getDbSize() { return m_entries.size(); }
+    size_t getAvgVerts() { return m_avgVerts; }
+    size_t getAvgFaces() { return m_avgFaces; }
+    std::string name;
 
 private:
     std::vector<Entry> m_entries;
     std::set<std::string> m_labels;
 
-    int m_avgVerts = 0;
-    int m_avgFaces = 0;
+    size_t m_avgVerts = 0;
+    size_t m_avgFaces = 0;
 
     void exportStatistics(std::string suffix = "") const;
     void exportMeshes(std::string extension, std::string folder);
@@ -157,6 +115,6 @@ private:
     bool m_imported = false;
     // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
     bool m_columnSelected[N_DB_HEADERS] = {false};
-    int m_columns = 0;
+    size_t m_columns = 0;
 };
 } // namespace mmr

@@ -1,27 +1,95 @@
 #include "descriptors.h"
-<<<<<<< HEAD
+#include "settings.h"
 #include "util.h"
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <random>
 #include <chrono>
+#include <fstream>
 
 namespace mmr {
-Histogram::Histogram(std::vector<float>& values, int bins, int max_value) {
 
+Histogram::Histogram(std::string name_, std::vector<float>& values,
+                     float min_value, float max_value, int num_bins)
+{
+    std::filesystem::path p = name_;
+
+    name = p.replace_extension().string();
+    m_minValue = min_value;
+    m_maxValue = max_value;
+    m_numBins = num_bins;
+    m_binWidth = static_cast<float>(m_maxValue - m_minValue) / (m_numBins - 1);
+
+    histogram.resize(m_numBins);
+    m_bins.resize(m_numBins);
+
+    for (size_t i = 0; i < m_numBins; i++)
+        m_bins[i] = i * m_binWidth;
+
+    create(values);
+    normalize();
 }
 
-void Histogram::create() {}
+void Histogram::save()
+{
+    std::ofstream fout;
+    fout.open(util::getExportDir("histogram/data/") + name + ".txt");
+    //
+    // !! If you add data or change the order of lines, you also need update the python file !!
+    //
+    /*[0]*/ fout << name << "\n";
+    /*[1]*/ fout << m_minValue << "\n";
+    /*[2]*/ fout << m_maxValue << "\n";
+    /*[3]*/ fout << m_binWidth << "\n";
 
-void Histogram::normalize() {}
-=======
-#include <pmp/algorithms/DifferentialGeometry.h>
+    for (size_t i = 0; i < m_bins.size(); i++)
+        /*[4]*/ fout << m_bins[i] << " ";
 
-namespace mmr {
->>>>>>> 492f9ecfc21249e48b7e40560eda42004a290439
+    fout << "\n";
+
+    for (size_t i = 0; i < histogram.size(); i++)
+        /*[5]*/ fout << histogram[i] << " ";
+
+    fout.close();
+}
+
+void Histogram::create(std::vector<float>& values)
+{
+    for (unsigned int i = 0; i < values.size(); i++)
+    {
+        auto idx = std::floorf((values[i] - m_minValue) / m_binWidth);
+        int index = static_cast<int>(idx);
+        histogram[index]++;
+    }
+}
+
+void Histogram::normalize()
+{
+    float maxValue = 0;
+    for (unsigned int i = 0; i < histogram.size(); i++)
+        if (histogram[i] > maxValue)
+            maxValue = histogram[i];
+
+    for (unsigned int i = 0; i < histogram.size(); i++)
+        histogram[i] /= maxValue;
+}
+
+// DESCRIPTOR ================================================================================
+// ===========================================================================================
+
+void Descriptor::histograms(Database& db)
+{
+    for (size_t i = 0; i < db.m_entries.size(); i++)
+    {
+        Entry& entry = db.m_entries[i];
+        A3(entry).save();
+        D1(entry).save();
+        D2(entry).save();
+    }
+}
 
 pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
 {
-    unsigned int n_vertices = mesh.n_vertices();
+    size_t n_vertices = mesh.n_vertices();
     pmp::Point center = pmp::centroid(mesh);
     Eigen::MatrixXf input(3, n_vertices);
     auto points = mesh.get_vertex_property<pmp::Point>("v:point");
@@ -46,69 +114,153 @@ pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
     return ecc;
 }
 
+pmp::Scalar Descriptor::diameter(pmp::SurfaceMesh& mesh)
+{
+    size_t n_vertices = mesh.n_vertices();
+    pmp::Point center = pmp::centroid(mesh);
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    float maxDiameter = 0.0f;
+    float maxDistCentroid = 0.0f;
+    for (auto v : mesh.vertices())
+    {
+        float distCentroid = pmp::distance(points[v], center);
+
+        /*if (distCentroid > maxDistCentroid)
+            maxDistCentroid = distCentroid;
+        else
+            continue;*/
+
+        for (auto u : mesh.vertices())
+        {
+            if (v == u)
+                continue;
+            float dist = pmp::distance(points[v], points[u]);
+            if (dist > maxDiameter)
+                maxDiameter = dist;
+        }
+    }
+    return maxDiameter;
+}
+
 pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
 {
     auto S = surface_area(mesh);
     auto V = volume(mesh);
     return (S * S * S) / (V * V * 36 * M_PI);
 }
-<<<<<<< HEAD
 
-Histogram Descriptor::A3(pmp::SurfaceMesh& mesh)
+Histogram Descriptor::A3(Entry& entry)
 {
+    auto& mesh = entry.mesh;
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    auto random = std::bind(std::uniform_int_distribution<int>(0, TARGET_VALUE - 1),
-                            std::mt19937(seed));
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
+                  std::mt19937(seed));
 
     auto points = mesh.get_vertex_property<pmp::Point>("v:point");
 
-    int k = pow(TARGET_VALUE, 1.0 / 3.0);
-
     // Use pointers to create create data on heap
     std::vector<float>* angles = new std::vector<float>();
-    angles->reserve(TARGET_VALUE);
+    angles->reserve(param::TARGET_VALUE);
     int max_value = 0;
 
-    for (unsigned int i = 0; i < k; i++)
+    for (unsigned int i = 0; i < param::TARGET_VALUE; i++)
     {
         int v1 = random();
 
-        for (unsigned int j = 0; j < k; j++)
-        {
-            int v2 = random();
-            while (v2 == v1)
-                v2 = random();
+        int v2 = random();
+        while (v2 == v1)
+            v2 = random();
 
-            for (unsigned int l = 0; l < k; l++)
-            {
-                int v3 = random();
-                while (v3 == v2 || v3 == v1)
-                    v3 = random();
+        int v3 = random();
+        while (v3 == v2 || v3 == v1)
+            v3 = random();
 
-                pmp::Point p1 = points[Vertex(v1)];
-                pmp::Point p2 = points[Vertex(v2)];
-                pmp::Point p3 = points[Vertex(v3)];
+        pmp::Point p1 = points[pmp::Vertex(v1)];
+        pmp::Point p2 = points[pmp::Vertex(v2)];
+        pmp::Point p3 = points[pmp::Vertex(v3)];
 
-                auto u = p2 - p1;
-                auto v = p3 - p1;
+        auto u = p2 - p1;
+        auto v = p3 - p1;
 
-                float dot = pmp::dot(u, v);
-                float u_mag = pmp::distance(p2, p1);
-                float v_mag = pmp::distance(p3, p1);
+        float dot = pmp::dot(u, v);
+        float u_mag = pmp::distance(p2, p1);
+        float v_mag = pmp::distance(p3, p1);
 
-                float angle = acos(dot / (u_mag * v_mag));
+        float angle = acos(dot / (u_mag * v_mag));
 
-                if (angle > max_value)
-                    max_value = angle;
+        if (angle > max_value)
+            max_value = angle;
 
-                angles->push_back(angle);
-            }
-        }
+        angles->push_back(angle);
     }
 
-    return Histogram(*angles, 10, max_value);
+    std::string name = Entry::toString(entry.statistics["filename"]);
+    return Histogram(name + "_A3", *angles, 0, max_value, param::BIN_SIZE);
 }
+
+Histogram Descriptor::D1(Entry& entry)
+{
+    auto& mesh = entry.mesh;
+
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
+                  std::mt19937(seed));
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    auto center = centroid(mesh);
+    std::vector<float>* D1 = new std::vector<float>();
+    D1->reserve(param::TARGET_VALUE);
+    float maxValue = 0;
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
+    {
+        size_t v = random();
+        float d = distance(center, points[pmp::Vertex(v)]);
+        D1->push_back(d);
+        if (d > maxValue)
+            maxValue = d;
+    }
+    std::string name = Entry::toString(entry.statistics["filename"]);
+    return Histogram(name + "_D1", *D1, 0, maxValue, param::BIN_SIZE);
+}
+
+Histogram Descriptor::D2(Entry& entry)
+{
+    auto& mesh = entry.mesh;
+
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh.n_vertices() - 1),
+                  std::mt19937(seed));
+
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    auto center = centroid(mesh);
+    std::vector<float>* D2 = new std::vector<float>();
+    D2->reserve(param::TARGET_VALUE);
+
+    float maxValue = 0;
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
+    {
+        size_t v1 = random();
+        size_t v2 = random();
+        while (v2 == v1)
+            v2 = random();
+<<<<<<< HEAD
+
+        float d = distance(points[pmp::Vertex(v1)], points[pmp::Vertex(v2)]);
+        D2->push_back(d);
+        if (d > maxValue)
+            maxValue = d;
 =======
->>>>>>> 492f9ecfc21249e48b7e40560eda42004a290439
+        Point p1 = points[pmp::Vertex(v1)];
+        Point p2 = points[pmp::Vertex(v2)];
+        D2->push_back(distance(p1, p2));
+>>>>>>> 4de10a297d9c2f072e0f58384fe89389f95e9d5b
+    }
+    std::string name = Entry::toString(entry.statistics["filename"]);
+    return Histogram(name + "_D2", *D2, 0, maxValue, param::BIN_SIZE);
+}
 } // namespace mmr

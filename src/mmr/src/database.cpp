@@ -1,9 +1,68 @@
 #include "database.h"
+#include "descriptors.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
 
 namespace mmr {
+        
+std::vector<std::string> Entry::getHeaders()
+{
+    static std::vector<std::string> headers = {
+        "filename",       "label",      "n_vertices",
+        "n_faces",        "face_type",  "distance_to_origin",
+        "bb_distance",    "bb_volume",  "surface_area",
+        "rectangularity", "area",       "volume",
+        "compactness",    "sphericity", "eccentricity",
+        "diameter"};
+    return headers;
+}
+
+Entry::Entry(std::string filename, std::string label, std::string path,
+             std::string db)
+{
+    original_path = path;
+    mesh.read(path);
+    std::filesystem::path p = filename;
+    statistics["filename"] = p.replace_extension().string();
+    statistics["label"] = label;
+    db_name = db;
+    updateStatistics();
+}
+
+void Entry::updateStatistics()
+{
+    statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
+    statistics["n_faces"] = static_cast<int>(mesh.n_faces());
+    statistics["face_type"] = checkFaceType();
+    statistics["distance_to_origin"] =
+        pmp::distance(pmp::centroid(mesh), pmp::vec3(0, 0, 0));
+
+    pmp::BoundingBox bb = mesh.bounds();
+    statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
+    statistics["surface_area"] = pmp::surface_area(mesh);
+    statistics["bb_volume"] =
+        ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
+         (bb.max()[2] - bb.min()[2]));
+    statistics["rectangularity"] =
+        (volume(mesh) /
+         ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
+          (bb.max()[2] - bb.min()[2])));
+    statistics["area"] = surface_area(mesh);
+    statistics["volume"] = volume(mesh);
+    Scalar compactness = Descriptor::compactness(mesh);
+    statistics["compactness"] = compactness;
+    statistics["sphericity"] = (1 / compactness);
+    statistics["eccentricity"] = Descriptor::eccentricity(mesh);
+    statistics["diameter"] = Descriptor::diameter(mesh);
+}
+
+
+
+// DATABASE ==================================================================================
+// ===========================================================================================
+
+
 
 Database::Database(const std::string path)
 {
@@ -18,12 +77,15 @@ Entry* Database::get(int index)
     return &m_entries[index];
 }
 
-void Database::import(const std::string& path)
+void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 5;
-    for (const auto& file_entry : recursive_directory_iterator(path))
+    int maxModels = 1;
+    std::filesystem::path p = path_;
+    name = p.filename().string();
+
+    for (const auto& file_entry : recursive_directory_iterator(path_))
     {
         std::string path = file_entry.path().string();
         std::string filename = file_entry.path().filename().string();
@@ -36,13 +98,13 @@ void Database::import(const std::string& path)
             continue;
 
         /*if (nModels > maxModels)
-            break;*/
+            break;
 
-        /*if (filename != "256.off")
+        if (filename != "360.off")
             continue;*/
 
         // Create entry
-        Entry entry(filename, label, path);
+        Entry entry(filename, label, path, name);
 
         // Update global statistics
         m_avgVerts += entry.mesh.n_vertices();

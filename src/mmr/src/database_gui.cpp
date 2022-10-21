@@ -1,5 +1,6 @@
 #include "database_gui.h"
 #include "util.h"
+#include "descriptors.h"
 #include <imgui.h>
 #include <implot.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
@@ -9,10 +10,47 @@
 #include "normalization.h"
 
 namespace mmr {
+void DbGui::beginGui(Database& db)
+{
+    window(db);
+
+    if (!ImGui::BeginMenu("Database"))
+        return;
+
+    if (ImGui::BeginMenu("Import"))
+    {
+        if (ImGui::MenuItem("LabeledDB_new"))
+        {
+            db.import(util::getDataDir("LabeledDB_new"));
+            m_showStatistics = true;
+        }
+        if (ImGui::MenuItem("Normalized"))
+        {
+            db.import(util::getExportDir("normalized"));
+            m_showStatistics = true;
+        }
+        ImGui::EndMenu();
+    }
+
+    if (db.m_imported)
+    {
+        if (ImGui::MenuItem("Clear"))
+        {
+            db.clear();
+            db.m_imported = false;
+            m_showStatistics = false;
+        }
+
+        if (ImGui::MenuItem("Statistics"))
+            m_showStatistics = true;
+    }
+
+    ImGui::EndMenu();
+}
 
 void DbGui::window(Database& db)
 {
-    if (!DbGui::m_showStatistics)
+    if (!m_showStatistics)
         return;
 
     if (db.m_entries.empty())
@@ -27,77 +65,11 @@ void DbGui::window(Database& db)
 
     if (ImGui::BeginMenuBar())
     {
-        if (ImGui::MenuItem("Normalize all"))
-        {
-            int i = 0;
-            for (auto& e : db.m_entries)
-            {
-                Normalize::all_steps(e.mesh);
-                e.updateStatistics();
-                printf("%i\n", i++);
-            }
-            printf("Finished normalizing!\n");
-        }
-
-        if (ImGui::MenuItem("Remesh all"))
-        {
-            int i = 0;
-            for (auto& e : db.m_entries)
-            {
-                Normalize::remesh(e.mesh);
-                e.updateStatistics();
-                printf("%i\n", i++);
-            }
-            printf("Finished remeshing!\n");
-        }
-
-        if (ImGui::MenuItem("Translate all"))
-        {
-            int i = 0;
-            for (auto& e : db.m_entries)
-            {
-                Normalize::translate(e.mesh);
-                e.updateStatistics();
-                printf("%i\n", i++);
-            }
-            printf("Finished translating!\n");
-        }
-
-        if (ImGui::MenuItem("PCA Pose all"))
-        {
-            int i = 0;
-            for (auto& e : db.m_entries)
-            {
-                Normalize::pca_pose(e.mesh);
-                e.updateStatistics();
-                printf("%i\n", i++);
-            }
-            printf("Finished PCA Posing !\n");
-        }
-
-        if (ImGui::MenuItem("Flip Moment all"))
-        {
-            int i = 0;
-            for (auto& e : db.m_entries)
-            {
-                Normalize::flip(e.mesh);
-                e.updateStatistics();
-                printf("%i\n", i++);
-            }
-            printf("Finished flipping !\n");
-        }
-
-        if (ImGui::MenuItem("Scale all"))
-        {
-            int i = 0;
-            for (auto& e : db.m_entries)
-            {
-                Normalize::scale(e.mesh);
-                e.updateStatistics();
-                printf("%i\n", i++);
-            }
-            printf("Finished scaling !\n");
-        }
+        exportMenu(db);
+        normalizeAll(db);
+        
+        if (ImGui::MenuItem("Histograms"))
+            Descriptor::histograms(db);
 
         ImGui::EndMenuBar();
     }
@@ -109,6 +81,9 @@ void DbGui::window(Database& db)
 
 void DbGui::statisticsTable(Database& db)
 {
+    if (db.m_entries.size() == 0)
+        return;
+
     static ImGuiTableFlags flags =
         ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable |
         ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuter |
@@ -116,7 +91,7 @@ void DbGui::statisticsTable(Database& db)
         ImGuiTableFlags_RowBg;
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(5, 5));
 
-    if (!ImGui::BeginTable("Statistics", db.m_columns, flags))
+    if (!ImGui::BeginTable("Statistics", static_cast<int>(db.m_columns), flags))
         return;
 
     // Setup headers
@@ -143,7 +118,7 @@ void DbGui::statisticsTable(Database& db)
                               &db.m_columnSelected[col],
                               ImGuiSelectableFlags_SpanAllColumns);
 
-            algorithmsPopup(db, row, col);
+            rightClickEntry(db, row, col);
         }
     }
 
@@ -162,7 +137,36 @@ int DbGui::columnIndex(std::string key)
     return 0;
 }
 
-void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
+void DbGui::exportMenu(Database& db)
+{
+    if (ImGui::BeginMenu("Export..."))
+    {
+        if (ImGui::MenuItem("Statistics"))
+            db.exportStatistics();
+        if (ImGui::BeginMenu("Meshes"))
+        {
+            if (ImGui::MenuItem("As .off"))
+            {
+                for (auto& entry : db.m_entries)
+                {
+                    entry.write(".off", "Meshes");
+                }
+            }
+            if (ImGui::MenuItem("As .ply"))
+            {
+                for (auto& entry : db.m_entries)
+                {
+                    entry.write(".ply", "Meshes");
+                }
+                printf("Finished exporting!\n");
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+}
+
+void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
 {
     if (ImGui::BeginPopupContextItem())
     {
@@ -177,10 +181,9 @@ void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
             entry.reload();
         }
         ImGui::Separator();
-        normalizationMenu(entry);
+        normalizeEntry(entry);
 
         ImGui::Separator();
-
         if (ImGui::BeginMenu("Export"))
         {
             if (ImGui::MenuItem("As .off"))
@@ -198,7 +201,7 @@ void DbGui::algorithmsPopup(Database& db, const int& index, const int& column)
         ImGui::SetTooltip("Right-click to...");
 }
 
-void DbGui::normalizationMenu(Entry& entry)
+void DbGui::normalizeEntry(Entry& entry)
 {
     if (ImGui::BeginMenu("Normalization"))
     {
@@ -237,68 +240,82 @@ void DbGui::normalizationMenu(Entry& entry)
     }
 }
 
-void DbGui::beginMenu(Database& db)
-{
-    window(db);
+void DbGui::normalizeAll(Database& db) {
 
-    if (!ImGui::BeginMenu("Database"))
+    if (!ImGui::BeginMenu("Normalize"))
         return;
 
-    if (ImGui::BeginMenu("Import"))
+    if (ImGui::MenuItem("Normalize all"))
     {
-        if (ImGui::MenuItem("LabeledDB_new"))
+        int i = 0;
+        for (auto& e : db.m_entries)
         {
-            db.import(util::getDataDir("LabeledDB_new"));
-            m_showStatistics = true;
+            Normalize::all_steps(e.mesh);
+            e.updateStatistics();
+            printf("%i\n", i++);
         }
-        if (ImGui::MenuItem("Normalized"))
-        {
-            db.import(util::getExportDir("Normalized"));
-            m_showStatistics = true;
-        }
-        ImGui::EndMenu();
+        printf("Finished normalizing!\n");
     }
 
-    if (db.m_imported)
-        if (ImGui::MenuItem("Clear"))
+    if (ImGui::MenuItem("Remesh all"))
+    {
+        int i = 0;
+        for (auto& e : db.m_entries)
         {
-            db.clear();
-            db.m_imported = false;
-            m_showStatistics = false;
+            Normalize::remesh(e.mesh);
+            e.updateStatistics();
+            printf("%i\n", i++);
         }
+        printf("Finished remeshing!\n");
+    }
 
-    if (!m_showStatistics && db.m_imported)
-        if (ImGui::MenuItem("Statistics"))
-            m_showStatistics = true;
-
-    if (db.m_imported)
-        if (ImGui::BeginMenu("Export..."))
+    if (ImGui::MenuItem("Translate all"))
+    {
+        int i = 0;
+        for (auto& e : db.m_entries)
         {
-            if (ImGui::MenuItem("Statistics"))
-                db.exportStatistics();
-            if (ImGui::BeginMenu("Meshes"))
-            {
-                if (ImGui::MenuItem("As .off"))
-                {
-                    for (auto& entry : db.m_entries)
-                    {
-                        entry.write(".off");
-                    }
-                }
-                if (ImGui::MenuItem("As .ply"))
-                {
-                    for (auto& entry : db.m_entries)
-                    {
-                        entry.write(".ply");
-                    }
-                    printf("Finished exporting!\n");
-                }
-                ImGui::EndMenu();
-            }
-
-            ImGui::EndMenu();
+            Normalize::translate(e.mesh);
+            e.updateStatistics();
+            printf("%i\n", i++);
         }
+        printf("Finished translating!\n");
+    }
 
+    if (ImGui::MenuItem("PCA Pose all"))
+    {
+        int i = 0;
+        for (auto& e : db.m_entries)
+        {
+            Normalize::pca_pose(e.mesh);
+            e.updateStatistics();
+            printf("%i\n", i++);
+        }
+        printf("Finished PCA Posing !\n");
+    }
+
+    if (ImGui::MenuItem("Flip Moment all"))
+    {
+        int i = 0;
+        for (auto& e : db.m_entries)
+        {
+            Normalize::flip(e.mesh);
+            e.updateStatistics();
+            printf("%i\n", i++);
+        }
+        printf("Finished flipping !\n");
+    }
+
+    if (ImGui::MenuItem("Scale all"))
+    {
+        int i = 0;
+        for (auto& e : db.m_entries)
+        {
+            Normalize::scale(e.mesh);
+            e.updateStatistics();
+            printf("%i\n", i++);
+        }
+        printf("Finished scaling !\n");
+    }
     ImGui::EndMenu();
 }
 
