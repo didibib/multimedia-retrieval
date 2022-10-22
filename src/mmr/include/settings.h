@@ -15,5 +15,9 @@ static const float D1_MAX_VALUE = 1;
 // Max distance between two vertices
 static const float D2_MAX_VALUE = 2;
 
+static const float D3_MAX_VALUE = sqrt(0.73f);
+
+static const float D4_MAX_VALUE = 1.0f;
+
 } // namespace param
 } // namespace mmr

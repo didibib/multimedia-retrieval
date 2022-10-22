@@ -241,17 +241,17 @@ Histogram Descriptor::D3(Entry& entry)
     auto points = mesh.get_vertex_property<pmp::Point>("v:point");
     
     std::vector<Scalar>* D3 = new std::vector<float>();
-    D3->reserve(TARGET_VALUE);
+    D3->reserve(param::TARGET_VALUE);
 
-    for (size_t i = 0; i < TARGET_VALUE; i++)
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
         size_t r1 = random();
-        for (size_t j = 0; j < TARGET_VALUE; j++)
+        for (size_t j = 0; j < param::TARGET_VALUE; j++)
         {
             size_t r2 = random();
             while (r1 == r2)
                 r2 = random();
-            for (size_t k = 0; k < TARGET_VALUE; k++)
+            for (size_t k = 0; k < param::TARGET_VALUE; k++)
             {
                 size_t r3 = random();
                 while (r3 == r1 || r3 == r2)
@@ -270,7 +270,7 @@ Histogram Descriptor::D3(Entry& entry)
 
         }
     }
-    return Histogram(*D3, 10, sqrt(0.73f));
+    return Histogram(entry, "D3", * D3, 0.0f, param::D3_MAX_VALUE, param::BIN_SIZE);
 }
 
 
@@ -286,23 +286,23 @@ Histogram Descriptor::D4(Entry& entry)
     auto points = mesh.get_vertex_property<pmp::Point>("v:point");
 
     std::vector<Scalar>* D4 = new std::vector<float>();
-    D4->reserve(TARGET_VALUE);
+    D4->reserve(param::TARGET_VALUE);
 
-    for (size_t i = 0; i < TARGET_VALUE; i++)
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
         size_t r1 = random();
-        for (size_t j = 0; j < TARGET_VALUE; j++)
+        for (size_t j = 0; j < param::TARGET_VALUE; j++)
         {
             size_t r2 = random();
             while (r1 == r2)
                 r2 = random();
             
-            for (size_t k = 0; k < TARGET_VALUE; k++)
+            for (size_t k = 0; k < param::TARGET_VALUE; k++)
             {
                 size_t r3 = random();
                 while (r3 == r1 || r3 == r2)
                     r3 = random();
-                for (size_t u = 0; u < TARGET_VALUE; u++)
+                for (size_t u = 0; u < param::TARGET_VALUE; u++)
                 {
                     size_t r4 = random();
                     while (r4 == r1 || r4 == r2 || r4 == r3)
@@ -322,7 +322,7 @@ Histogram Descriptor::D4(Entry& entry)
             }
         }
     }
-    return Histogram(*D4, 10, 1);
+    return Histogram(entry, "D4", * D4, 0.0f, param::D4_MAX_VALUE, param::BIN_SIZE);
 }
 
 //pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
