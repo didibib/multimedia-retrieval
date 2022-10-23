@@ -67,12 +67,23 @@ void DbGui::window(Database& db)
     {
         exportMenu(db);
         normalizeAll(db);
-        
+        if (ImGui::MenuItem("Normalize and Remesh Query"))
+        {
+            for (auto& q : db.m_queries)
+            {
+                Normalize::all_steps(q.mesh);
+                Normalize::remesh(q.mesh);
+            }
+        }
         if (ImGui::MenuItem("Histograms"))
             Descriptor::histograms(db);
 
         ImGui::EndMenuBar();
     }
+
+
+
+
 
     statisticsTable(db);
 
@@ -236,6 +247,7 @@ void DbGui::normalizeEntry(Entry& entry)
             Normalize::scale(entry.mesh);
             entry.updateStatistics();
         }
+
         ImGui::EndMenu();
     }
 }
@@ -254,6 +266,13 @@ void DbGui::normalizeAll(Database& db) {
             e.updateStatistics();
             printf("%i\n", i++);
         }
+
+        int j = 0;
+        for (auto& q: db.m_queries)
+        {
+            Normalize::all_steps(q.mesh);
+            printf("Query:  %i\n", j++);
+        }
         printf("Finished normalizing!\n");
     }
 
@@ -265,6 +284,13 @@ void DbGui::normalizeAll(Database& db) {
             Normalize::remesh(e.mesh);
             e.updateStatistics();
             printf("%i\n", i++);
+        }
+
+        int j = 0;
+        for (auto& q : db.m_queries)
+        {
+            Normalize::remesh(q.mesh);
+            printf("Query:  %i\n", j++);
         }
         printf("Finished remeshing!\n");
     }

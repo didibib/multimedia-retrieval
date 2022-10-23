@@ -231,12 +231,114 @@ Histogram Descriptor::D1(Entry& entry)
     D1->reserve(param::TARGET_VALUE);
     for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
+
         size_t v = random();
         float d = distance(center, points[pmp::Vertex(v)]);
         D1->push_back(d);
+
     }
     return Histogram(entry, "D1", *D1, 0, param::D1_MAX_VALUE, param::BIN_SIZE);
 }
+
+
+Histogram Descriptor::D3(Entry& entry)
+{
+  
+    auto& mesh = entry.mesh;
+    size_t mesh_size(mesh.vertices_size());
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh_size - 1),
+                  std::mt19937(seed));
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+    
+    std::vector<Scalar>* D3 = new std::vector<float>();
+    D3->reserve(param::TARGET_VALUE);
+
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
+    {
+        size_t r1 = random();
+        for (size_t j = 0; j < param::TARGET_VALUE; j++)
+        {
+            size_t r2 = random();
+            while (r1 == r2)
+                r2 = random();
+            for (size_t k = 0; k < param::TARGET_VALUE; k++)
+            {
+                size_t r3 = random();
+                while (r3 == r1 || r3 == r2)
+                    r3 = random();
+                Point v1 = points[Vertex(r1)];
+                Point v2 = points[Vertex(r2)];
+                Point v3 = points[Vertex(r3)];
+                Point v1v2 = v2 - v1;
+                Point v1v3 = v3 - v1;
+                float dist12 = norm(v1v2);
+                float dist13 = norm(v1v3);
+                float theta = acosf(dot(v1v2, v1v3) / (dist12 * dist13));
+                D3->push_back(sqrt(0.5f * dist12 * dist13 * sinf(theta)));
+            }
+
+
+        }
+    }
+    return Histogram(entry, "D3", * D3, 0.0f, param::D3_MAX_VALUE, param::BIN_SIZE);
+}
+
+
+Histogram Descriptor::D4(Entry& entry)
+{
+    auto& mesh = entry.mesh;
+    size_t mesh_size(mesh.vertices_size());
+    std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random =
+        std::bind(std::uniform_int_distribution<int>(0, mesh_size - 1),
+                  std::mt19937(seed));
+    auto points = mesh.get_vertex_property<pmp::Point>("v:point");
+
+    std::vector<Scalar>* D4 = new std::vector<float>();
+    D4->reserve(param::TARGET_VALUE);
+
+    for (size_t i = 0; i < param::TARGET_VALUE; i++)
+    {
+        size_t r1 = random();
+        for (size_t j = 0; j < param::TARGET_VALUE; j++)
+        {
+            size_t r2 = random();
+            while (r1 == r2)
+                r2 = random();
+            
+            for (size_t k = 0; k < param::TARGET_VALUE; k++)
+            {
+                size_t r3 = random();
+                while (r3 == r1 || r3 == r2)
+                    r3 = random();
+                for (size_t u = 0; u < param::TARGET_VALUE; u++)
+                {
+                    size_t r4 = random();
+                    while (r4 == r1 || r4 == r2 || r4 == r3)
+                        r4 = random();
+                    Point v1 = points[Vertex(r1)];
+                    Point v2 = points[Vertex(r2)];
+                    Point v3 = points[Vertex(r3)];
+                    Point v4 = points[Vertex(r4)];
+                    Eigen::Matrix4f verts;
+                    verts.row(0) << v1[0], v1[1], v1[2], 1;
+                    verts.row(1) << v2[0], v2[1], v2[2], 1;
+                    verts.row(2) << v3[0], v3[1], v3[2], 1;
+                    verts.row(3) << v4[0], v4[1], v4[2], 1;
+                    D4->push_back(cbrt(abs(verts.determinant()) / 6));
+                }
+                
+            }
+        }
+    }
+    return Histogram(entry, "D4", * D4, 0.0f, param::D4_MAX_VALUE, param::BIN_SIZE);
+}
+
+//pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
 
 Histogram Descriptor::D2(Entry& entry)
 {

@@ -81,7 +81,12 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
+<<<<<<< HEAD
     int maxModels = 50;
+=======
+    int nQueries = 1;
+    int maxModels = 1;
+>>>>>>> 1b5346103390f251ee3dc0da6b7a0778bd566cfd
     std::filesystem::path p = path_;
     name = p.filename().string();
 
@@ -105,21 +110,29 @@ void Database::import(const std::string& path_)
 
         // Create entry
         Entry entry(filename, label, path, name);
+        if (nModels++ > 0)
+        {
+            // Update global statistics
+            m_avgVerts += entry.mesh.n_vertices();
+            m_avgFaces += entry.mesh.n_faces();
 
-        // Update global statistics
-        m_avgVerts += entry.mesh.n_vertices();
-        m_avgFaces += entry.mesh.n_faces();
+            m_labels.insert(label);
+            m_entries.push_back(std::move(entry));
+            std::cout << "Model: " << nModels << std::endl;
+        }
+        else
+        {
+            m_queries.push_back(std::move(entry));
+        }
 
-        m_labels.insert(label);
-        m_entries.push_back(std::move(entry));
-        std::cout << "Model: " << nModels++ << std::endl;
+       
     }
 
-    if (nModels == 0)
+    if ((nModels - nQueries)== 0 || nModels ==0)
         return;
 
-    m_avgVerts /= nModels;
-    m_avgFaces /= nModels;
+    m_avgVerts /= (nModels - nQueries);
+    m_avgFaces /= (nModels - nQueries);
     std::cout << "Average Vertices: " << m_avgVerts << std::endl;
     std::cout << "Average Faces: " << m_avgFaces << std::endl;
 
