@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace mmr {
-        
+
 std::vector<std::string> Entry::getHeaders()
 {
     static std::vector<std::string> headers = {
@@ -57,12 +57,8 @@ void Entry::updateStatistics()
     statistics["diameter"] = Descriptor::diameter(mesh);
 }
 
-
-
 // DATABASE ==================================================================================
 // ===========================================================================================
-
-
 
 Database::Database(const std::string path)
 {
@@ -81,7 +77,7 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 50;
+    int maxModels = 3;
     int nQueries = 1;
     std::filesystem::path p = path_;
     name = p.filename().string();
@@ -98,8 +94,8 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        /*if (nModels > maxModels)
-            break;*/
+        //if (nModels > maxModels)
+            //break;
 
         /*if (filename != "360.off")
             continue;*/
@@ -120,11 +116,9 @@ void Database::import(const std::string& path_)
         {
             m_queries.push_back(std::move(entry));
         }
-
-       
     }
 
-    if ((nModels - nQueries)== 0 || nModels ==0)
+    if ((nModels - nQueries) == 0 || nModels == 0)
         return;
 
     m_avgVerts /= (nModels - nQueries);

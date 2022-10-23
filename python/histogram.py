@@ -31,6 +31,7 @@ def read_data(file):
     return entry
 
 
+print('Creating histogram images...\n')
 for root, dirs, files in os.walk(root_data_path):
     for filename in files:
         path = os.path.join(root, filename)
@@ -46,3 +47,4 @@ for root, dirs, files in os.walk(root_data_path):
         plt.savefig(export_dir + entry['descriptor'] + '.png')
     plt.clf();
 
+print('Finished!\n')

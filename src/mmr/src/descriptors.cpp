@@ -60,17 +60,16 @@ void Histogram::save()
 }
 
 void Histogram::create(std::vector<float>& values)
-{
+{    
     for (unsigned int i = 0; i < values.size(); i++)
     {
-        printf("filename %s\n", m_filename.c_str());
+        /*printf("filename %s\n", m_filename.c_str());
         printf("descriptor %s\n", m_descriptor.c_str());
         printf("min value %f\n", m_minValue);
         printf("max value %f\n", m_maxValue);
         printf("bin width %f\n", m_binWidth);
         printf("value %f\n", values[i]);
-        std::cout << std::endl;
-
+        std::cout << std::endl;*/
         auto idx = std::floorf((values[i] - m_minValue) / m_binWidth);
         int index = static_cast<int>(idx);
         histogram[index]++;
@@ -99,8 +98,10 @@ void Descriptor::histograms(Database& db)
         A3(entry).save();
         D1(entry).save();
         D2(entry).save();
+        D3(entry).save();
+        D4(entry).save();
     }
-    printf("Histograms saved\n");
+    printf("Histograms saved!\n");
 }
 
 pmp::Scalar Descriptor::eccentricity(pmp::SurfaceMesh& mesh)
@@ -140,11 +141,6 @@ pmp::Scalar Descriptor::diameter(pmp::SurfaceMesh& mesh)
     for (auto v : mesh.vertices())
     {
         float distCentroid = pmp::distance(points[v], center);
-
-        /*if (distCentroid > maxDistCentroid)
-            maxDistCentroid = distCentroid;
-        else
-            continue;*/
 
         for (auto u : mesh.vertices())
         {
@@ -203,11 +199,12 @@ Histogram Descriptor::A3(Entry& entry)
         float u_mag = pmp::distance(p2, p1);
         float v_mag = pmp::distance(p3, p1);
 
-        float angle = std::acos(dot / (u_mag * v_mag));
-        if (isinf(angle))
+        float angle = std::acosf(dot / (u_mag * v_mag));
+        if (isinf(angle) || isnan(angle))
+        {
+            i--;
             continue;
-        if (isnan(angle))
-            continue;
+        }
 
         angles->push_back(angle * param::RAD_TO_DEG);
     }
@@ -285,27 +282,32 @@ Histogram Descriptor::D3(Entry& entry)
     for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
         size_t r1 = random();
-        for (size_t j = 0; j < param::TARGET_VALUE; j++)
+
+        size_t r2 = random();
+        while (r1 == r2)
+            r2 = random();
+
+        size_t r3 = random();
+        while (r3 == r1 || r3 == r2)
+            r3 = random();
+
+        Point v1 = points[Vertex(r1)];
+        Point v2 = points[Vertex(r2)];
+        Point v3 = points[Vertex(r3)];
+        Point v1v2 = v2 - v1;
+        Point v1v3 = v3 - v1;
+        float dist12 = norm(v1v2);
+        float dist13 = norm(v1v3);
+        float theta = acosf(dot(v1v2, v1v3) / (dist12 * dist13));
+        
+        float result = sqrt(0.5f * dist12 * dist13 * sinf(theta));
+        if (isinf(result) || isnan(result))
         {
-            size_t r2 = random();
-            while (r1 == r2)
-                r2 = random();
-            for (size_t k = 0; k < param::TARGET_VALUE; k++)
-            {
-                size_t r3 = random();
-                while (r3 == r1 || r3 == r2)
-                    r3 = random();
-                Point v1 = points[Vertex(r1)];
-                Point v2 = points[Vertex(r2)];
-                Point v3 = points[Vertex(r3)];
-                Point v1v2 = v2 - v1;
-                Point v1v3 = v3 - v1;
-                float dist12 = norm(v1v2);
-                float dist13 = norm(v1v3);
-                float theta = acosf(dot(v1v2, v1v3) / (dist12 * dist13));
-                D3->push_back(sqrt(0.5f * dist12 * dist13 * sinf(theta)));
-            }
+            i--;
+            continue;
         }
+
+        D3->push_back(result);
     }
     return Histogram(entry, "D3", *D3, 0.0f, param::D3_MAX_VALUE,
                      param::BIN_SIZE);
@@ -328,35 +330,28 @@ Histogram Descriptor::D4(Entry& entry)
     for (size_t i = 0; i < param::TARGET_VALUE; i++)
     {
         size_t r1 = random();
-        for (size_t j = 0; j < param::TARGET_VALUE; j++)
-        {
-            size_t r2 = random();
-            while (r1 == r2)
-                r2 = random();
+        size_t r2 = random();
+        while (r1 == r2)
+            r2 = random();
 
-            for (size_t k = 0; k < param::TARGET_VALUE; k++)
-            {
-                size_t r3 = random();
-                while (r3 == r1 || r3 == r2)
-                    r3 = random();
-                for (size_t u = 0; u < param::TARGET_VALUE; u++)
-                {
-                    size_t r4 = random();
-                    while (r4 == r1 || r4 == r2 || r4 == r3)
-                        r4 = random();
-                    Point v1 = points[Vertex(r1)];
-                    Point v2 = points[Vertex(r2)];
-                    Point v3 = points[Vertex(r3)];
-                    Point v4 = points[Vertex(r4)];
-                    Eigen::Matrix4f verts;
-                    verts.row(0) << v1[0], v1[1], v1[2], 1;
-                    verts.row(1) << v2[0], v2[1], v2[2], 1;
-                    verts.row(2) << v3[0], v3[1], v3[2], 1;
-                    verts.row(3) << v4[0], v4[1], v4[2], 1;
-                    D4->push_back(cbrt(abs(verts.determinant()) / 6));
-                }
-            }
-        }
+        size_t r3 = random();
+        while (r3 == r1 || r3 == r2)
+            r3 = random();
+
+        size_t r4 = random();
+        while (r4 == r1 || r4 == r2 || r4 == r3)
+            r4 = random();
+
+        Point v1 = points[Vertex(r1)];
+        Point v2 = points[Vertex(r2)];
+        Point v3 = points[Vertex(r3)];
+        Point v4 = points[Vertex(r4)];
+        Eigen::Matrix4f verts;
+        verts.row(0) << v1[0], v1[1], v1[2], 1;
+        verts.row(1) << v2[0], v2[1], v2[2], 1;
+        verts.row(2) << v3[0], v3[1], v3[2], 1;
+        verts.row(3) << v4[0], v4[1], v4[2], 1;
+        D4->push_back(cbrt(abs(verts.determinant()) / 6));
     }
     return Histogram(entry, "D4", *D4, 0.0f, param::D4_MAX_VALUE,
                      param::BIN_SIZE);

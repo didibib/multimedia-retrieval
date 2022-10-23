@@ -10,8 +10,8 @@ static const int BIN_SIZE = 10;
 //
 #define PI 3.14159265
 // Max angle
-static const float A3_MAX_VALUE = 180;
 static const float RAD_TO_DEG = 180 / PI;
+static const float A3_MAX_VALUE = 180;
 // Max distance from vertex to centroid
 static const float D1_MAX_VALUE = 1;
 // Max distance between two vertices

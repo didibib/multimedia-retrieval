@@ -14,38 +14,47 @@ void DbGui::beginGui(Database& db)
 {
     window(db);
 
-    if (!ImGui::BeginMenu("Database"))
-        return;
-
-    if (ImGui::BeginMenu("Import"))
+    if (ImGui::BeginMenu("Database"))
     {
-        if (ImGui::MenuItem("LabeledDB_new"))
+        if (ImGui::BeginMenu("Import"))
         {
-            db.import(util::getDataDir("LabeledDB_new"));
-            m_showStatistics = true;
+            if (ImGui::MenuItem("LabeledDB_new"))
+            {
+                db.import(util::getDataDir("LabeledDB_new"));
+                m_showStatistics = true;
+            }
+            if (ImGui::MenuItem("Normalized"))
+            {
+                db.import(util::getExportDir("normalized"));
+                m_showStatistics = true;
+            }
+            ImGui::EndMenu();
         }
-        if (ImGui::MenuItem("Normalized"))
+
+        if (db.m_imported)
         {
-            db.import(util::getExportDir("normalized"));
-            m_showStatistics = true;
+            if (ImGui::MenuItem("Clear"))
+            {
+                db.clear();
+                db.m_imported = false;
+                m_showStatistics = false;
+            }
+
+            if (ImGui::MenuItem("Statistics"))
+                m_showStatistics = true;
         }
+
         ImGui::EndMenu();
     }
 
-    if (db.m_imported)
+    if (ImGui::MenuItem("Normalize and Remesh Query"))
     {
-        if (ImGui::MenuItem("Clear"))
+        for (auto& q : db.m_queries)
         {
-            db.clear();
-            db.m_imported = false;
-            m_showStatistics = false;
+            Normalize::all_steps(q.mesh);
+            Normalize::remesh(q.mesh);
         }
-
-        if (ImGui::MenuItem("Statistics"))
-            m_showStatistics = true;
     }
-
-    ImGui::EndMenu();
 }
 
 void DbGui::window(Database& db)
@@ -67,23 +76,11 @@ void DbGui::window(Database& db)
     {
         exportMenu(db);
         normalizeAll(db);
-        if (ImGui::MenuItem("Normalize and Remesh Query"))
-        {
-            for (auto& q : db.m_queries)
-            {
-                Normalize::all_steps(q.mesh);
-                Normalize::remesh(q.mesh);
-            }
-        }
         if (ImGui::MenuItem("Histograms"))
             Descriptor::histograms(db);
 
         ImGui::EndMenuBar();
     }
-
-
-
-
 
     statisticsTable(db);
 
@@ -158,17 +155,14 @@ void DbGui::exportMenu(Database& db)
         {
             if (ImGui::MenuItem("As .off"))
             {
-                for (auto& entry : db.m_entries)
-                {
-                    entry.write(".off", "Meshes");
-                }
+                for (auto& entry : db.m_entries)                
+                    entry.write(".off", "Meshes");                
+                printf("Finished exporting!\n");
             }
             if (ImGui::MenuItem("As .ply"))
             {
-                for (auto& entry : db.m_entries)
-                {
-                    entry.write(".ply", "Meshes");
-                }
+                for (auto& entry : db.m_entries)                
+                    entry.write(".ply", "Meshes");                
                 printf("Finished exporting!\n");
             }
             ImGui::EndMenu();
@@ -252,8 +246,8 @@ void DbGui::normalizeEntry(Entry& entry)
     }
 }
 
-void DbGui::normalizeAll(Database& db) {
-
+void DbGui::normalizeAll(Database& db)
+{
     if (!ImGui::BeginMenu("Normalize"))
         return;
 
@@ -268,7 +262,7 @@ void DbGui::normalizeAll(Database& db) {
         }
 
         int j = 0;
-        for (auto& q: db.m_queries)
+        for (auto& q : db.m_queries)
         {
             Normalize::all_steps(q.mesh);
             printf("Query:  %i\n", j++);

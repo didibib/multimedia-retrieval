@@ -30,8 +30,6 @@ public:
 class Descriptor
 {
 public:
-
-
     static void histograms(Database& db);
     static pmp::Scalar eccentricity(pmp::SurfaceMesh& entry);
     static pmp::Scalar compactness(pmp::SurfaceMesh& entry);
