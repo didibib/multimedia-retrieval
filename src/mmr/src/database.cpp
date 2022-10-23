@@ -81,7 +81,7 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 1;
+    int maxModels = 50;
     std::filesystem::path p = path_;
     name = p.filename().string();
 
@@ -98,9 +98,9 @@ void Database::import(const std::string& path_)
             continue;
 
         /*if (nModels > maxModels)
-            break;
+            break;*/
 
-        if (filename != "360.off")
+        /*if (filename != "360.off")
             continue;*/
 
         // Create entry

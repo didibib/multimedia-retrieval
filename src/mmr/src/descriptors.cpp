@@ -5,6 +5,7 @@
 #include <random>
 #include <chrono>
 #include <fstream>
+#include <algorithm>
 
 namespace mmr {
 Histogram::Histogram(Entry& entry, std::string descriptor,
@@ -62,9 +63,17 @@ void Histogram::create(std::vector<float>& values)
 {
     for (unsigned int i = 0; i < values.size(); i++)
     {
-        auto idx = std::floorf((values[i] - m_minValue) / m_binWidth);
-        int index = static_cast<int>(idx);
-        histogram[index]++;
+        printf("filename %s\n", m_filename.c_str());
+        printf("descriptor %s\n", m_descriptor.c_str());
+        printf("min value %f\n", m_minValue);
+        printf("max value %f\n", m_maxValue);
+        printf("bin width %f\n", m_binWidth);
+        printf("value %f\n", values[i]);
+        std::cout << std::endl;
+
+            auto idx = std::floorf((values[i] - m_minValue) / m_binWidth);
+            int index = static_cast<int>(idx);
+            histogram[index]++;
     }
 }
 
@@ -194,9 +203,13 @@ Histogram Descriptor::A3(Entry& entry)
         float u_mag = pmp::distance(p2, p1);
         float v_mag = pmp::distance(p3, p1);
 
-        float angle = acos(dot / (u_mag * v_mag));
+        float angle = std::acos(dot / (u_mag * v_mag));
+        if (isinf(angle))
+            continue;
+        if (isnan(angle))
+            continue;
 
-        angles->push_back(angle);
+        angles->push_back(angle * param::RAD_TO_DEG);
     }
 
     return Histogram(entry, "A3", *angles, 0, param::A3_MAX_VALUE,
