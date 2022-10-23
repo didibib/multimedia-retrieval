@@ -34,6 +34,8 @@ set(DESCRIPTORS
 set(FEATURE_VECTOR
     "include/feature_vector.h"
     "src/feature_vector.cpp"
+    "include/emd.h"
+    "src/emd.c"
 )
 
 add_executable(${EXC_NAME} 
