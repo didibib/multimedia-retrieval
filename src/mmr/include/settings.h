@@ -19,7 +19,7 @@ static const float D2_MAX_VALUE = 1.25;
 
 static const float D3_MAX_VALUE = sqrt(0.73f);
 
-static const float D4_MAX_VALUE = 1.0f;
+static const float D4_MAX_VALUE = .5f;
 
 } // namespace param
 } // namespace mmr

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 rel_data_path = '../export/histogram/data/'
-rel_img_path = '../export/histogram/images/'
+rel_img_path  = '../export/histogram/images/'
 
 dirname = os.path.dirname(__file__) # Get current directory
 root_data_path = os.path.join(dirname, rel_data_path)
@@ -31,13 +31,14 @@ def read_data(file):
     return entry
 
 
-print('Creating histogram images...\n')
+print('Creating histogram images...')
 for root, dirs, files in os.walk(root_data_path):
     for filename in files:
         path = os.path.join(root, filename)
         entry = read_data(path)
 
         plt.plot(entry['bins'], entry['data'])
+        plt.title(entry['label'] + ' ' + entry['descriptor'])
         plt.xlabel('bins')
         plt.ylabel('normalized count')
         
@@ -47,4 +48,4 @@ for root, dirs, files in os.walk(root_data_path):
         plt.savefig(export_dir + entry['descriptor'] + '.png')
     plt.clf();
 
-print('Finished!\n')
+print('Finished!')

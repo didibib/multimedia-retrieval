@@ -35,6 +35,7 @@ set(FEATURE_VECTOR
     "include/feature_vector.h"
     "include/emd.h"
     "src/feature_vector.cpp"
+    "include/emd.h"
     "src/emd.c"
 )
 
