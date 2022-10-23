@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif // DEBUG
+
 #ifndef _EMD_H
 #define _EMD_H
 /*
@@ -50,3 +54,7 @@ float emd(signature_t *Signature1, signature_t *Signature2,
 	  flow_t *Flow, int *FlowSize);
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
