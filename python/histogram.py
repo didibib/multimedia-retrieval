@@ -38,9 +38,7 @@ for root, dirs, files in os.walk(root_data_path):
         entry = read_data(path)
 
         plt.plot(entry['bins'], entry['data'])
-        plt.title(entry['label'] + ' ' + entry['descriptor'])
-        plt.xlabel('bins')
-        plt.ylabel('normalized count')
+        plt.title(entry['label'], fontsize = 20)
         
         export_dir = full_img_path + entry['label'] + "/";
         if not os.path.exists(export_dir):

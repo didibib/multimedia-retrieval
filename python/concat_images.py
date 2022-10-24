@@ -49,32 +49,35 @@ D4[p]
 def concat(descriptor, filename):
     img0 = Image.open(descriptor[0])
     (width, height) = img0.size
-    # Create 4x4 images
-    dst = Image.new('RGB', (width * 4, height * 4))
+    # Create 4x5 images
+    col = 4
+    row = 5
+    dst = Image.new('RGB', (width * col, height * row))
     i = 0
     n = 0
+    print(col * row)
+    print()
     for (index, path) in enumerate(descriptor):        
         img = Image.open(path)
-        x = i % 4
-        y = math.floor(i / 4)
+        x = i % col
+        y = math.floor(i / row)
+        print(index)
+        print(x)
+        print(y)
+        print()
+
         dst.paste(img, (x * width, y * height))
         i = i + 1
-        if(i >= 16):
+        if(i >= (col * row)):
             dst.save(full_img_path + '/' + filename + '_' + str(n) + '.jpg')
-            dst = Image.new('RGB', (width * 4, height * 4), 'white')
+            dst = Image.new('RGB', (width * col, height * row), 'white')
             i = 0
-            n = n + 1
-        if(index >= len(descriptor) - 1):    
-            left = top = 0
-            right = dst.width
-            bottom = (y + 1) * height
-            dst.crop((left, top, right, bottom))          
-            dst.save(full_img_path + '/' + filename + '_' + str(n) + '.jpg')          
+            n = n + 1         
 
 print('Concatting images...')
 concat(A3, 'A3')
-concat(D1, 'D1')
-concat(D2, 'D2')
-concat(D3, 'D3')
-concat(D4, 'D4')
+# concat(D1, 'D1')
+# concat(D2, 'D2')
+# concat(D3, 'D3')
+# concat(D4, 'D4')
 print('Finished!')
