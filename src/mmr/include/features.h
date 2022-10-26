@@ -5,10 +5,9 @@
 #include <variant>
 #include <map>
 #include "descriptors.h"
+#include "emd.h"
 
 namespace mmr {
-
-typedef float feature_t;
 
 class Feature
 {
@@ -35,20 +34,18 @@ public:
         return std::visit(AnyGet{}, input);
     }
 
-
     static float e_dist(feature_t* F1, feature_t* F2) { return *F1 - *F2; }
 };
-
 
 class FeatureVector : public Feature
 {
     std::map<std::string, AnyType> m_statistics;
 
 public:
-    static pmp::Scalar distance(Histogram h1, Histogram h2);
-    static pmp::Scalar distance(std::map<std::string, pmp::Scalar>* data1,
-                                std::map<std::string, pmp::Scalar>* data2,
-                       std::vector<std::string>* index);
+    static pmp::Scalar distance(Histogram& h1, Histogram& h2);
+    static pmp::Scalar distance(std::map<std::string, pmp::Scalar>& data1,
+                                std::map<std::string, pmp::Scalar>& data2,
+                                std::vector<std::string>& index);
 
     AnyType& operator[](std::string key) { return m_statistics[key]; }
 

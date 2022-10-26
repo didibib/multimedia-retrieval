@@ -23,12 +23,12 @@ extern "C" {
 /* DEFINITIONS */
 #define MAX_SIG_SIZE   100
 #define MAX_ITERATIONS 500
-#define INFINITY       1e20
+#define EMD_INFINITY       1e20
 #define EPSILON        1e-6
 
 /*****************************************************************************/
 /* feature_t SHOULD BE MODIFIED BY THE USER TO REFLECT THE FEATURE TYPE      */
-typedef int feature_t;
+typedef float feature_t;
 /*****************************************************************************/
 
 
