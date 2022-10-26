@@ -34,9 +34,9 @@ typedef float feature_t;
 
 typedef struct
 {
-  int n;                /* Number of features in the signature */
-  feature_t *Features;  /* Pointer to the features vector */
-  float *Weights;       /* Pointer to the weights of the features */
+  int n;                /* Number of m_features in the signature */
+  feature_t *Features;  /* Pointer to the m_features vector */
+  float *Weights;       /* Pointer to the weights of the m_features */
 } signature_t;
 
 

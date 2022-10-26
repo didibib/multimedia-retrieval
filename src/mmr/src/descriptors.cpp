@@ -1,20 +1,24 @@
-#include "descriptors.h"
-#include "settings.h"
-#include "util.h"
+
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <random>
 #include <chrono>
 #include <fstream>
 #include <algorithm>
 
+#include "descriptors.h"
+#include "database.h"
+#include "settings.h"
+#include "util.h"
+#include "entry.h"
+
 namespace mmr {
-Histogram::Histogram(Entry& entry, std::string descriptor,
+Histogram::Histogram(Entry* entry, std::string descriptor,
                      std::vector<float>& values, float min_value,
                      float max_value, int num_bins)
     : m_entry(entry)
 {
     m_filename =
-        Entry::toString(entry.statistics["filename"]) + "_" + descriptor;
+        Feature::toString(entry->features["filename"]) + "_" + descriptor;
     m_descriptor = descriptor;
     m_minValue = min_value;
     m_maxValue = max_value;
@@ -33,9 +37,9 @@ Histogram::Histogram(Entry& entry, std::string descriptor,
 
 void Histogram::save()
 {
-    std::string label = Entry::toString(m_entry.statistics["label"]);
+    std::string label = Feature::toString(m_entry->features["label"]);
     std::ofstream fout;
-    fout.open(util::getExportDir("histogram/data/" + m_entry.db_name + "/" +
+    fout.open(util::getExportDir("histogram/data/" + m_entry->db_name + "/" +
                                  label + "/" + m_descriptor + "/") +
               m_filename + ".txt");
     //
@@ -89,17 +93,17 @@ void Histogram::normalize()
 // DESCRIPTOR ================================================================================
 // ===========================================================================================
 
-void Descriptor::histograms(Database& db)
+void Descriptor::histograms(Database* db)
 {
     printf("Creating histograms...\n");
-    for (size_t i = 0; i < db.m_entries.size(); i++)
+    for (size_t i = 0; i < db->m_entries.size(); i++)
     {
-        Entry& entry = db.m_entries[i];
-        A3(entry).save();
-        D1(entry).save();
-        D2(entry).save();
-        D3(entry).save();
-        D4(entry).save();
+        Entry& entry = db->m_entries[i];
+        A3(&entry).save();
+        D1(&entry).save();
+        D2(&entry).save();
+        D3(&entry).save();
+        D4(&entry).save();
     }
     printf("Histograms saved!\n");
 }
@@ -161,9 +165,9 @@ pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
     return (S * S * S) / (V * V * 36 * M_PI);
 }
 
-Histogram Descriptor::A3(Entry& entry)
+Histogram Descriptor::A3(Entry* entry)
 {
-    auto& mesh = entry.mesh;
+    auto& mesh = entry->mesh;
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
     auto random =
@@ -213,9 +217,9 @@ Histogram Descriptor::A3(Entry& entry)
                      param::BIN_SIZE);
 }
 
-Histogram Descriptor::D1(Entry& entry)
+Histogram Descriptor::D1(Entry* entry)
 {
-    auto& mesh = entry.mesh;
+    auto& mesh = entry->mesh;
 
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -235,9 +239,9 @@ Histogram Descriptor::D1(Entry& entry)
     return Histogram(entry, "D1", *D1, 0, param::D1_MAX_VALUE, param::BIN_SIZE);
 }
 
-Histogram Descriptor::D2(Entry& entry)
+Histogram Descriptor::D2(Entry* entry)
 {
-    auto& mesh = entry.mesh;
+    auto& mesh = entry->mesh;
 
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -265,9 +269,9 @@ Histogram Descriptor::D2(Entry& entry)
     return Histogram(entry, "D2", *D2, 0, param::D2_MAX_VALUE, param::BIN_SIZE);
 }
 
-Histogram Descriptor::D3(Entry& entry)
+Histogram Descriptor::D3(Entry* entry)
 {
-    auto& mesh = entry.mesh;
+    auto& mesh = entry->mesh;
     size_t mesh_size(mesh.vertices_size());
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -313,9 +317,9 @@ Histogram Descriptor::D3(Entry& entry)
                      param::BIN_SIZE);
 }
 
-Histogram Descriptor::D4(Entry& entry)
+Histogram Descriptor::D4(Entry* entry)
 {
-    auto& mesh = entry.mesh;
+    auto& mesh = entry->mesh;
     size_t mesh_size(mesh.vertices_size());
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();

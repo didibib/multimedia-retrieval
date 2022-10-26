@@ -15,6 +15,8 @@ set(MMR_VIEWER
 )
 
 set(DATABASE
+    "include/entry.h"
+    "src/entry.cpp"
     "include/database.h"
     "src/database.cpp"
     "include/database_gui.h"
@@ -32,9 +34,9 @@ set(DESCRIPTORS
 )
 
 set(FEATURE_VECTOR
-    "include/feature_vector.h"
+    "include/features.h"
+    "src/features.cpp"
     "include/emd.h"
-    "src/feature_vector.cpp"
     "src/emd.c"
 )
 

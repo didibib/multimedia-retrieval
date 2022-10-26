@@ -8,6 +8,7 @@
 #include <pmp/algorithms/Smoothing.h>
 #include <pmp/algorithms/Triangulation.h>
 #include "normalization.h"
+#include "entry.h"
 
 namespace mmr {
 void DbGui::beginGui(Database& db)
@@ -77,7 +78,7 @@ void DbGui::window(Database& db)
         exportMenu(db);
         normalizeAll(db);
         if (ImGui::MenuItem("Histograms"))
-            Descriptor::histograms(db);
+            Descriptor::histograms(&db);
 
         ImGui::EndMenuBar();
     }
@@ -104,7 +105,7 @@ void DbGui::statisticsTable(Database& db)
 
     // Setup headers
     ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-    const auto& stats = db.m_entries[0].statistics;
+    const auto& stats = db.m_entries[0].features.statistics();
     for (auto it = stats.cbegin(); it != stats.cend(); ++it)
     {
         int index = columnIndex(it->first);
@@ -117,12 +118,13 @@ void DbGui::statisticsTable(Database& db)
     {
         ImGui::TableNextRow();
 
-        const auto& stats = db.m_entries[row].statistics;
+        const auto& stats = db.m_entries[row].features.statistics();
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
         {
             int col = columnIndex(it->first);
             ImGui::TableSetColumnIndex(col);
-            ImGui::Selectable(Entry::toString(it->second).c_str(),
+
+            ImGui::Selectable(Feature::toString(it->second).c_str(),
                               &db.m_columnSelected[col],
                               ImGuiSelectableFlags_SpanAllColumns);
 

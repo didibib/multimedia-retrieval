@@ -3,20 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "..\include\entry.h"
 
 namespace mmr {
-
-std::vector<std::string> Entry::getHeaders()
-{
-    static std::vector<std::string> headers = {
-        "filename",       "label",      "n_vertices",
-        "n_faces",        "face_type",  "distance_to_origin",
-        "bb_distance",    "bb_volume",  "surface_area",
-        "rectangularity", "area",       "volume",
-        "compactness",    "sphericity", "eccentricity",
-        "diameter"};
-    return headers;
-}
 
 Entry::Entry(std::string filename, std::string label, std::string path,
              std::string db)
@@ -24,37 +13,38 @@ Entry::Entry(std::string filename, std::string label, std::string path,
     original_path = path;
     mesh.read(path);
     std::filesystem::path p = filename;
-    statistics["filename"] = p.replace_extension().string();
-    statistics["label"] = label;
+    features["filename"] = p.replace_extension().string(); // Remove extension
+    features["label"] = label;
     db_name = db;
     updateStatistics();
 }
 
 void Entry::updateStatistics()
 {
-    statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
-    statistics["n_faces"] = static_cast<int>(mesh.n_faces());
-    statistics["face_type"] = checkFaceType();
-    statistics["distance_to_origin"] =
+    features["n_vertices"] = static_cast<int>(mesh.n_vertices());
+    features["n_faces"] = static_cast<int>(mesh.n_faces());
+    features["face_type"] = checkFaceType();
+    features["distance_to_origin"] =
         pmp::distance(pmp::centroid(mesh), pmp::vec3(0, 0, 0));
 
     pmp::BoundingBox bb = mesh.bounds();
-    statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
-    statistics["surface_area"] = pmp::surface_area(mesh);
-    statistics["bb_volume"] =
+
+    features["bb_distance"] = pmp::distance(bb.max(), bb.min());
+    features["surface_area"] = pmp::surface_area(mesh);
+
+    features["bb_volume"] =
         ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
          (bb.max()[2] - bb.min()[2]));
-    statistics["rectangularity"] =
-        (volume(mesh) /
-         ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
-          (bb.max()[2] - bb.min()[2])));
-    statistics["area"] = surface_area(mesh);
-    statistics["volume"] = volume(mesh);
+    features["rectangularity"] = (volume(mesh) / ((bb.max()[0] - bb.min()[0]) *
+                                                  (bb.max()[1] - bb.min()[1]) *
+                                                  (bb.max()[2] - bb.min()[2])));
+    features["area"] = surface_area(mesh);
+    features["volume"] = volume(mesh);
     Scalar compactness = Descriptor::compactness(mesh);
-    statistics["compactness"] = compactness;
-    statistics["sphericity"] = (1 / compactness);
-    statistics["eccentricity"] = Descriptor::eccentricity(mesh);
-    statistics["diameter"] = Descriptor::diameter(mesh);
+    features["compactness"] = compactness;
+    features["sphericity"] = (1 / compactness);
+    features["eccentricity"] = Descriptor::eccentricity(mesh);
+    features["diameter"] = Descriptor::diameter(mesh);
 }
 
 // DATABASE ==================================================================================
@@ -94,8 +84,8 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        //if (nModels > maxModels)
-            //break;
+        if (nModels > maxModels)
+            break;
 
         /*if (filename != "360.off")
             continue;*/
@@ -127,7 +117,7 @@ void Database::import(const std::string& path_)
     std::cout << "Average Faces: " << m_avgFaces << std::endl;
 
     m_imported = true;
-    m_columns = m_entries[0].statistics.size();
+    m_columns = m_entries[0].features.n_statistics();
 }
 
 void Database::clear()
@@ -148,7 +138,7 @@ void Database::exportStatistics(std::string suffix) const
     statistics.open(util::getExportDir() + filename + ".csv");
 
     // Headers
-    for (auto const& [key, val] : m_entries[0].statistics)
+    for (auto const& [key, val] : m_entries[0].features.statistics())
         statistics << key << ",";
     statistics << "\n";
 
@@ -156,8 +146,8 @@ void Database::exportStatistics(std::string suffix) const
     for (unsigned int i = 0; i < m_entries.size(); i++)
     {
         // Columns
-        for (auto const& [key, val] : m_entries[i].statistics)
-            statistics << Entry::toString(val) << ",";
+        for (auto const& [key, val] : m_entries[i].features.statistics())
+            statistics << Feature::toString(val) << ",";
         statistics << "\n";
     }
     statistics.close();

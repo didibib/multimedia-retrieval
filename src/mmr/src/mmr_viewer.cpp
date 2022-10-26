@@ -5,6 +5,7 @@
 #include "normalization.h"
 #include "mmr_viewer.h"
 #include "database_gui.h"
+#include "entry.h"
 
 using namespace pmp;
 using namespace std;

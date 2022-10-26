@@ -87,7 +87,7 @@ where
    Signature1, Signature2  Pointers to signatures that their distance we want
               to compute.
    Dist       Pointer to the ground distance. i.e. the function that computes
-              the distance between two features.
+              the distance between two m_features.
    Flow       (Optional) Pointer to a vector of flow_t (defined in emd.h) 
               where the resulting flow will be stored. Flow must have n1+n2-1
               elements, where n1 and n2 are the sizes of the two signatures

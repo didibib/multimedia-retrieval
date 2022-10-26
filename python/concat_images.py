@@ -52,32 +52,20 @@ def concat(descriptor, filename):
     # Create 4x5 images
     col = 4
     row = 5
-    dst = Image.new('RGB', (width * col, height * row))
-    i = 0
-    n = 0
-    print(col * row)
-    print()
-    for (index, path) in enumerate(descriptor):        
+    dst = Image.new('RGB', (width * col, height * row), 'white')
+    for (i, path) in enumerate(descriptor):        
         img = Image.open(path)
         x = i % col
-        y = math.floor(i / row)
-        print(index)
-        print(x)
-        print(y)
-        print()
-
+        y = math.floor(i / col)
         dst.paste(img, (x * width, y * height))
-        i = i + 1
-        if(i >= (col * row)):
-            dst.save(full_img_path + '/' + filename + '_' + str(n) + '.jpg')
-            dst = Image.new('RGB', (width * col, height * row), 'white')
-            i = 0
-            n = n + 1         
+
+    dst.save(full_img_path + '/' + filename + '.jpg')
+    dst = Image.new('RGB', (width * col, height * row), 'white')
 
 print('Concatting images...')
 concat(A3, 'A3')
-# concat(D1, 'D1')
-# concat(D2, 'D2')
-# concat(D3, 'D3')
-# concat(D4, 'D4')
+concat(D1, 'D1')
+concat(D2, 'D2')
+concat(D3, 'D3')
+concat(D4, 'D4')
 print('Finished!')
