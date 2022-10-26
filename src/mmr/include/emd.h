@@ -28,7 +28,7 @@ extern "C" {
 
 /*****************************************************************************/
 /* feature_t SHOULD BE MODIFIED BY THE USER TO REFLECT THE FEATURE TYPE      */
-typedef float feature_t;
+typedef int feature_t;
 /*****************************************************************************/
 
 
