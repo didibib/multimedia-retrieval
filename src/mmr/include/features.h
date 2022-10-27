@@ -34,7 +34,10 @@ public:
         return std::visit(AnyGet{}, input);
     }
 
-    static float e_dist(feature_t* F1, feature_t* F2) { return *F1 - *F2; }
+    static float e_dist(feature_t* F1, feature_t* F2)
+    {
+        return fabs(* F1 - *F2);
+    }
 };
 
 class FeatureVector : public Feature
