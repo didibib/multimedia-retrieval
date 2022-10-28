@@ -3,7 +3,15 @@
 using pmp::Scalar;
 
 namespace mmr {
-
+void FeatureVector::updateFeatureVector() 
+{
+    features.resize(5);
+    features << features, m_statistics["area"];
+    features << features, m_statistics["compactness"];
+    features << features, m_statistics["rectangularity"];
+    features << features, m_statistics["diameter"];
+    features << features, m_statistics["eccentricity"];
+}
 Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
 {
     std::vector<float>::size_type N1 = h1.histogram.size();

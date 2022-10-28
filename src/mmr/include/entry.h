@@ -45,5 +45,6 @@ public:
     pmp::SurfaceMeshGL mesh;
     std::string original_path;
     std::string db_name;
+    bool isNormalized = false;
 };
 } // namespace mmr

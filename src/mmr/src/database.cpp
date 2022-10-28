@@ -45,6 +45,7 @@ void Entry::updateStatistics()
     features["sphericity"] = (1 / compactness);
     features["eccentricity"] = Descriptor::eccentricity(mesh);
     features["diameter"] = Descriptor::diameter(mesh);
+    features.updateFeatureVector();
 }
 
 // DATABASE ==================================================================================
@@ -67,7 +68,7 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 3;
+    int maxModels = 380;
     int nQueries = 1;
     std::filesystem::path p = path_;
     name = p.filename().string();

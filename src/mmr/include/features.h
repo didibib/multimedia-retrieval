@@ -45,10 +45,19 @@ class FeatureVector : public Feature
     std::map<std::string, AnyType> m_statistics;
 
 public:
+    Eigen::VectorXf features;
+
+public:
+    void updateFeatureVector();
     static pmp::Scalar distance(Histogram& h1, Histogram& h2);
     static pmp::Scalar distance(std::map<std::string, pmp::Scalar>& data1,
                                 std::map<std::string, pmp::Scalar>& data2,
                                 std::vector<std::string>& index);
+    inline static pmp::Scalar distance(Eigen::VectorXf& featuresA, Eigen::VectorXf& featuresB)
+    {
+        Eigen::VectorXf v = featuresA - featuresB;
+        return v.norm();
+    }
 
     AnyType& operator[](std::string key) { return m_statistics[key]; }
 

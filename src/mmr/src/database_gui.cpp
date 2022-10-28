@@ -28,6 +28,10 @@ void DbGui::beginGui(Database& db)
             {
                 db.import(util::getExportDir("normalized"));
                 m_showStatistics = true;
+                for (auto& e : db.m_entries)
+                { 
+                    e.isNormalized = true;
+                }
             }
             ImGui::EndMenu();
         }
@@ -54,6 +58,30 @@ void DbGui::beginGui(Database& db)
         {
             Normalize::all_steps(q.mesh);
             Normalize::remesh(q.mesh);
+            q.isNormalized = true;
+        }
+    }
+
+     if (ImGui::MenuItem("Print Distance Function (Only vector discriptors)"))
+    {
+         int qi = 0;
+        for (auto& q : db.m_queries)
+        {
+            qi++;
+            int ei = 0;
+            if (!q.isNormalized)
+            {
+                Normalize::all_steps(q.mesh);
+                Normalize::remesh(q.mesh);
+                q.isNormalized = true;
+            }
+            for (auto& e : db.m_entries)
+            {
+                ei++;
+                printf("Distance function between %i and %i is %f\n", qi, ei, mmr::FeatureVector::distance(q.features.features,
+                                                       e.features.features));
+            }
+            
         }
     }
 }
@@ -260,6 +288,7 @@ void DbGui::normalizeAll(Database& db)
         {
             Normalize::all_steps(e.mesh);
             e.updateStatistics();
+            e.isNormalized = true;
             printf("%i\n", i++);
         }
 
@@ -267,6 +296,7 @@ void DbGui::normalizeAll(Database& db)
         for (auto& q : db.m_queries)
         {
             Normalize::all_steps(q.mesh);
+            q.isNormalized = true;
             printf("Query:  %i\n", j++);
         }
         printf("Finished normalizing!\n");
