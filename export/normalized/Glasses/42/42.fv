@@ -1,0 +1,16 @@
+area,float,0.333490
+bb_distance,float,1.264878
+bb_volume,float,0.173955
+compactness,float,24.958738
+diameter,float,1.094060
+distance_to_origin,float,0.299906
+eccentricity,float,0.048725
+face_type,string,tri
+filename,string,42
+label,string,Glasses
+n_faces,int,33296
+n_vertices,int,16650
+rectangularity,float,0.020838
+sphericity,float,0.040066
+surface_area,float,0.333490
+volume,float,0.003625

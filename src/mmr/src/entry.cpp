@@ -8,12 +8,13 @@ Entry::Entry(std::string filename, std::string label, std::string path,
              std::string db)
 {
     original_path = path;
-    mesh.read(path);
+    //mesh.read(path);
     std::filesystem::path p = filename;
     features["filename"] = p.replace_extension().string(); // Remove extension
     features["label"] = label;
     db_name = db;
-    updateStatistics();
+    //updateStatistics();
+    deserialize();
 }
 
 void Entry::updateStatistics()
@@ -45,7 +46,7 @@ void Entry::updateStatistics()
     features.updateFeatureVector();
 }
 
-const void Entry::write(std::string extension, std::string folder)
+const void Entry::writeMesh(std::string extension, std::string folder)
 {
     std::filesystem::path filename = Feature::toString(features["filename"]);
     filename.replace_extension(extension);
@@ -59,14 +60,17 @@ const void Entry::write(std::string extension, std::string folder)
 void Entry::serialize()
 {
     std::filesystem::path p = original_path;
-    std::string folder = p.parent_path().string();
-    features.serialize(folder, Feature::toString(features["filename"]));
+    std::string filename = Feature::toString(features["filename"]);
+    std::string dir = p.parent_path().string() + "/" + filename;
+    std::filesystem::create_directories(dir);
+    features.serialize(dir, filename);
 }
 
 void Entry::deserialize()
 {
     std::filesystem::path p = original_path;
-    std::string folder = p.parent_path().string();
+    std::string filename = Feature::toString(features["filename"]);
+    std::string folder = p.parent_path().string() + "/" + filename;
     features.deserialize(folder);
 }
 

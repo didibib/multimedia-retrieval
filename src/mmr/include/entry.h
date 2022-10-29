@@ -37,8 +37,7 @@ public:
         mesh.read(original_path);
         updateStatistics();
     }
-
-    const void write(std::string extension, std::string folder = "");
+    const void writeMesh(std::string extension, std::string folder = "");
 
     void serialize();
     void deserialize();

@@ -59,6 +59,8 @@ class FeatureVector : public Feature
     std::map<std::string, AnyType> m_statistics;
     std::map<std::string, Histogram> m_histograms;
 
+    void deserialize_fv(std::string path);
+
 public:
     Eigen::VectorXf features;
 
@@ -85,8 +87,8 @@ public:
     void addHistogram(Histogram h) { m_histograms[h.descriptor()] = h; }
 
     void exportStatistics(std::ofstream&) const;
-    void serialize(std::string folder, std::string filename);
-    void deserialize(std::string path);
+    void serialize(std::string dir, std::string filename);
+    void deserialize(std::string dir);
 };
 
 } // namespace mmr

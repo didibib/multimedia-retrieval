@@ -1,0 +1,16 @@
+area,float,2.292109
+bb_distance,float,1.512680
+bb_volume,float,0.551580
+compactness,float,2.376893
+diameter,float,1.108549
+distance_to_origin,float,0.054658
+eccentricity,float,0.435323
+face_type,string,tri
+filename,string,327
+label,string,Mech
+n_faces,int,29870
+n_vertices,int,14937
+rectangularity,float,0.383719
+sphericity,float,0.420717
+surface_area,float,2.292109
+volume,float,0.211652

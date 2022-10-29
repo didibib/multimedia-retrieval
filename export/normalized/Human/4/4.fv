@@ -1,0 +1,16 @@
+area,float,0.630736
+bb_distance,float,1.187112
+bb_volume,float,0.160782
+compactness,float,10.942820
+diameter,float,1.040943
+distance_to_origin,float,0.036038
+eccentricity,float,0.058362
+face_type,string,tri
+filename,string,4
+label,string,Human
+n_faces,int,11348
+n_vertices,int,5676
+rectangularity,float,0.088561
+sphericity,float,0.091384
+surface_area,float,0.630736
+volume,float,0.014239

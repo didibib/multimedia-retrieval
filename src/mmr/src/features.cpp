@@ -61,6 +61,7 @@ Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
     return (f1 - f2).norm();
 }
 
+
 void FeatureVector::exportStatistics(std::ofstream& file) const
 {
     // Columns
@@ -69,30 +70,62 @@ void FeatureVector::exportStatistics(std::ofstream& file) const
     file << "\n";
 }
 
-void FeatureVector::serialize(std::string folder, std::string filename)
+void FeatureVector::serialize(std::string dir, std::string filename)
 {
-    std::string path = folder + "/" + filename + ".fv";
+    std::string filepath = dir + "/" + filename + ".fv";
+
     std::ofstream file;
-    file.open(path);
+    file.open(filepath);
     for (auto const& [key, val] : m_statistics)
         file << key << CSV_DELIM << Feature::toSerialize(val) << "\n";
     file.close();
 
-    for (auto const& h : m_histograms)
-        h.second.serialize(folder, filename + ".hi");
+    for (auto& h : m_histograms)
+        h.second.serialize(dir);
 }
 
-void FeatureVector::deserialize(std::string filepath) {
-    std::filesystem::path p = filepath;
-    std::string ext = p.extension().string();
+void FeatureVector::deserialize(std::string folder) {
 
-    if (ext == ".fv")
+    if (!std::filesystem::is_directory(folder))
+        return;
+    for (const auto& entry : std::filesystem::directory_iterator(folder))
     {
-    
+        std::filesystem::path path = entry.path();
+        std::string ext = path.extension().string();
+
+        if (ext == ".fv")
+        {
+            deserialize_fv(path.string());
+        }
+        if (ext == ".hi")
+        {
+            Histogram h;
+            std::string key = h.deserialize(path.string());
+            m_histograms[key] = h;
+        }
     }
-    if (ext == ".hi")
+}
+
+void FeatureVector::deserialize_fv(std::string path) {
+    std::ifstream file;
+    std::string line;
+
+    file.open(path);
+    while (getline(file, line))
     {
-    
+        std::string key, type, value;
+        std::stringstream ss(line);
+        std::getline(ss, key, ',');
+        std::getline(ss, type, ',');
+        std::getline(ss, value, ',');
+
+        if (type == "int")
+            m_statistics[key] = std::stoi(value);
+        else if (type == "float")
+            m_statistics[key] = std::stof(value);        
+        else if (type == "string")
+            m_statistics[key] = value;
     }
+    file.close();
 }
 } // namespace mmr

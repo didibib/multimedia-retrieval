@@ -1,0 +1,16 @@
+area,float,1.136060
+bb_distance,float,1.200643
+bb_volume,float,0.211914
+compactness,float,3.033594
+diameter,float,1.012891
+distance_to_origin,float,0.028333
+eccentricity,float,0.147885
+face_type,string,tri
+filename,string,172
+label,string,Teddy
+n_faces,int,20278
+n_vertices,int,10141
+rectangularity,float,0.308488
+sphericity,float,0.329642
+surface_area,float,1.136060
+volume,float,0.065373

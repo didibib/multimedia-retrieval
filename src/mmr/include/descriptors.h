@@ -20,15 +20,15 @@ class Histogram
 
     std::string m_filename;
     std::string m_descriptor;
-    Entry* m_entry;
+    Entry* m_entry = nullptr;
 
 public:
     Histogram() = default;
     Histogram(Entry* entry, std::string descriptor, std::vector<float>& values, float min_value, float max_value,
               int num_bins);
     void save();
-    void serialize(std::string folder, std::string filename) const;
-    void deserialize(std::string path) const;
+    void serialize(std::string dir);
+    std::string deserialize(std::string path);
     const std::string& filename() const { return m_filename; } 
     const std::string& descriptor() const { return m_descriptor; }
     std::vector<float>& values() { return m_values; }

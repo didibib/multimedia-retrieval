@@ -63,11 +63,14 @@ void Histogram::save()
     fout.close();
 }
 
-void Histogram::serialize(std::string folder, std::string filename) const {
-    
-    std::string path = folder + "/" + filename;
+void Histogram::serialize(std::string dir)
+{
+    std::string path = dir + "/" + m_filename + ".hi";
     std::ofstream file;
     file.open(path);
+    
+    file << m_descriptor << "\n";
+
     for (unsigned int i = 0; i < m_bins.size(); i++)
         file << m_bins[i] << Feature::CSV_DELIM;
     file << "\n";
@@ -76,10 +79,41 @@ void Histogram::serialize(std::string folder, std::string filename) const {
     file.close();
 }
 
-void Histogram::deserialize(std::string path) const {}
+std::string Histogram::deserialize(std::string path)
+{
+    m_bins.clear();
+    m_values.clear();
+    m_bins.resize(param::BIN_SIZE);
+    m_values.resize(param::BIN_SIZE);
+
+    std::ifstream file;
+    file.open(path);
+
+    std::string bins, values;
+
+    std::getline(file, m_descriptor);
+    std::getline(file, bins);
+    std::getline(file, values);
+
+    file.close();
+
+    std::string bin, val;
+    std::stringstream bins_ss(bins);
+    std::stringstream values_ss(values);
+
+    for (size_t i = 0; i < param::BIN_SIZE; i++)
+    {
+        std::getline(bins_ss, bin, ',');
+        m_bins[i] = std::stof(bin);
+
+        std::getline(values_ss, val, ',');
+        m_values[i] = std::stof(val);
+    }
+    return m_descriptor;
+}
 
 void Histogram::create(std::vector<float>& values)
-{    
+{
     for (unsigned int i = 0; i < values.size(); i++)
     {
         auto idx = std::floorf((values[i] - m_minValue) / m_binWidth);
@@ -325,7 +359,7 @@ Histogram Descriptor::D3(Entry* entry)
         float dist12 = norm(v1v2);
         float dist13 = norm(v1v3);
         float theta = acosf(dot(v1v2, v1v3) / (dist12 * dist13));
-        
+
         float result = sqrt(0.5f * dist12 * dist13 * sinf(theta));
         if (isinf(result) || isnan(result))
         {

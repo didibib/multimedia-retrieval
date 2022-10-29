@@ -1,0 +1,16 @@
+area,float,0.785105
+bb_distance,float,1.378526
+bb_volume,float,0.258361
+compactness,float,17.384714
+diameter,float,1.065923
+distance_to_origin,float,0.084392
+eccentricity,float,0.040855
+face_type,string,tri
+filename,string,80
+label,string,Airplane
+n_faces,int,14698
+n_vertices,int,7351
+rectangularity,float,0.060723
+sphericity,float,0.057522
+surface_area,float,0.785105
+volume,float,0.015688

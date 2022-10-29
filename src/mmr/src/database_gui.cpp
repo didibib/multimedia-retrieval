@@ -193,13 +193,13 @@ void DbGui::exportMenu(Database& db)
             if (ImGui::MenuItem("As .off"))
             {
                 for (auto& entry : db.m_entries)                
-                    entry.write(".off", "Meshes");                
+                    entry.writeMesh(".off", "Meshes");                
                 printf("Finished exporting!\n");
             }
             if (ImGui::MenuItem("As .ply"))
             {
                 for (auto& entry : db.m_entries)                
-                    entry.write(".ply", "Meshes");                
+                    entry.writeMesh(".ply", "Meshes");                
                 printf("Finished exporting!\n");
             }
             ImGui::EndMenu();
@@ -229,9 +229,9 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
         if (ImGui::BeginMenu("Export"))
         {
             if (ImGui::MenuItem("As .off"))
-                entry.write(".off");
+                entry.writeMesh(".off");
             if (ImGui::MenuItem("As .ply"))
-                entry.write(".ply");
+                entry.writeMesh(".ply");
 
             ImGui::EndMenu();
         }

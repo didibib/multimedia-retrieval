@@ -45,8 +45,8 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        if (nModels > maxModels)
-            break;
+        /*if (nModels > maxModels)
+            break;*/
 
         // Create entry
         Entry entry(filename, label, path, name);
@@ -110,6 +110,6 @@ void Database::exportStatistics(std::string suffix) const
 void Database::exportMeshes(std::string extension, std::string folder)
 {
     for (auto& e : m_entries)
-        e.write(extension, folder);
+        e.writeMesh(extension, folder);
 }
 } // namespace mmr

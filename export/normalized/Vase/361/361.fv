@@ -1,0 +1,16 @@
+area,float,1.434551
+bb_distance,float,1.231838
+bb_volume,float,0.258653
+compactness,float,5.415838
+diameter,float,1.008733
+distance_to_origin,float,0.049420
+eccentricity,float,0.297131
+face_type,string,tri
+filename,string,361
+label,string,Vase
+n_faces,int,29734
+n_vertices,int,14859
+rectangularity,float,0.268410
+sphericity,float,0.184644
+surface_area,float,1.434551
+volume,float,0.069425

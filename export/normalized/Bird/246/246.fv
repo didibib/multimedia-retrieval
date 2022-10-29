@@ -1,0 +1,16 @@
+area,float,0.427415
+bb_distance,float,1.075450
+bb_volume,float,0.077333
+compactness,float,11.041718
+diameter,float,1.000001
+distance_to_origin,float,0.049132
+eccentricity,float,0.047029
+face_type,string,tri
+filename,string,246
+label,string,Bird
+n_faces,int,33736
+n_vertices,int,16870
+rectangularity,float,0.102250
+sphericity,float,0.090566
+surface_area,float,0.427415
+volume,float,0.007907

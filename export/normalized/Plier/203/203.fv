@@ -1,0 +1,16 @@
+area,float,0.553618
+bb_distance,float,1.218222
+bb_volume,float,0.070072
+compactness,float,10.270247
+diameter,float,1.099669
+distance_to_origin,float,0.056419
+eccentricity,float,0.016890
+face_type,string,tri
+filename,string,203
+label,string,Plier
+n_faces,int,31232
+n_vertices,int,15618
+rectangularity,float,0.172486
+sphericity,float,0.097369
+surface_area,float,0.553618
+volume,float,0.012086
