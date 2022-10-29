@@ -34,7 +34,7 @@ public:
 private:
     std::vector<Entry> m_entries;
     std::vector<Entry> m_queries;
-    std::set<std::string> m_labels;
+    std::vector<std::string> m_labels;
 
     size_t m_avgVerts = 0;
     size_t m_avgFaces = 0;

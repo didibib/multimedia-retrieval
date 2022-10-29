@@ -74,6 +74,7 @@ public:
         Eigen::VectorXf v = featuresA - featuresB;
         return v.norm();
     }
+    static std::vector<int> kMeansIndices(int index, std::vector<float>& distances, int size);
 
     AnyType& operator[](std::string key) { return m_statistics[key]; }
 

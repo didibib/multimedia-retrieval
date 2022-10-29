@@ -1,6 +1,7 @@
 #include "features.h"
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
 
 using pmp::Scalar;
 
@@ -59,6 +60,26 @@ Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
         f2 << f2, Scalar(data2[i]);
     }
     return (f1 - f2).norm();
+}
+
+std::vector<int> FeatureVector::kMeansIndices(int index,
+                                              std::vector<float>& distances, int size)
+{
+    int const k = 5;
+    std::vector<int> indices;
+    for (int i = 0; i< size -1; i++)
+    {
+        indices.push_back(i < index ? i : i + 1);
+    }
+    std::stable_sort(
+        indices.begin(), indices.end(),
+        [&distances](int i1, int i2) { return distances[i1] < distances[i2]; });
+    std::vector<int> kIndices;
+    for (int i = 0; i < k; i++)
+    {
+        kIndices.push_back(indices[i]);
+    }
+    return kIndices;
 }
 
 void FeatureVector::exportStatistics(std::ofstream& file) const

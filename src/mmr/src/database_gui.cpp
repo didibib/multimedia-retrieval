@@ -83,7 +83,43 @@ void DbGui::beginGui(Database& db)
             }
             
         }
+     }
+    if (ImGui::MenuItem("Print Accuracy"))
+    {
+        
+        float globalScore = 0.0f;
+        for (int i = 0; i < db.m_entries.size(); i++)
+        {
+            printf("Entry: %i", i);
+            float score = 0;
+            std::vector<float> distances;
+            for (int j = 0; j < db.m_entries.size(); j++)
+            {
+                if (i == j)
+                    continue;
+                distances.push_back(mmr::FeatureVector::distance(
+                    db.m_entries[i].features.features,
+                    db.m_entries[j].features.features));
+
+            }
+            std::vector<int> kIndices = mmr::FeatureVector::kMeansIndices(
+                i, distances, db.m_entries.size());
+            for (int k = 0 ; k < kIndices.size(); k++)
+            {
+                if (!db.m_labels[i].compare(db.m_labels[kIndices[k]]))
+                {
+                    score++;
+                }
+            }
+            globalScore += score / (float)kIndices.size();
+            printf("Score is %f", score / (float)kIndices.size());
+
+        }
+        printf("Final accuracy is: %f",
+               100.0f * globalScore / (float)db.m_entries.size());
+     
     }
+
 }
 
 void DbGui::window(Database& db)

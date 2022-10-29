@@ -1,6 +1,8 @@
 #include "database.h"
 #include "descriptors.h"
 #include <iostream>
+#include <random>
+#include <chrono>
 #include <fstream>
 #include <vector>
 #include "..\include\entry.h"
@@ -28,11 +30,20 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 2;
-    int nQueries = 1;
+    int iterator = 0;
+    int maxModels = 350;
+    int nQueries = 0;
+    /*std::mt19937::result_type seed =
+        std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    auto random = std::bind(std::uniform_int_distribution<int>(0, maxModels - 1),
+                  std::mt19937(seed));*/
     std::filesystem::path p = path_;
     name = p.filename().string();
-
+    std::vector<int> qIndices;
+    /*for (int i = 0; i < nQueries; i++)
+    {
+        qIndices.push_back(random());
+    }*/
     for (const auto& file_entry : recursive_directory_iterator(path_))
     {
         std::string path = file_entry.path().string();
@@ -47,23 +58,23 @@ void Database::import(const std::string& path_)
 
         if (nModels > maxModels)
             break;
-
+        iterator++;
         // Create entry
         Entry entry(filename, label, path, name);
-        if (nModels++ > 0)
-        {
+        /*if (nModels++ > 0)
+        {*/
             // Update global statistics
             m_avgVerts += entry.mesh.n_vertices();
             m_avgFaces += entry.mesh.n_faces();
 
-            m_labels.insert(label);
+            m_labels.push_back(label);
             m_entries.push_back(std::move(entry));
-            std::cout << "Model: " << nModels << std::endl;
-        }
+            std::cout << "Model: " << ++nModels << std::endl;
+       /* }
         else
         {
             m_queries.push_back(std::move(entry));
-        }
+        }*/
     }
 
     if ((nModels - nQueries) == 0 || nModels == 0)
