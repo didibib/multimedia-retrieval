@@ -7,46 +7,6 @@
 
 namespace mmr {
 
-Entry::Entry(std::string filename, std::string label, std::string path,
-             std::string db)
-{
-    original_path = path;
-    mesh.read(path);
-    std::filesystem::path p = filename;
-    features["filename"] = p.replace_extension().string(); // Remove extension
-    features["label"] = label;
-    db_name = db;
-    updateStatistics();
-}
-
-void Entry::updateStatistics()
-{
-    features["n_vertices"] = static_cast<int>(mesh.n_vertices());
-    features["n_faces"] = static_cast<int>(mesh.n_faces());
-    features["face_type"] = checkFaceType();
-    features["distance_to_origin"] =
-        pmp::distance(pmp::centroid(mesh), pmp::vec3(0, 0, 0));
-
-    pmp::BoundingBox bb = mesh.bounds();
-
-    features["bb_distance"] = pmp::distance(bb.max(), bb.min());
-    features["surface_area"] = pmp::surface_area(mesh);
-
-    features["bb_volume"] =
-        ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
-         (bb.max()[2] - bb.min()[2]));
-    features["rectangularity"] = (volume(mesh) / ((bb.max()[0] - bb.min()[0]) *
-                                                  (bb.max()[1] - bb.min()[1]) *
-                                                  (bb.max()[2] - bb.min()[2])));
-    features["area"] = surface_area(mesh);
-    features["volume"] = volume(mesh);
-    Scalar compactness = Descriptor::compactness(mesh);
-    features["compactness"] = compactness;
-    features["sphericity"] = (1 / compactness);
-    features["eccentricity"] = Descriptor::eccentricity(mesh);
-    features["diameter"] = Descriptor::diameter(mesh);
-    features.updateFeatureVector();
-}
 
 // DATABASE ==================================================================================
 // ===========================================================================================
@@ -68,7 +28,7 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int maxModels = 380;
+    int maxModels = 2;
     int nQueries = 1;
     std::filesystem::path p = path_;
     name = p.filename().string();
@@ -87,9 +47,6 @@ void Database::import(const std::string& path_)
 
         if (nModels > maxModels)
             break;
-
-        /*if (filename != "360.off")
-            continue;*/
 
         // Create entry
         Entry entry(filename, label, path, name);
@@ -144,13 +101,9 @@ void Database::exportStatistics(std::string suffix) const
     statistics << "\n";
 
     // Rows
-    for (unsigned int i = 0; i < m_entries.size(); i++)
-    {
-        // Columns
-        for (auto const& [key, val] : m_entries[i].features.statistics())
-            statistics << Feature::toString(val) << ",";
-        statistics << "\n";
-    }
+    for (unsigned int i = 0; i < m_entries.size(); i++)    
+        m_entries[i].features.exportStatistics(statistics);
+    
     statistics.close();
 }
 

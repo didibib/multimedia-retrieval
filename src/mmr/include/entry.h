@@ -40,6 +40,9 @@ public:
 
     const void write(std::string extension, std::string folder = "");
 
+    void serialize();
+    void deserialize();
+
 public:
     FeatureVector features;
     pmp::SurfaceMeshGL mesh;

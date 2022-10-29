@@ -1,9 +1,17 @@
 #include "features.h"
+#include <fstream>
+#include <filesystem>
 
 using pmp::Scalar;
 
 namespace mmr {
-void FeatureVector::updateFeatureVector() 
+
+const std::string Feature::INT = "int";
+const std::string Feature::FLOAT = "float";
+const std::string Feature::STRING = "string";
+const std::string Feature::CSV_DELIM = ",";
+
+void FeatureVector::updateFeatureVector()
 {
     features.resize(5);
     features << features, m_statistics["area"];
@@ -14,23 +22,23 @@ void FeatureVector::updateFeatureVector()
 }
 Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
 {
-    std::vector<float>::size_type N1 = h1.histogram.size();
-    std::vector<float>::size_type N2 = h2.histogram.size();
+    std::vector<float>::size_type N1 = h1.values().size();
+    std::vector<float>::size_type N2 = h2.values().size();
     feature_t *f1 = new feature_t[N1], *f2 = new feature_t[N2];
     Scalar *w1 = new Scalar[N1], *w2 = new Scalar[N2];
     int i = 0;
-    for (std::vector<float>::iterator iter = h1.histogram.begin();
-         iter != h1.histogram.end(); ++iter, ++i)
+    for (std::vector<float>::iterator iter = h1.values().begin();
+         iter != h1.values().end(); ++iter, ++i)
     {
         f1[i] = i;
-        w1[i] = h1.histogram[*iter];
+        w1[i] = h1.values()[*iter];
     }
     i = 0;
-    for (std::vector<float>::iterator iter = h1.histogram.begin();
-         iter != h2.histogram.end(); ++iter, ++i)
+    for (std::vector<float>::iterator iter = h1.values().begin();
+         iter != h2.values().end(); ++iter, ++i)
     {
         f2[i] = i;
-        w2[i] = h2.histogram[*iter];
+        w2[i] = h2.values()[*iter];
     }
     signature_t s1 = {N1, f1, w1}, s2 = {N2, f2, w2};
     Scalar d = emd(&s1, &s2, Feature::e_dist, 0, 0);
@@ -42,7 +50,7 @@ Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
                                std::vector<std::string>& index)
 {
     Eigen::VectorXf f1, f2;
-    for (auto &i : index)
+    for (auto& i : index)
     {
         auto iter = data1.find(i);
         if (iter == data1.end() || iter == data2.end())
@@ -51,5 +59,40 @@ Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
         f2 << f2, Scalar(data2[i]);
     }
     return (f1 - f2).norm();
+}
+
+void FeatureVector::exportStatistics(std::ofstream& file) const
+{
+    // Columns
+    for (auto const& [key, val] : m_statistics)
+        file << Feature::toString(val) << CSV_DELIM;
+    file << "\n";
+}
+
+void FeatureVector::serialize(std::string folder, std::string filename)
+{
+    std::string path = folder + "/" + filename + ".fv";
+    std::ofstream file;
+    file.open(path);
+    for (auto const& [key, val] : m_statistics)
+        file << key << CSV_DELIM << Feature::toSerialize(val) << "\n";
+    file.close();
+
+    for (auto const& h : m_histograms)
+        h.second.serialize(folder, filename + ".hi");
+}
+
+void FeatureVector::deserialize(std::string filepath) {
+    std::filesystem::path p = filepath;
+    std::string ext = p.extension().string();
+
+    if (ext == ".fv")
+    {
+    
+    }
+    if (ext == ".hi")
+    {
+    
+    }
 }
 } // namespace mmr

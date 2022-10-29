@@ -1,7 +1,5 @@
 #pragma once
 
-#include <pmp/visualization/SurfaceMeshGL.h>
-#include <pmp/algorithms/DifferentialGeometry.h>
 #include <pmp/MatVec.h>
 #include <any>
 #include <set>

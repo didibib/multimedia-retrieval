@@ -108,6 +108,13 @@ void DbGui::window(Database& db)
         if (ImGui::MenuItem("Histograms"))
             Descriptor::histograms(&db);
 
+        if (ImGui::MenuItem("Serialize..."))
+        {
+            for (auto& e : db.m_entries)
+                e.serialize();
+            printf("Finished serializing!\n");
+        }
+
         ImGui::EndMenuBar();
     }
 

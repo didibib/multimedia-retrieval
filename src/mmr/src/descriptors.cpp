@@ -25,7 +25,7 @@ Histogram::Histogram(Entry* entry, std::string descriptor,
     m_numBins = num_bins;
     m_binWidth = static_cast<float>(m_maxValue - m_minValue) / (m_numBins - 1);
 
-    histogram.resize(m_numBins);
+    m_values.resize(m_numBins);
     m_bins.resize(m_numBins);
 
     for (size_t i = 0; i < m_numBins; i++)
@@ -57,37 +57,45 @@ void Histogram::save()
 
     fout << "\n";
 
-    for (size_t i = 0; i < histogram.size(); i++)
-        /*[7]*/ fout << histogram[i] << " ";
+    for (size_t i = 0; i < m_values.size(); i++)
+        /*[7]*/ fout << m_values[i] << " ";
 
     fout.close();
 }
+
+void Histogram::serialize(std::string folder, std::string filename) const {
+    
+    std::string path = folder + "/" + filename;
+    std::ofstream file;
+    file.open(path);
+    for (unsigned int i = 0; i < m_bins.size(); i++)
+        file << m_bins[i] << Feature::CSV_DELIM;
+    file << "\n";
+    for (unsigned int i = 0; i < m_values.size(); i++)
+        file << m_values[i] << Feature::CSV_DELIM;
+    file.close();
+}
+
+void Histogram::deserialize(std::string path) const {}
 
 void Histogram::create(std::vector<float>& values)
 {    
     for (unsigned int i = 0; i < values.size(); i++)
     {
-        /*printf("filename %s\n", m_filename.c_str());
-        printf("descriptor %s\n", m_descriptor.c_str());
-        printf("min value %f\n", m_minValue);
-        printf("max value %f\n", m_maxValue);
-        printf("bin width %f\n", m_binWidth);
-        printf("value %f\n", values[i]);
-        std::cout << std::endl;*/
         auto idx = std::floorf((values[i] - m_minValue) / m_binWidth);
         int index = static_cast<int>(idx);
-        histogram[index]++;
+        m_values[index]++;
     }
 }
 
 void Histogram::normalize()
 {
     float sum = 0;
-    for (unsigned int i = 0; i < histogram.size(); i++)
-        sum += histogram[i];
+    for (unsigned int i = 0; i < m_values.size(); i++)
+        sum += m_values[i];
 
-    for (unsigned int i = 0; i < histogram.size(); i++)
-        histogram[i] /= sum;
+    for (unsigned int i = 0; i < m_values.size(); i++)
+        m_values[i] /= sum;
 }
 
 // DESCRIPTOR ================================================================================
@@ -99,11 +107,25 @@ void Descriptor::histograms(Database* db)
     for (size_t i = 0; i < db->m_entries.size(); i++)
     {
         Entry& entry = db->m_entries[i];
-        A3(&entry).save();
-        D1(&entry).save();
-        D2(&entry).save();
-        D3(&entry).save();
-        D4(&entry).save();
+        Histogram h = A3(&entry);
+        h.save();
+        entry.features.addHistogram(h);
+
+        h = D1(&entry);
+        h.save();
+        entry.features.addHistogram(h);
+
+        h = D2(&entry);
+        h.save();
+        entry.features.addHistogram(h);
+
+        h = D3(&entry);
+        h.save();
+        entry.features.addHistogram(h);
+
+        h = D4(&entry);
+        h.save();
+        entry.features.addHistogram(h);
     }
     printf("Histograms saved!\n");
 }
@@ -162,7 +184,7 @@ pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
 {
     auto S = surface_area(mesh);
     auto V = volume(mesh);
-    return (S * S * S) / (V * V * 36 * M_PI);
+    return static_cast<pmp::Scalar>((S * S * S) / (V * V * 36 * M_PI));
 }
 
 Histogram Descriptor::A3(Entry* entry)

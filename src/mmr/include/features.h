@@ -12,37 +12,52 @@ namespace mmr {
 class Feature
 {
 public:
-    struct AnyGet
+    struct AnyString
     {
         std::string operator()(int value) { return std::to_string(value); }
         std::string operator()(float value) { return std::to_string(value); }
         std::string operator()(const std::string& value) { return value; }
-        std::string operator()(const pmp::Point& value)
+    };
+
+    static const std::string INT;
+    static const std::string FLOAT;
+    static const std::string STRING;
+    static const std::string CSV_DELIM;
+
+    struct AnySerialize
+    {
+        std::string operator()(int value) { return INT + CSV_DELIM + std::to_string(value); }
+        std::string operator()(float value)
         {
-            // https://stackoverflow.com/questions/566052/can-you-encode-cr-lf-in-into-csv-files
-            std::string x = std::to_string(value[0]) + "\n";
-            std::string y = std::to_string(value[1]) + "\n";
-            std::string z = std::to_string(value[2]);
-            return std::string("\"" + x + y + z + "\"");
+            return FLOAT + CSV_DELIM + std::to_string(value);
+        }
+        std::string operator()(const std::string& value)
+        {
+            return STRING + CSV_DELIM + value;
         }
     };
 
-    using AnyType = std::variant<int, float, std::string, pmp::Point>;
+    using AnyType = std::variant<int, float, std::string>;
 
     static std::string toString(const AnyType& input)
     {
-        return std::visit(AnyGet{}, input);
+        return std::visit(AnyString{}, input);
+    }
+    static std::string toSerialize(const AnyType& input)
+    {
+        return std::visit(AnySerialize{}, input);
     }
 
     static float e_dist(feature_t* F1, feature_t* F2)
     {
-        return fabs(* F1 - *F2);
+        return fabs(*F1 - *F2);
     }
 };
 
 class FeatureVector : public Feature
 {
     std::map<std::string, AnyType> m_statistics;
+    std::map<std::string, Histogram> m_histograms;
 
 public:
     Eigen::VectorXf features;
@@ -53,7 +68,8 @@ public:
     static pmp::Scalar distance(std::map<std::string, pmp::Scalar>& data1,
                                 std::map<std::string, pmp::Scalar>& data2,
                                 std::vector<std::string>& index);
-    inline static pmp::Scalar distance(Eigen::VectorXf& featuresA, Eigen::VectorXf& featuresB)
+    inline static pmp::Scalar distance(Eigen::VectorXf& featuresA,
+                                       Eigen::VectorXf& featuresB)
     {
         Eigen::VectorXf v = featuresA - featuresB;
         return v.norm();
@@ -61,11 +77,16 @@ public:
 
     AnyType& operator[](std::string key) { return m_statistics[key]; }
 
-    const int n_statistics() const { return m_statistics.size(); };
+    const size_t n_statistics() const { return m_statistics.size(); };
     const std::map<std::string, AnyType>& statistics() const
     {
         return m_statistics;
     };
+    void addHistogram(Histogram h) { m_histograms[h.descriptor()] = h; }
+
+    void exportStatistics(std::ofstream&) const;
+    void serialize(std::string folder, std::string filename);
+    void deserialize(std::string path);
 };
 
 } // namespace mmr
