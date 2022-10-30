@@ -90,7 +90,7 @@ void DbGui::beginGui(Database& db)
         float globalScore = 0.0f;
         for (int i = 0; i < db.m_entries.size(); i++)
         {
-            printf("Entry: %i", i);
+            printf("Entry: %i\n", i);
             float score = 0;
             std::vector<float> distances;
             for (int j = 0; j < db.m_entries.size(); j++)
@@ -112,10 +112,10 @@ void DbGui::beginGui(Database& db)
                 }
             }
             globalScore += score / (float)kIndices.size();
-            printf("Score is %f", score / (float)kIndices.size());
+            printf("Score is %f\n", score / (float)kIndices.size());
 
         }
-        printf("Final accuracy is: %f",
+        printf("Final accuracy is: %f\n",
                100.0f * globalScore / (float)db.m_entries.size());
      
     }

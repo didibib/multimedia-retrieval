@@ -32,17 +32,31 @@ void Entry::updateStatistics()
     features["bb_volume"] =
         ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
          (bb.max()[2] - bb.min()[2]));
-    features["rectangularity"] = (volume(mesh) / ((bb.max()[0] - bb.min()[0]) *
+    float rectangularity = (volume(mesh) / ((bb.max()[0] - bb.min()[0]) *
                                                   (bb.max()[1] - bb.min()[1]) *
                                                   (bb.max()[2] - bb.min()[2])));
-    features["area"] = surface_area(mesh);
+    features["rectangularity"] = rectangularity;
+    float area = surface_area(mesh);
+    features["area"] = area;
     features["volume"] = volume(mesh);
     Scalar compactness = Descriptor::compactness(mesh);
     features["compactness"] = compactness;
     features["sphericity"] = (1 / compactness);
-    features["eccentricity"] = Descriptor::eccentricity(mesh);
-    features["diameter"] = Descriptor::diameter(mesh);
-    features.updateFeatureVector();
+    float eccentricity = Descriptor::eccentricity(mesh);
+    features["eccentricity"] = eccentricity;
+    float diameter = Descriptor::diameter(mesh);
+    features["diameter"] = diameter;
+    features.features.resize(5);
+    features.features << area, (float)compactness, rectangularity, diameter,
+        eccentricity;
+    
+    
+  /*  float x0 = features.features(0);
+    float x1 = features.features(1);
+    float x2 = features.features(2);
+    float x3 = features.features(3);
+    float x4 = features.features(4);*/
+    //features.updateFeatureVector();
 }
 
 const void Entry::write(std::string extension, std::string folder)

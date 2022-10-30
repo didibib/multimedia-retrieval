@@ -14,12 +14,18 @@ const std::string Feature::CSV_DELIM = ",";
 
 void FeatureVector::updateFeatureVector()
 {
-    features.resize(5);
-    features << features, m_statistics["area"];
-    features << features, m_statistics["compactness"];
-    features << features, m_statistics["rectangularity"];
-    features << features, m_statistics["diameter"];
-    features << features, m_statistics["eccentricity"];
+    /*features.resize(5);
+    float area = m_statistics["area"];
+    features << m_statistics["area"], m_statistics["compactness"],
+        m_statistics["rectangularity"], m_statistics["diameter"],
+        m_statistics["eccentricity"];
+   
+    float x0 = features(0);
+    float x1 = features(1);
+    float x2 = features(2);
+    float x3 = features(3);
+    float x4 = features(4);
+    */
 }
 Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
 {
@@ -69,12 +75,16 @@ std::vector<int> FeatureVector::kMeansIndices(int index,
     std::vector<int> indices;
     for (int i = 0; i< size -1; i++)
     {
-        indices.push_back(i < index ? i : i + 1);
+        indices.push_back(i);
     }
     std::stable_sort(
         indices.begin(), indices.end(),
         [&distances](int i1, int i2) { return distances[i1] < distances[i2]; });
     std::vector<int> kIndices;
+    for (int i = 0; i < size - 1; i++)
+    {
+        indices[i] = indices[i] >= index ? indices[i] + 1: indices[i];
+    }
     for (int i = 0; i < k; i++)
     {
         kIndices.push_back(indices[i]);

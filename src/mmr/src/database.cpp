@@ -31,7 +31,7 @@ void Database::import(const std::string& path_)
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
     int iterator = 0;
-    int maxModels = 350;
+    int maxModels = 380;
     int nQueries = 0;
     /*std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
