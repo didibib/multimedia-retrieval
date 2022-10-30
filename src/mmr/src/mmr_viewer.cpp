@@ -36,7 +36,6 @@ void MmrViewer::draw(const std::string& drawMode)
             entries.push_back(e);
 
             BoundingBox& bb = e->mesh.bounds();
-
             radius += bb.size() * .5f;
             n += step;
         }
