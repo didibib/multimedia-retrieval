@@ -216,7 +216,11 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
 
         if (ImGui::MenuItem("View"))
         {
-            m_selectedEntry = index;
+            static int i = 0;
+            m_selectedEntries[i++] = index;
+            if (i >= m_maxEntries)
+                i = 0;
+            m_newSelectedEntry = true;
         }
         if (ImGui::MenuItem("Reload"))
         {

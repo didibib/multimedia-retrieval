@@ -1,6 +1,7 @@
 #pragma once
 
 #include "database.h"
+#include <vector>
 
 namespace mmr {
 class DbGui
@@ -15,12 +16,24 @@ class DbGui
 
     bool m_showHistogram = false;
     bool m_showStatistics = false;
-    int m_selectedEntry = 0;
+    static const int m_maxEntries = 5;
+    std::vector<int> m_selectedEntries;
+    bool m_newSelectedEntry = false;
     Database& m_db;
 
 public:
-    DbGui(Database& db) : m_db(db) {}
-    int getSelectedEntry() { return m_selectedEntry; }
+    DbGui(Database& db) : m_db(db) { m_selectedEntries.resize(m_maxEntries, -1); }
+    std::vector<int> getSelectedEntries() { return m_selectedEntries; }
     void beginGui(Database& db);
+    bool newSelectedEntry( )
+    {
+        bool r = false;
+        if (m_newSelectedEntry)
+        {
+            r = true;
+            m_newSelectedEntry = false;
+        }
+        return r;
+    }
 };
 } // namespace mmr
