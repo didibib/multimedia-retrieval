@@ -1,5 +1,4 @@
 #include <imgui.h>
-#include <implot.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include "util.h"
 #include "normalization.h"
@@ -29,6 +28,7 @@ void MmrViewer::draw(const std::string& drawMode)
             return;
 
         m_selectedEntry = m_dbGui.getSelectedEntry();
+        entry->reload();
         BoundingBox& bb = entry->mesh.bounds();
         set_scene(bb.center(), bb.size() * .5f);
     }
@@ -36,7 +36,7 @@ void MmrViewer::draw(const std::string& drawMode)
     if (entry == nullptr)
         return;
 
-    entry->mesh.draw(projection_matrix_, modelview_matrix_, drawMode);
+    entry->draw(projection_matrix_, modelview_matrix_, drawMode);
 }
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)

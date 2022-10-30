@@ -45,8 +45,8 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        /*if (nModels > maxModels)
-            break;*/
+        if (nModels > maxModels)
+            break;
 
         // Create entry
         Entry entry(filename, label, path, name);

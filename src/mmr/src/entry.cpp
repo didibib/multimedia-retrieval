@@ -13,7 +13,6 @@ Entry::Entry(std::string filename, std::string label, std::string path,
     features["filename"] = p.replace_extension().string(); // Remove extension
     features["label"] = label;
     db_name = db;
-    //updateStatistics();
     deserialize();
 }
 
@@ -44,6 +43,24 @@ void Entry::updateStatistics()
     features["eccentricity"] = Descriptor::eccentricity(mesh);
     features["diameter"] = Descriptor::diameter(mesh);
     features.updateFeatureVector();
+}
+
+void Entry::reload()
+{
+    if (!m_meshLoaded)
+    {
+        mesh.read(original_path);
+        updateStatistics();
+        m_meshLoaded = true;
+    }
+}
+
+void Entry::draw(const pmp::mat4& projection_matrix,
+                 const pmp::mat4& modelview_matrix,
+                 const std::string& draw_mode)
+{
+    reload();
+    mesh.draw(projection_matrix, modelview_matrix, draw_mode);
 }
 
 const void Entry::writeMesh(std::string extension, std::string folder)
