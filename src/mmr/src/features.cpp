@@ -104,6 +104,7 @@ void FeatureVector::deserialize(std::string folder) {
             m_histograms[key] = h;
         }
     }
+    updateFeatureVector();
 }
 
 void FeatureVector::deserialize_fv(std::string path) {
