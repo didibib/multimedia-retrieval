@@ -31,6 +31,9 @@ public:
     size_t getAvgFaces() { return m_avgFaces; }
     std::string name;
 
+    //std::map<std::string, std::vector<Entry*>> ANN(int k, float R,
+    //                                            mmr::Entry& target);
+
 private:
     std::vector<Entry> m_entries;
     std::vector<Entry> m_queries;
