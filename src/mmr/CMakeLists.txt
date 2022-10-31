@@ -62,6 +62,7 @@ target_include_directories(${EXC_NAME} PUBLIC
 
 target_link_libraries(${EXC_NAME}
     pmp_vis
+    ANN
 )
 
 target_compile_definitions(${EXC_NAME} PUBLIC 
