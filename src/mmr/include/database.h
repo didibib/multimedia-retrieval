@@ -9,6 +9,7 @@
 #include "util.h"
 #include "features.h"
 #include "entry.h"
+#include <ANN/ANN.h>
 
 namespace mmr {
 
@@ -31,8 +32,8 @@ public:
     size_t getAvgFaces() { return m_avgFaces; }
     std::string name;
 
-    //std::map<std::string, std::vector<Entry*>> ANN(int k, float R,
-    //                                            mmr::Entry& target);
+    std::map<std::string, std::vector<Entry*>> ANN(int k, float R,
+                                                mmr::Entry& target);
 
 private:
     std::vector<Entry> m_entries;
@@ -49,5 +50,6 @@ private:
     // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
     bool m_columnSelected[16] = {false};
     size_t m_columns = 0;
+    static void printPt(Eigen::VectorXf& features, ANNpoint p);
 };
 } // namespace mmr
