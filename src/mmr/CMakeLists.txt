@@ -60,9 +60,11 @@ target_include_directories(${EXC_NAME} PUBLIC
     "include"
 )
 
+add_subdirectory(ANN)
+
 target_link_libraries(${EXC_NAME}
     pmp_vis
-    ANN
+    ann
 )
 
 target_compile_definitions(${EXC_NAME} PUBLIC 
