@@ -13,12 +13,19 @@ const std::string Feature::CSV_DELIM = ",";
 
 void FeatureVector::updateFeatureVector()
 {
-    features.resize(5);
-    features << features, m_statistics["area"];
-    features << features, m_statistics["compactness"];
-    features << features, m_statistics["rectangularity"];
-    features << features, m_statistics["diameter"];
-    features << features, m_statistics["eccentricity"];
+    std::vector<std::string> index = {"area", "compactness", "rectangularity",
+                                      "diameter", "eccentricity"};
+    features.resize(index.size());
+    int j = 0;
+    for (auto i=index.begin();i!=index.end();++i)
+    {
+        auto iter = m_statistics.find(*i);
+        if (iter != m_statistics.end())
+        {
+            features[j] = toFloat(iter->second);
+            j++;
+        }
+    }
 }
 Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
 {
@@ -44,23 +51,6 @@ Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
     Scalar d = emd(&s1, &s2, Feature::e_dist, 0, 0);
     return d;
 }
-
-Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
-                               std::map<std::string, Scalar>& data2,
-                               std::vector<std::string>& index)
-{
-    Eigen::VectorXf f1, f2;
-    for (auto& i : index)
-    {
-        auto iter = data1.find(i);
-        if (iter == data1.end() || iter == data2.end())
-            continue;
-        f1 << f1, Scalar(data1[i]);
-        f2 << f2, Scalar(data2[i]);
-    }
-    return (f1 - f2).norm();
-}
-
 
 void FeatureVector::exportStatistics(std::ofstream& file) const
 {
@@ -123,7 +113,7 @@ void FeatureVector::deserialize_fv(std::string path) {
         if (type == "int")
             m_statistics[key] = std::stoi(value);
         else if (type == "float")
-            m_statistics[key] = std::stof(value);        
+            m_statistics[key] = std::stof(value);
         else if (type == "string")
             m_statistics[key] = value;
     }

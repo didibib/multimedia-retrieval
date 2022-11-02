@@ -18,6 +18,12 @@ public:
         std::string operator()(float value) { return std::to_string(value); }
         std::string operator()(const std::string& value) { return value; }
     };
+    struct AnyFloat
+    {
+        float operator()(std::string value) { return std::stof(value); }
+        float operator()(int value) { return float(value); }
+        float operator()(float value) { return value; }
+    };
 
     static const std::string INT;
     static const std::string FLOAT;
@@ -47,6 +53,10 @@ public:
     {
         return std::visit(AnySerialize{}, input);
     }
+    static float toFloat(const AnyType& input)
+    {
+        return std::visit(AnyFloat{}, input);
+    }
 
     static float e_dist(feature_t* F1, feature_t* F2)
     {
@@ -64,12 +74,8 @@ class FeatureVector : public Feature
 public:
     Eigen::VectorXf features;
 
-public:
     void updateFeatureVector();
     static pmp::Scalar distance(Histogram& h1, Histogram& h2);
-    static pmp::Scalar distance(std::map<std::string, pmp::Scalar>& data1,
-                                std::map<std::string, pmp::Scalar>& data2,
-                                std::vector<std::string>& index);
     inline static pmp::Scalar distance(Eigen::VectorXf& featuresA,
                                        Eigen::VectorXf& featuresB)
     {
