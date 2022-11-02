@@ -64,8 +64,8 @@ void DbGui::beginGui(Database& db)
 
      if (ImGui::MenuItem("Print Distance Function (Only vector discriptors)"))
     {
-         int qi = 0;
-        for (auto& q : db.m_queries)
+        int qi = 0;
+        for (auto& q : db.m_entries)
         {
             qi++;
             int ei = 0;
@@ -75,14 +75,19 @@ void DbGui::beginGui(Database& db)
                 Normalize::remesh(q.mesh);
                 q.isNormalized = true;
             }
-            for (auto& e : db.m_entries)
+
+            auto mi = Database::ANN(2, 0, q, db);
+            ei = mi["knn"][1] + 1;
+            printf("nearest neighbour of %i is %i\n", qi, ei);
+            /*for (auto& e : db.m_entries)
             {
                 ei++;
                 printf("Distance function between %i and %i is %f\n", qi, ei,
                        mmr::FeatureVector::distance(
                            q.features.histograms, e.features.histograms,
                            q.features.features, e.features.features));
-            }
+                
+            }*/
             
         }
     }

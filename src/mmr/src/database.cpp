@@ -116,19 +116,27 @@ void Database::exportMeshes(std::string extension, std::string folder)
 // ANN =======================================================================================
 // ===========================================================================================
 
-void Database::printPt(Eigen::VectorXf& features, ANNpoint p)
+void Database::readPt(std::vector<float>& features, ANNpoint p)
 {
+    int j = 0;
     for (auto& i : features)
-        *p++ = i;
+    {
+        p[j] = i;
+        j++;
+    }
+
 }
 
-std::map<std::string, std::vector<Entry*>> Database::ANN(
-    int k, float R, mmr::Entry& target)
+std::map<std::string, std::vector<int>> Database::ANN(
+    int k, float R, mmr::Entry& target,mmr::Database& db)
 {
-    std::map<std::string, std::vector<Entry*>> Idx;
-    std::vector<Entry*> kIdx(5), RIdx;
+    std::map<std::string, std::vector<int>> Idx;
+    std::vector<int> kIdx(k), RIdx;
 
-    int dim(target.features.features.size());
+    auto entries(db.m_entries);
+    auto query(target.features);
+
+    int dim(query.allfeatures.size());
     double eps(0);
     int maxPts(1000);
 
@@ -137,40 +145,45 @@ std::map<std::string, std::vector<Entry*>> Database::ANN(
     ANNpoint queryPt;
     ANNidxArray nnIdx;
     ANNidxArray nnRIdx;
-    ANNdistArray dists;
+    ANNdistArray kdists;
+    ANNdistArray Rdists;
     ANNkd_tree* kdTree;
 
     queryPt = annAllocPt(dim);
     dataPts = annAllocPts(maxPts, dim);
     nnIdx = new ANNidx[k];
-    nnRIdx = new ANNidx[k];
-    dists = new ANNdist[k];
+    nnRIdx = new ANNidx[maxPts];
+    kdists = new ANNdist[k];
+    Rdists = new ANNdist[maxPts];
 
-    for (auto iter : m_entries)
-        printPt(iter.features.features, *dataPts++);
+    for (auto& iter1 : entries)
+    {
+        readPt(iter1.features.allfeatures, dataPts[nPts]);
+        nPts++;
+    }
 
-    for (auto iter : target.features.features)
-        *queryPt++ = iter;
+    readPt(query.allfeatures, queryPt);
 
     kdTree = new ANNkd_tree(dataPts, nPts, dim);
 
-    kdTree->annkSearch(queryPt, k, nnIdx, dists, eps);
+    kdTree->annkSearch(queryPt, k, nnIdx, kdists, eps);
     
     R *= R;
-    int n = kdTree->annkFRSearch(queryPt, R, nPts, nnRIdx, dists, eps);
+    int n = kdTree->annkFRSearch(queryPt, R, nPts, nnRIdx, Rdists, eps);
 
     RIdx.resize(n);
     if (k > 0)
         for (size_t i = 0; i < k; i++)
-            kIdx.push_back(&m_entries[nnIdx[i]]);
+            kIdx[i] = nnIdx[i];
 
     if (R > 0)
         for (size_t i = 0; nnRIdx[i] != ANN_NULL_IDX && i < nPts; i++)
-            RIdx.push_back(&m_entries[nnRIdx[i]]);
+            RIdx[i] = nnRIdx[i];
 
     delete[] nnIdx;
     delete[] nnRIdx;
-    delete[] dists;
+    delete[] kdists;
+    delete[] Rdists;
     delete kdTree;
     annClose();
 

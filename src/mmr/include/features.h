@@ -71,9 +71,11 @@ class FeatureVector : public Feature
 public:
     Eigen::VectorXf features;
     std::vector<Histogram> histograms;
+    std::vector<float> allfeatures;
 
     void updateFeatureVector();
     void updateHistograms();
+    void updateAllFeatures();
     
     static pmp::Scalar distance(std::vector<Histogram> h1,
                                 std::vector<Histogram> h2,

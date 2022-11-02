@@ -40,6 +40,17 @@ void FeatureVector::updateHistograms()
     }
 }
 
+void FeatureVector::updateAllFeatures() 
+{
+    allfeatures.clear();
+    allfeatures.insert(allfeatures.end(), features.begin(), features.end());
+    for (auto i:histograms)
+    {
+        std::vector<float> temp = i.values();
+        allfeatures.insert(allfeatures.end(), temp.begin(), temp.end());
+    }
+}
+
 Scalar FeatureVector::distance(std::vector<Histogram> h1,
                                std::vector<Histogram> h2,
                                Eigen::VectorXf& featuresA,
@@ -134,6 +145,7 @@ void FeatureVector::deserialize(std::string folder) {
     }
     updateFeatureVector();
     updateHistograms();
+    updateAllFeatures();
 }
 
 void FeatureVector::deserialize_fv(std::string path) {
