@@ -57,11 +57,6 @@ public:
     {
         return std::visit(AnyFloat{}, input);
     }
-
-    static float e_dist(feature_t* F1, feature_t* F2)
-    {
-        return fabs(*F1 - *F2);
-    }
 };
 
 class FeatureVector : public Feature
@@ -69,19 +64,21 @@ class FeatureVector : public Feature
     std::map<std::string, AnyType> m_statistics;
     std::map<std::string, Histogram> m_histograms;
 
+    static pmp::Scalar distance(Histogram& h1, Histogram& h2);
+
     void deserialize_fv(std::string path);
 
 public:
     Eigen::VectorXf features;
+    std::vector<Histogram> histograms;
 
     void updateFeatureVector();
-    static pmp::Scalar distance(Histogram& h1, Histogram& h2);
-    inline static pmp::Scalar distance(Eigen::VectorXf& featuresA,
-                                       Eigen::VectorXf& featuresB)
-    {
-        Eigen::VectorXf v = featuresA - featuresB;
-        return v.norm();
-    }
+    void updateHistograms();
+    
+    static pmp::Scalar distance(std::vector<Histogram> h1,
+                                std::vector<Histogram> h2,
+                                Eigen::VectorXf& featuresA,
+                                Eigen::VectorXf& featuresB);
 
     AnyType& operator[](std::string key) { return m_statistics[key]; }
 

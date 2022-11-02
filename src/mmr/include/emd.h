@@ -1,7 +1,3 @@
-#ifdef __cplusplus
-extern "C" {
-#endif // DEBUG
-
 #ifndef _EMD_H
 #define _EMD_H
 /*
@@ -26,9 +22,13 @@ extern "C" {
 #define EMD_INFINITY       1e20
 #define EPSILON        1e-6
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*****************************************************************************/
 /* feature_t SHOULD BE MODIFIED BY THE USER TO REFLECT THE FEATURE TYPE      */
-typedef float feature_t;
+typedef int feature_t;
 /*****************************************************************************/
 
 
@@ -53,8 +53,8 @@ float emd(signature_t *Signature1, signature_t *Signature2,
 	  float (*func)(feature_t *, feature_t *),
 	  flow_t *Flow, int *FlowSize);
 
-#endif
-
 #ifdef __cplusplus
 }
-#endif // __cplusplus
+#endif
+    
+#endif

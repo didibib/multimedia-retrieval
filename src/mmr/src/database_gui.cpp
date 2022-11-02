@@ -78,8 +78,10 @@ void DbGui::beginGui(Database& db)
             for (auto& e : db.m_entries)
             {
                 ei++;
-                printf("Distance function between %i and %i is %f\n", qi, ei, mmr::FeatureVector::distance(q.features.features,
-                                                       e.features.features));
+                printf("Distance function between %i and %i is %f\n", qi, ei,
+                       mmr::FeatureVector::distance(
+                           q.features.histograms, e.features.histograms,
+                           q.features.features, e.features.features));
             }
             
         }
