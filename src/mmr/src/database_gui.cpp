@@ -62,7 +62,7 @@ void DbGui::beginGui(Database& db)
         }
     }
 
-     if (ImGui::MenuItem("Print Distance Function (Only vector discriptors)"))
+     if (ImGui::MenuItem("Print kNN list of every shapes"))
     {
         int qi = 0;
         for (auto& q : db.m_entries)
@@ -75,10 +75,23 @@ void DbGui::beginGui(Database& db)
                 Normalize::remesh(q.mesh);
                 q.isNormalized = true;
             }
-
-            auto mi = Database::ANN(2, 0, q, db);
-            ei = mi["knn"][1] + 1;
-            printf("nearest neighbour of %i is %i\n", qi, ei);
+            
+            auto mi = Database::ANN(6, 0, q, db);
+            std::vector<int> e = mi["knn"];
+            std::cout
+                << "nearest neighbour of" << std::setw(4) << qi << std::setw(10)
+                << FeatureVector::toString(q.features["label"]) << " is"
+                << std::setw(4) << e[1] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[1]].features["label"])
+                << std::setw(4) << e[2] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[2]].features["label"])
+                << std::setw(4) << e[3] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[3]].features["label"])
+                << std::setw(4) << e[4] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[4]].features["label"])
+                << std::setw(4) << e[5] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[5]].features["label"])
+                << std::endl;
             /*for (auto& e : db.m_entries)
             {
                 ei++;
