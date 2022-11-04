@@ -1,6 +1,7 @@
 #include "features.h"
 #include <fstream>
 #include <filesystem>
+#include <algorithm>
 
 using pmp::Scalar;
 
@@ -13,6 +14,7 @@ const std::string Feature::CSV_DELIM = ",";
 
 void FeatureVector::updateFeatureVector()
 {
+
     std::vector<std::string> Findex = {"area", "sphericity", "rectangularity",
                                       "diameter", "eccentricity"};
     features.resize(Findex.size());
@@ -69,6 +71,7 @@ Scalar FeatureVector::distance(std::vector<Histogram> h1,
 float e_dist(feature_t* F1, feature_t* F2) //Distance of two histogram bars
 {
     return fabs(*F1 - *F2);
+
 }
 
 Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
@@ -100,6 +103,47 @@ Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
     d = emd(&s1, &s2, e_dist, 0, 0);
     return d;
 }
+
+Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
+                               std::map<std::string, Scalar>& data2,
+                               std::vector<std::string>& index)
+{
+    Eigen::VectorXf f1, f2;
+    for (auto& i : index)
+    {
+        auto iter = data1.find(i);
+        if (iter == data1.end() || iter == data2.end())
+            continue;
+        f1 << f1, Scalar(data1[i]);
+        f2 << f2, Scalar(data2[i]);
+    }
+    return (f1 - f2).norm();
+}
+
+std::vector<int> FeatureVector::kMeansIndices(int index,
+                                              std::vector<float>& distances, int size)
+{
+    int const k = 5;
+    std::vector<int> indices;
+    for (int i = 0; i< size -1; i++)
+    {
+        indices.push_back(i);
+    }
+    std::stable_sort(
+        indices.begin(), indices.end(),
+        [&distances](int i1, int i2) { return distances[i1] < distances[i2]; });
+    std::vector<int> kIndices;
+    for (int i = 0; i < size - 1; i++)
+    {
+        indices[i] = indices[i] >= index ? indices[i] + 1: indices[i];
+    }
+    for (int i = 0; i < k; i++)
+    {
+        kIndices.push_back(indices[i]);
+    }
+    return kIndices;
+}
+
 
 void FeatureVector::exportStatistics(std::ofstream& file) const
 {

@@ -74,6 +74,19 @@ public:
     std::vector<float> allfeatures;
 
     void updateFeatureVector();
+
+    static pmp::Scalar distance(Histogram& h1, Histogram& h2);
+    static pmp::Scalar distance(std::map<std::string, pmp::Scalar>& data1,
+                                std::map<std::string, pmp::Scalar>& data2,
+                                std::vector<std::string>& index);
+    inline static pmp::Scalar distance(Eigen::VectorXf& featuresA,
+                                       Eigen::VectorXf& featuresB)
+    {
+        Eigen::VectorXf v = featuresA - featuresB;
+        return v.norm();
+    }
+    static std::vector<int> kMeansIndices(int index, std::vector<float>& distances, int size);
+
     void updateHistograms();
     void updateAllFeatures();
     
@@ -81,6 +94,7 @@ public:
                                 std::vector<Histogram> h2,
                                 Eigen::VectorXf& featuresA,
                                 Eigen::VectorXf& featuresB);
+
 
     AnyType& operator[](std::string key) { return m_statistics[key]; }
 

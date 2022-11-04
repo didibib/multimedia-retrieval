@@ -1,6 +1,8 @@
 #include "database.h"
 #include "descriptors.h"
 #include <iostream>
+#include <random>
+#include <chrono>
 #include <fstream>
 #include <vector>
 #include "..\include\entry.h"
@@ -28,11 +30,17 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
+
     int maxModels = 5;
     int nQueries = 1;
+
     std::filesystem::path p = path_;
     name = p.filename().string();
-
+    std::vector<int> qIndices;
+    /*for (int i = 0; i < nQueries; i++)
+    {
+        qIndices.push_back(random());
+    }*/
     for (const auto& file_entry : recursive_directory_iterator(path_))
     {
         std::string path = file_entry.path().string();
@@ -45,25 +53,27 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
+
         /*if (nModels > maxModels)
             break;*/
 
+
         // Create entry
         Entry entry(filename, label, path, name);
-        if (nModels++ > 0)
-        {
+        /*if (nModels++ > 0)
+        {*/
             // Update global statistics
             m_avgVerts += entry.mesh.n_vertices();
             m_avgFaces += entry.mesh.n_faces();
 
-            m_labels.insert(label);
+            m_labels.push_back(label);
             m_entries.push_back(std::move(entry));
-            std::cout << "Model: " << nModels << std::endl;
-        }
+            std::cout << "Model: " << ++nModels << std::endl;
+       /* }
         else
         {
             m_queries.push_back(std::move(entry));
-        }
+        }*/
     }
 
     if ((nModels - nQueries) == 0 || nModels == 0)

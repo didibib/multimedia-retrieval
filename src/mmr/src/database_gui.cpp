@@ -103,7 +103,83 @@ void DbGui::beginGui(Database& db)
             }*/
             
         }
+     }
+    if (ImGui::MenuItem("Print Accuracy"))
+    {
+        
+        float globalScore = 0.0f;
+        for (int i = 0; i < db.m_entries.size(); i++)
+        {
+            printf("Entry: %i\n", i);
+            float score = 0;
+            std::vector<float> distances;
+            for (int j = 0; j < db.m_entries.size(); j++)
+            {
+                if (i == j)
+                    continue;
+                distances.push_back(mmr::FeatureVector::distance(
+                    db.m_entries[i].features.features,
+                    db.m_entries[j].features.features));
+            }
+            std::vector<int> kIndices = mmr::FeatureVector::kMeansIndices(
+                i, distances, db.m_entries.size());
+
+            // helpful struct to find the most occured label
+            struct decisionClass
+            {
+                std::vector<::std::string> labels;
+                std::vector<int> counts;
+                int end;
+            } classes;
+            classes.end = 0;
+
+            // search through the helpful label container and increment the occurance
+            for (int k = 0; k < kIndices.size(); k++)
+            {
+                bool isFound = false;
+                for (int c = 0; c < classes.end; c++)
+                {
+                    if (!classes.labels[c].compare(db.m_labels[kIndices[k]]))
+                    {
+                        classes.counts[c]++;
+                        isFound = true;
+                    }
+                    if (isFound)
+                        break;
+                }
+
+                // add the label if not found
+                if (!isFound)
+                {
+                    classes.labels.push_back(db.m_labels[kIndices[k]]);
+                    classes.counts.push_back(1);
+                    classes.end++;
+                }
+            }
+            int max = 0;
+            int cIndex;
+            for (int c = 0; c < classes.end; c++)
+            {
+                if (classes.counts[c] > max)
+                {
+                    max = classes.counts[c];
+                    cIndex = c;
+                }
+            }
+
+            if (!db.m_labels[i].compare(classes.labels[cIndex]))
+            {
+                score++;
+            }
+            globalScore += score;
+            //printf("Score is %f\n", score / (float)kIndices.size());
+
+        }
+        printf("Final accuracy is: %f\n",
+               100.0f * globalScore / (float)db.m_entries.size());
+     
     }
+
 }
 
 void DbGui::window(Database& db)
