@@ -1,0 +1,16 @@
+area,float,0.406134
+bb_distance,float,1.220297
+bb_volume,float,0.225465
+compactness,float,20.110510
+diameter,float,1.046218
+distance_to_origin,float,0.168424
+eccentricity,float,0.263277
+face_type,string,tri
+filename,string,114
+label,string,Chair
+n_faces,int,11588
+n_vertices,int,5794
+rectangularity,float,0.024071
+sphericity,float,0.049725
+surface_area,float,0.406134
+volume,float,0.005427

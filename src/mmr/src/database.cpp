@@ -30,13 +30,10 @@ void Database::import(const std::string& path_)
 {
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
-    int iterator = 0;
-    int maxModels = 380;
-    int nQueries = 0;
-    /*std::mt19937::result_type seed =
-        std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    auto random = std::bind(std::uniform_int_distribution<int>(0, maxModels - 1),
-                  std::mt19937(seed));*/
+
+    int maxModels = 5;
+    int nQueries = 1;
+
     std::filesystem::path p = path_;
     name = p.filename().string();
     std::vector<int> qIndices;
@@ -56,9 +53,11 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-        if (nModels > maxModels)
-            break;
-        iterator++;
+
+        /*if (nModels > maxModels)
+            break;*/
+
+
         // Create entry
         Entry entry(filename, label, path, name);
         /*if (nModels++ > 0)
@@ -121,6 +120,87 @@ void Database::exportStatistics(std::string suffix) const
 void Database::exportMeshes(std::string extension, std::string folder)
 {
     for (auto& e : m_entries)
-        e.write(extension, folder);
+        e.writeMesh(extension, folder);
 }
+
+// ANN =======================================================================================
+// ===========================================================================================
+
+void Database::readPt(std::vector<float>& features, ANNpoint p)
+{
+    int j = 0;
+    for (auto& i : features)
+    {
+        p[j] = i;
+        j++;
+    }
+
+}
+
+std::map<std::string, std::vector<int>> Database::ANN(
+    int k, float R, mmr::Entry& target,mmr::Database& db)
+{
+    std::map<std::string, std::vector<int>> Idx;
+    std::vector<int> kIdx(k), RIdx;
+
+    auto entries(db.m_entries);
+    auto query(target.features);
+
+    int dim(query.allfeatures.size());
+    double eps(0);
+    int maxPts(1000);
+
+    int nPts(0);
+    ANNpointArray dataPts;
+    ANNpoint queryPt;
+    ANNidxArray nnIdx;
+    ANNidxArray nnRIdx;
+    ANNdistArray kdists;
+    ANNdistArray Rdists;
+    ANNkd_tree* kdTree;
+
+    queryPt = annAllocPt(dim);
+    dataPts = annAllocPts(maxPts, dim);
+    nnIdx = new ANNidx[k];
+    nnRIdx = new ANNidx[maxPts];
+    kdists = new ANNdist[k];
+    Rdists = new ANNdist[maxPts];
+
+    for (auto& iter1 : entries)
+    {
+        readPt(iter1.features.allfeatures, dataPts[nPts]);
+        nPts++;
+    }
+
+    readPt(query.allfeatures, queryPt);
+
+    kdTree = new ANNkd_tree(dataPts, nPts, dim);
+
+    kdTree->annkSearch(queryPt, k, nnIdx, kdists, eps);
+    
+    R *= R;
+    int n = kdTree->annkFRSearch(queryPt, R, nPts, nnRIdx, Rdists, eps);
+
+    RIdx.resize(n);
+    if (k > 0)
+        for (size_t i = 0; i < k; i++)
+            kIdx[i] = nnIdx[i];
+
+    if (R > 0)
+        for (size_t i = 0; nnRIdx[i] != ANN_NULL_IDX && i < nPts; i++)
+            RIdx[i] = nnRIdx[i];
+
+    delete[] nnIdx;
+    delete[] nnRIdx;
+    delete[] kdists;
+    delete[] Rdists;
+    delete kdTree;
+    annClose();
+
+    Idx["knn"] = kIdx;
+    Idx["rnn"] = RIdx;
+
+    return Idx;
+}
+
 } // namespace mmr

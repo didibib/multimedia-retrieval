@@ -1,0 +1,16 @@
+area,float,1.603527
+bb_distance,float,1.527145
+bb_volume,float,0.665918
+compactness,float,18.801876
+diameter,float,1.056603
+distance_to_origin,float,0.037749
+eccentricity,float,0.673792
+face_type,string,tri
+filename,string,135
+label,string,Octopus
+n_faces,int,30398
+n_vertices,int,15201
+rectangularity,float,0.066125
+sphericity,float,0.053186
+surface_area,float,1.603527
+volume,float,0.044034

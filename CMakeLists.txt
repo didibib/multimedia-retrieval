@@ -55,6 +55,10 @@ include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/eigen)
 include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/glfw/include)
 include_directories(${PROJECT_SOURCE_DIR}/external/pmp-library/external/glew/include)
 
+# ANN
+include_directories(${PROJECT_SOURCE_DIR}/external/ann/ANN)
+link_directories(${PROJECT_SOURCE_DIR}/external/ann)
+
 # set default compiler flags
 if((UNIX OR APPLE) AND CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic -Wall -Wextra")

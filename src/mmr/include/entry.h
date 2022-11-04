@@ -1,9 +1,10 @@
 #pragma once
+
+#include "features.h"
 #include <string>
 #include <vector>
 #include <filesystem>
 #include <pmp/visualization/SurfaceMeshGL.h>
-#include "features.h"
 
 namespace mmr {
 
@@ -23,6 +24,7 @@ private:
         }
         return "tri/quad";
     }
+    bool m_meshLoaded = false;
 
 public:
     Entry(std::string filename, std::string label, std::string path,
@@ -32,13 +34,12 @@ public:
 
     void updateStatistics();
 
-    void reload()
-    {
-        mesh.read(original_path);
-        updateStatistics();
-    }
+    void reload();
+    void draw(const pmp::mat4& projection_matrix,
+              const pmp::mat4& modelview_matrix,
+              const std::string& draw_mode);
 
-    const void write(std::string extension, std::string folder = "");
+    const void writeMesh(std::string extension, std::string folder = "");
 
     void serialize();
     void deserialize();

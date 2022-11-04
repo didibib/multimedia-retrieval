@@ -1,0 +1,16 @@
+area,float,1.796345
+bb_distance,float,1.568779
+bb_volume,float,0.726526
+compactness,float,7.105605
+diameter,float,1.162710
+distance_to_origin,float,0.071971
+eccentricity,float,0.465142
+face_type,string,tri
+filename,string,299
+label,string,Armadillo
+n_faces,int,34230
+n_vertices,int,17117
+rectangularity,float,0.116898
+sphericity,float,0.140734
+surface_area,float,1.796345
+volume,float,0.084929

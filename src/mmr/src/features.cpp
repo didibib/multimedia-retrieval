@@ -14,41 +14,93 @@ const std::string Feature::CSV_DELIM = ",";
 
 void FeatureVector::updateFeatureVector()
 {
-    /*features.resize(5);
-    float area = m_statistics["area"];
-    features << m_statistics["area"], m_statistics["compactness"],
-        m_statistics["rectangularity"], m_statistics["diameter"],
-        m_statistics["eccentricity"];
-   
-    float x0 = features(0);
-    float x1 = features(1);
-    float x2 = features(2);
-    float x3 = features(3);
-    float x4 = features(4);
-    */
+
+    std::vector<std::string> Findex = {"area", "sphericity", "rectangularity",
+                                      "diameter", "eccentricity"};
+    features.resize(Findex.size());
+    int j = 0;
+    for (auto i:Findex)
+    {
+        auto iter = m_statistics.find(i);
+        if (iter != m_statistics.end())
+        {
+            features[j] = toFloat(iter->second);
+            j++;
+        }
+    }
 }
+
+void FeatureVector::updateHistograms() 
+{
+    std::vector<std::string> Hindex = {"A3", "D1", "D2", "D3", "D4"};
+    Scalar dist(0.f);
+    for (auto i : Hindex)
+    {
+        auto iter = m_histograms.find(i);
+        if (iter != m_histograms.end())
+            histograms.push_back(iter->second);
+    }
+}
+
+void FeatureVector::updateAllFeatures() 
+{
+    allfeatures.clear();
+    allfeatures.insert(allfeatures.end(), features.begin(), features.end());
+    for (auto i:histograms)
+    {
+        std::vector<float> temp = i.values();
+        allfeatures.insert(allfeatures.end(), temp.begin(), temp.end());
+    }
+}
+
+Scalar FeatureVector::distance(std::vector<Histogram> h1,
+                               std::vector<Histogram> h2,
+                               Eigen::VectorXf& featuresA,
+                               Eigen::VectorXf& featuresB)
+{
+    Scalar dist(0.f);
+    Eigen::VectorXf v = featuresA - featuresB;
+    int n = h1.size();
+    for (size_t i = 0; i < n; i++)
+        dist += distance(h1[i], h2[i]);
+    dist += v.norm();
+    dist /= (n + 1);
+    return dist;
+}
+
+float e_dist(feature_t* F1, feature_t* F2) //Distance of two histogram bars
+{
+    return fabs(*F1 - *F2);
+
+}
+
 Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
 {
-    std::vector<float>::size_type N1 = h1.values().size();
-    std::vector<float>::size_type N2 = h2.values().size();
+    std::vector<float> his1(h1.values());
+    std::vector<float> his2(h2.values());
+    float d(-1);
+
+    std::vector<float>::size_type N1 = his1.size();
+    std::vector<float>::size_type N2 = his2.size();
     feature_t *f1 = new feature_t[N1], *f2 = new feature_t[N2];
     Scalar *w1 = new Scalar[N1], *w2 = new Scalar[N2];
+
     int i = 0;
-    for (std::vector<float>::iterator iter = h1.values().begin();
-         iter != h1.values().end(); ++iter, ++i)
+    for (auto iter1 = his1.begin();
+         iter1 != his1.end(); ++iter1, ++i)
     {
         f1[i] = i;
-        w1[i] = h1.values()[*iter];
+        w1[i] = *iter1;
     }
     i = 0;
-    for (std::vector<float>::iterator iter = h1.values().begin();
-         iter != h2.values().end(); ++iter, ++i)
+    for (auto iter2 = his2.begin();
+         iter2 != his2.end(); ++iter2, ++i)
     {
         f2[i] = i;
-        w2[i] = h2.values()[*iter];
+        w2[i] = *iter2;
     }
     signature_t s1 = {N1, f1, w1}, s2 = {N2, f2, w2};
-    Scalar d = emd(&s1, &s2, Feature::e_dist, 0, 0);
+    d = emd(&s1, &s2, e_dist, 0, 0);
     return d;
 }
 
@@ -92,6 +144,7 @@ std::vector<int> FeatureVector::kMeansIndices(int index,
     return kIndices;
 }
 
+
 void FeatureVector::exportStatistics(std::ofstream& file) const
 {
     // Columns
@@ -100,30 +153,65 @@ void FeatureVector::exportStatistics(std::ofstream& file) const
     file << "\n";
 }
 
-void FeatureVector::serialize(std::string folder, std::string filename)
+void FeatureVector::serialize(std::string dir, std::string filename)
 {
-    std::string path = folder + "/" + filename + ".fv";
+    std::string filepath = dir + "/" + filename + ".fv";
+
     std::ofstream file;
-    file.open(path);
+    file.open(filepath);
     for (auto const& [key, val] : m_statistics)
         file << key << CSV_DELIM << Feature::toSerialize(val) << "\n";
     file.close();
 
-    for (auto const& h : m_histograms)
-        h.second.serialize(folder, filename + ".hi");
+    for (auto& h : m_histograms)
+        h.second.serialize(dir);
 }
 
-void FeatureVector::deserialize(std::string filepath) {
-    std::filesystem::path p = filepath;
-    std::string ext = p.extension().string();
+void FeatureVector::deserialize(std::string folder) {
 
-    if (ext == ".fv")
+    if (!std::filesystem::is_directory(folder))
+        return;
+    for (const auto& entry : std::filesystem::directory_iterator(folder))
     {
-    
+        std::filesystem::path path = entry.path();
+        std::string ext = path.extension().string();
+
+        if (ext == ".fv")
+        {
+            deserialize_fv(path.string());
+        }
+        if (ext == ".hi")
+        {
+            Histogram h;
+            std::string key = h.deserialize(path.string());
+            m_histograms[key] = h;
+        }
     }
-    if (ext == ".hi")
+    updateFeatureVector();
+    updateHistograms();
+    updateAllFeatures();
+}
+
+void FeatureVector::deserialize_fv(std::string path) {
+    std::ifstream file;
+    std::string line;
+
+    file.open(path);
+    while (getline(file, line))
     {
-    
+        std::string key, type, value;
+        std::stringstream ss(line);
+        std::getline(ss, key, ',');
+        std::getline(ss, type, ',');
+        std::getline(ss, value, ',');
+
+        if (type == "int")
+            m_statistics[key] = std::stoi(value);
+        else if (type == "float")
+            m_statistics[key] = std::stof(value);
+        else if (type == "string")
+            m_statistics[key] = value;
     }
+    file.close();
 }
 } // namespace mmr

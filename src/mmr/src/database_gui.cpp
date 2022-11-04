@@ -62,10 +62,10 @@ void DbGui::beginGui(Database& db)
         }
     }
 
-     if (ImGui::MenuItem("Print Distance Function (Only vector discriptors)"))
+     if (ImGui::MenuItem("Print kNN list of every shapes"))
     {
-         int qi = 0;
-        for (auto& q : db.m_queries)
+        int qi = 0;
+        for (auto& q : db.m_entries)
         {
             qi++;
             int ei = 0;
@@ -75,12 +75,32 @@ void DbGui::beginGui(Database& db)
                 Normalize::remesh(q.mesh);
                 q.isNormalized = true;
             }
-            for (auto& e : db.m_entries)
+            
+            auto mi = Database::ANN(6, 0, q, db);
+            std::vector<int> e = mi["knn"];
+            std::cout
+                << "nearest neighbour of" << std::setw(4) << qi << std::setw(10)
+                << FeatureVector::toString(q.features["label"]) << " is"
+                << std::setw(4) << e[1] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[1]].features["label"])
+                << std::setw(4) << e[2] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[2]].features["label"])
+                << std::setw(4) << e[3] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[3]].features["label"])
+                << std::setw(4) << e[4] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[4]].features["label"])
+                << std::setw(4) << e[5] + 1 << std::setw(10)
+                << FeatureVector::toString(db.m_entries[e[5]].features["label"])
+                << std::endl;
+            /*for (auto& e : db.m_entries)
             {
                 ei++;
-                printf("Distance function between %i and %i is %f\n", qi, ei, mmr::FeatureVector::distance(q.features.features,
-                                                       e.features.features));
-            }
+                printf("Distance function between %i and %i is %f\n", qi, ei,
+                       mmr::FeatureVector::distance(
+                           q.features.histograms, e.features.histograms,
+                           q.features.features, e.features.features));
+                
+            }*/
             
         }
      }
@@ -269,13 +289,13 @@ void DbGui::exportMenu(Database& db)
             if (ImGui::MenuItem("As .off"))
             {
                 for (auto& entry : db.m_entries)                
-                    entry.write(".off", "Meshes");                
+                    entry.writeMesh(".off", "Meshes");                
                 printf("Finished exporting!\n");
             }
             if (ImGui::MenuItem("As .ply"))
             {
                 for (auto& entry : db.m_entries)                
-                    entry.write(".ply", "Meshes");                
+                    entry.writeMesh(".ply", "Meshes");                
                 printf("Finished exporting!\n");
             }
             ImGui::EndMenu();
@@ -292,7 +312,11 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
 
         if (ImGui::MenuItem("View"))
         {
-            m_selectedEntry = index;
+            static int i = 0;
+            m_selectedEntries[i++] = index;
+            if (i >= m_maxEntries)
+                i = 0;
+            m_newSelectedEntry = true;
         }
         if (ImGui::MenuItem("Reload"))
         {
@@ -305,9 +329,9 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
         if (ImGui::BeginMenu("Export"))
         {
             if (ImGui::MenuItem("As .off"))
-                entry.write(".off");
+                entry.writeMesh(".off");
             if (ImGui::MenuItem("As .ply"))
-                entry.write(".ply");
+                entry.writeMesh(".ply");
 
             ImGui::EndMenu();
         }
