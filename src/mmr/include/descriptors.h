@@ -28,6 +28,7 @@ public:
               int num_bins);
     void save();
     void serialize(std::string dir);
+    void exportTsneFormat(std::ofstream&) const;
     std::string deserialize(std::string path);
     const std::string& filename() const { return m_filename; } 
     const std::string& descriptor() const { return m_descriptor; }

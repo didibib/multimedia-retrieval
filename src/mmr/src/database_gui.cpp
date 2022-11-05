@@ -56,8 +56,8 @@ void DbGui::beginGui(Database& db)
     {
         for (auto& q : db.m_queries)
         {
-            Normalize::all_steps(q.mesh);
-            Normalize::remesh(q.mesh);
+            Normalize::all_steps(q.getMesh());
+            Normalize::remesh(q.getMesh());
             q.isNormalized = true;
         }
     }
@@ -71,8 +71,8 @@ void DbGui::beginGui(Database& db)
             int ei = 0;
             if (!q.isNormalized)
             {
-                Normalize::all_steps(q.mesh);
-                Normalize::remesh(q.mesh);
+                Normalize::all_steps(q.getMesh());
+                Normalize::remesh(q.getMesh());
                 q.isNormalized = true;
             }
             
@@ -176,10 +176,8 @@ void DbGui::beginGui(Database& db)
 
         }
         printf("Final accuracy is: %f\n",
-               100.0f * globalScore / (float)db.m_entries.size());
-     
+               100.0f * globalScore / (float)db.m_entries.size());     
     }
-
 }
 
 void DbGui::window(Database& db)
@@ -200,15 +198,12 @@ void DbGui::window(Database& db)
     if (ImGui::BeginMenuBar())
     {
         exportMenu(db);
-        normalizeAll(db);
-        if (ImGui::MenuItem("Histograms"))
-            Descriptor::histograms(&db);
+        normalizeAll(db);        
 
-        if (ImGui::MenuItem("Serialize..."))
+        if (ImGui::MenuItem("Histograms..."))
         {
-            for (auto& e : db.m_entries)
-                e.serialize();
-            printf("Finished serializing!\n");
+            Descriptor::histograms(&db);
+            printf("Finished creating histograms!\n");
         }
 
         ImGui::EndMenuBar();
@@ -282,24 +277,41 @@ void DbGui::exportMenu(Database& db)
 {
     if (ImGui::BeginMenu("Export..."))
     {
-        if (ImGui::MenuItem("Statistics"))
+        if (ImGui::MenuItem("Statistics..."))
+        {
             db.exportStatistics();
+            printf("Finished exporting statistics!\n");        
+        }
         if (ImGui::BeginMenu("Meshes"))
         {
             if (ImGui::MenuItem("As .off"))
             {
                 for (auto& entry : db.m_entries)                
                     entry.writeMesh(".off", "Meshes");                
-                printf("Finished exporting!\n");
+                printf("Finished exporting meshes!\n");
             }
             if (ImGui::MenuItem("As .ply"))
             {
                 for (auto& entry : db.m_entries)                
                     entry.writeMesh(".ply", "Meshes");                
-                printf("Finished exporting!\n");
+                printf("Finished exporting meshes!\n");
             }
             ImGui::EndMenu();
         }
+
+        if (ImGui::MenuItem("Serialize..."))
+        {
+            for (auto& e : db.m_entries)
+                e.serialize();
+            printf("Finished serializing!\n");
+        }
+
+        if (ImGui::MenuItem("TSNE Format..."))
+        {
+            db.exportTsneFormat();
+            printf("Finished TSNE formatting!\n");
+        }
+
         ImGui::EndMenu();
     }
 }
@@ -349,33 +361,33 @@ void DbGui::normalizeEntry(Entry& entry)
     {
         if (ImGui::MenuItem("All steps"))
         {
-            Normalize::all_steps(entry.mesh);
+            Normalize::all_steps(entry.getMesh());
             entry.updateStatistics();
         }
         ImGui::Separator();
         if (ImGui::MenuItem("Remesh"))
         {
-            Normalize::remesh(entry.mesh);
+            Normalize::remesh(entry.getMesh());
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("Translate"))
         {
-            Normalize::translate(entry.mesh);
+            Normalize::translate(entry.getMesh());
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("PCA Pose"))
         {
-            Normalize::pca_pose(entry.mesh);
+            Normalize::pca_pose(entry.getMesh());
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("Flip"))
         {
-            Normalize::flip(entry.mesh);
+            Normalize::flip(entry.getMesh());
             entry.updateStatistics();
         }
         if (ImGui::MenuItem("Scale"))
         {
-            Normalize::scale(entry.mesh);
+            Normalize::scale(entry.getMesh());
             entry.updateStatistics();
         }
 
@@ -393,7 +405,7 @@ void DbGui::normalizeAll(Database& db)
         int i = 0;
         for (auto& e : db.m_entries)
         {
-            Normalize::all_steps(e.mesh);
+            Normalize::all_steps(e.getMesh());
             e.updateStatistics();
             e.isNormalized = true;
             printf("%i\n", i++);
@@ -402,7 +414,7 @@ void DbGui::normalizeAll(Database& db)
         int j = 0;
         for (auto& q : db.m_queries)
         {
-            Normalize::all_steps(q.mesh);
+            Normalize::all_steps(q.getMesh());
             q.isNormalized = true;
             printf("Query:  %i\n", j++);
         }
@@ -414,7 +426,7 @@ void DbGui::normalizeAll(Database& db)
         int i = 0;
         for (auto& e : db.m_entries)
         {
-            Normalize::remesh(e.mesh);
+            Normalize::remesh(e.getMesh());
             e.updateStatistics();
             printf("%i\n", i++);
         }
@@ -422,7 +434,7 @@ void DbGui::normalizeAll(Database& db)
         int j = 0;
         for (auto& q : db.m_queries)
         {
-            Normalize::remesh(q.mesh);
+            Normalize::remesh(q.getMesh());
             printf("Query:  %i\n", j++);
         }
         printf("Finished remeshing!\n");
@@ -433,7 +445,7 @@ void DbGui::normalizeAll(Database& db)
         int i = 0;
         for (auto& e : db.m_entries)
         {
-            Normalize::translate(e.mesh);
+            Normalize::translate(e.getMesh());
             e.updateStatistics();
             printf("%i\n", i++);
         }
@@ -445,7 +457,7 @@ void DbGui::normalizeAll(Database& db)
         int i = 0;
         for (auto& e : db.m_entries)
         {
-            Normalize::pca_pose(e.mesh);
+            Normalize::pca_pose(e.getMesh());
             e.updateStatistics();
             printf("%i\n", i++);
         }
@@ -457,7 +469,7 @@ void DbGui::normalizeAll(Database& db)
         int i = 0;
         for (auto& e : db.m_entries)
         {
-            Normalize::flip(e.mesh);
+            Normalize::flip(e.getMesh());
             e.updateStatistics();
             printf("%i\n", i++);
         }
@@ -469,7 +481,7 @@ void DbGui::normalizeAll(Database& db)
         int i = 0;
         for (auto& e : db.m_entries)
         {
-            Normalize::scale(e.mesh);
+            Normalize::scale(e.getMesh());
             e.updateStatistics();
             printf("%i\n", i++);
         }

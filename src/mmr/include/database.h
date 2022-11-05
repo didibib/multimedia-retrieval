@@ -40,11 +40,13 @@ private:
     std::vector<Entry> m_entries;
     std::vector<Entry> m_queries;
     std::vector<std::string> m_labels;
+    std::vector<std::string> m_unique_labels;
 
     size_t m_avgVerts = 0;
     size_t m_avgFaces = 0;
 
     void exportStatistics(std::string suffix = "") const;
+    void exportTsneFormat();
     void exportMeshes(std::string extension, std::string folder);
 
     bool m_imported = false;

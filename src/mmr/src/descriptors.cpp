@@ -79,6 +79,12 @@ void Histogram::serialize(std::string dir)
     file.close();
 }
 
+void Histogram::exportTsneFormat(std::ofstream& file) const
+{
+    for (unsigned int i = 0; i < m_values.size(); i++)
+        file << m_values[i] << Feature::SPACE;
+}
+
 std::string Histogram::deserialize(std::string path)
 {
     m_bins.clear();
@@ -223,7 +229,7 @@ pmp::Scalar Descriptor::compactness(pmp::SurfaceMesh& mesh)
 
 Histogram Descriptor::A3(Entry* entry)
 {
-    auto& mesh = entry->mesh;
+    auto& mesh = entry->getMesh();
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
     auto random =
@@ -275,7 +281,7 @@ Histogram Descriptor::A3(Entry* entry)
 
 Histogram Descriptor::D1(Entry* entry)
 {
-    auto& mesh = entry->mesh;
+    auto& mesh = entry->getMesh();
 
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -297,7 +303,7 @@ Histogram Descriptor::D1(Entry* entry)
 
 Histogram Descriptor::D2(Entry* entry)
 {
-    auto& mesh = entry->mesh;
+    auto& mesh = entry->getMesh();
 
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -327,7 +333,7 @@ Histogram Descriptor::D2(Entry* entry)
 
 Histogram Descriptor::D3(Entry* entry)
 {
-    auto& mesh = entry->mesh;
+    auto& mesh = entry->getMesh();
     size_t mesh_size(mesh.vertices_size());
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -375,7 +381,7 @@ Histogram Descriptor::D3(Entry* entry)
 
 Histogram Descriptor::D4(Entry* entry)
 {
-    auto& mesh = entry->mesh;
+    auto& mesh = entry->getMesh();
     size_t mesh_size(mesh.vertices_size());
     std::mt19937::result_type seed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();

@@ -9,7 +9,6 @@
 
 namespace mmr {
 
-
 // DATABASE ==================================================================================
 // ===========================================================================================
 
@@ -31,7 +30,7 @@ void Database::import(const std::string& path_)
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
 
-    int maxModels = 5;
+    int maxModels = 1;
     int nQueries = 1;
 
     std::filesystem::path p = path_;
@@ -53,27 +52,18 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-
-        /*if (nModels > maxModels)
+       /* if (nModels > maxModels)
             break;*/
-
 
         // Create entry
         Entry entry(filename, label, path, name);
-        /*if (nModels++ > 0)
-        {*/
-            // Update global statistics
-            m_avgVerts += entry.mesh.n_vertices();
-            m_avgFaces += entry.mesh.n_faces();
+        /*m_avgVerts += entry.getMesh().n_vertices();
+        m_avgFaces += entry.getMesh().n_faces();*/
 
-            m_labels.push_back(label);
-            m_entries.push_back(std::move(entry));
-            std::cout << "Model: " << ++nModels << std::endl;
-       /* }
-        else
-        {
-            m_queries.push_back(std::move(entry));
-        }*/
+        m_labels.push_back(label);
+
+        m_entries.push_back(std::move(entry));
+        std::cout << "Model: " << ++nModels << std::endl;
     }
 
     if ((nModels - nQueries) == 0 || nModels == 0)
@@ -111,10 +101,31 @@ void Database::exportStatistics(std::string suffix) const
     statistics << "\n";
 
     // Rows
-    for (unsigned int i = 0; i < m_entries.size(); i++)    
+    for (unsigned int i = 0; i < m_entries.size(); i++)
         m_entries[i].features.exportStatistics(statistics);
-    
+
     statistics.close();
+}
+
+void Database::exportTsneFormat()
+{
+    std::ofstream data;
+    std::ofstream labels;
+    std::ofstream names;
+
+    data.open(util::getExportDir() + "tsne_data" + ".txt");
+    labels.open(util::getExportDir() + "tsne_labels" + ".txt");
+    names.open(util::getExportDir() + "tsne_names" + ".txt");
+    for (auto& e : m_entries)
+    {
+        labels << Feature::toString(e.features["label"]) << "\n";
+        names << Feature::toString(e.features["filename"]) << "\n";
+        e.features.exportTsneFormat(data);
+    }
+
+    data.close();
+    labels.close();
+    names.close();
 }
 
 void Database::exportMeshes(std::string extension, std::string folder)
@@ -134,11 +145,11 @@ void Database::readPt(std::vector<float>& features, ANNpoint p)
         p[j] = i;
         j++;
     }
-
 }
 
-std::map<std::string, std::vector<int>> Database::ANN(
-    int k, float R, mmr::Entry& target,mmr::Database& db)
+std::map<std::string, std::vector<int>> Database::ANN(int k, float R,
+                                                      mmr::Entry& target,
+                                                      mmr::Database& db)
 {
     std::map<std::string, std::vector<int>> Idx;
     std::vector<int> kIdx(k), RIdx;
@@ -177,7 +188,7 @@ std::map<std::string, std::vector<int>> Database::ANN(
     kdTree = new ANNkd_tree(dataPts, nPts, dim);
 
     kdTree->annkSearch(queryPt, k, nnIdx, kdists, eps);
-    
+
     R *= R;
     int n = kdTree->annkFRSearch(queryPt, R, nPts, nnRIdx, Rdists, eps);
 

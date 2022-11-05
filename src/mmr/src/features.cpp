@@ -11,15 +11,15 @@ const std::string Feature::INT = "int";
 const std::string Feature::FLOAT = "float";
 const std::string Feature::STRING = "string";
 const std::string Feature::CSV_DELIM = ",";
+const std::string Feature::SPACE = " ";
 
 void FeatureVector::updateFeatureVector()
 {
-
     std::vector<std::string> Findex = {"area", "sphericity", "rectangularity",
-                                      "diameter", "eccentricity"};
+                                       "diameter", "eccentricity"};
     features.resize(Findex.size());
     int j = 0;
-    for (auto i:Findex)
+    for (auto i : Findex)
     {
         auto iter = m_statistics.find(i);
         if (iter != m_statistics.end())
@@ -30,7 +30,7 @@ void FeatureVector::updateFeatureVector()
     }
 }
 
-void FeatureVector::updateHistograms() 
+void FeatureVector::updateHistograms()
 {
     std::vector<std::string> Hindex = {"A3", "D1", "D2", "D3", "D4"};
     Scalar dist(0.f);
@@ -42,11 +42,11 @@ void FeatureVector::updateHistograms()
     }
 }
 
-void FeatureVector::updateAllFeatures() 
+void FeatureVector::updateAllFeatures()
 {
     allfeatures.clear();
     allfeatures.insert(allfeatures.end(), features.begin(), features.end());
-    for (auto i:histograms)
+    for (auto i : histograms)
     {
         std::vector<float> temp = i.values();
         allfeatures.insert(allfeatures.end(), temp.begin(), temp.end());
@@ -71,7 +71,6 @@ Scalar FeatureVector::distance(std::vector<Histogram> h1,
 float e_dist(feature_t* F1, feature_t* F2) //Distance of two histogram bars
 {
     return fabs(*F1 - *F2);
-
 }
 
 Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
@@ -86,15 +85,13 @@ Scalar FeatureVector::distance(Histogram& h1, Histogram& h2)
     Scalar *w1 = new Scalar[N1], *w2 = new Scalar[N2];
 
     int i = 0;
-    for (auto iter1 = his1.begin();
-         iter1 != his1.end(); ++iter1, ++i)
+    for (auto iter1 = his1.begin(); iter1 != his1.end(); ++iter1, ++i)
     {
         f1[i] = i;
         w1[i] = *iter1;
     }
     i = 0;
-    for (auto iter2 = his2.begin();
-         iter2 != his2.end(); ++iter2, ++i)
+    for (auto iter2 = his2.begin(); iter2 != his2.end(); ++iter2, ++i)
     {
         f2[i] = i;
         w2[i] = *iter2;
@@ -121,11 +118,12 @@ Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
 }
 
 std::vector<int> FeatureVector::kMeansIndices(int index,
-                                              std::vector<float>& distances, int size)
+                                              std::vector<float>& distances,
+                                              int size)
 {
     int const k = 5;
     std::vector<int> indices;
-    for (int i = 0; i< size -1; i++)
+    for (int i = 0; i < size - 1; i++)
     {
         indices.push_back(i);
     }
@@ -135,7 +133,7 @@ std::vector<int> FeatureVector::kMeansIndices(int index,
     std::vector<int> kIndices;
     for (int i = 0; i < size - 1; i++)
     {
-        indices[i] = indices[i] >= index ? indices[i] + 1: indices[i];
+        indices[i] = indices[i] >= index ? indices[i] + 1 : indices[i];
     }
     for (int i = 0; i < k; i++)
     {
@@ -144,13 +142,20 @@ std::vector<int> FeatureVector::kMeansIndices(int index,
     return kIndices;
 }
 
-
 void FeatureVector::exportStatistics(std::ofstream& file) const
 {
-    // Columns
     for (auto const& [key, val] : m_statistics)
         file << Feature::toString(val) << CSV_DELIM;
     file << "\n";
+}
+
+void FeatureVector::exportTsneFormat(std::ofstream& data)
+{
+    for (auto val: features)
+        data << std::to_string(val) << SPACE;
+    for (auto& h : m_histograms)
+        h.second.exportTsneFormat(data);
+    data << "\n";
 }
 
 void FeatureVector::serialize(std::string dir, std::string filename)
@@ -167,10 +172,10 @@ void FeatureVector::serialize(std::string dir, std::string filename)
         h.second.serialize(dir);
 }
 
-void FeatureVector::deserialize(std::string folder) {
-
+bool FeatureVector::deserialize(std::string folder)
+{
     if (!std::filesystem::is_directory(folder))
-        return;
+        return false;
     for (const auto& entry : std::filesystem::directory_iterator(folder))
     {
         std::filesystem::path path = entry.path();
@@ -190,9 +195,11 @@ void FeatureVector::deserialize(std::string folder) {
     updateFeatureVector();
     updateHistograms();
     updateAllFeatures();
+    return true;
 }
 
-void FeatureVector::deserialize_fv(std::string path) {
+void FeatureVector::deserialize_fv(std::string path)
+{
     std::ifstream file;
     std::string line;
 

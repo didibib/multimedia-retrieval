@@ -29,6 +29,7 @@ public:
     static const std::string FLOAT;
     static const std::string STRING;
     static const std::string CSV_DELIM;
+    static const std::string SPACE;
 
     struct AnySerialize
     {
@@ -75,7 +76,6 @@ public:
 
     void updateFeatureVector();
 
-    static pmp::Scalar distance(Histogram& h1, Histogram& h2);
     static pmp::Scalar distance(std::map<std::string, pmp::Scalar>& data1,
                                 std::map<std::string, pmp::Scalar>& data2,
                                 std::vector<std::string>& index);
@@ -106,8 +106,9 @@ public:
     void addHistogram(Histogram h) { m_histograms[h.descriptor()] = h; }
 
     void exportStatistics(std::ofstream&) const;
+    void exportTsneFormat(std::ofstream& data);
     void serialize(std::string dir, std::string filename);
-    void deserialize(std::string dir);
+    bool deserialize(std::string dir);
 };
 
 } // namespace mmr
