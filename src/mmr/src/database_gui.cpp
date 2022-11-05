@@ -118,6 +118,8 @@ void DbGui::beginGui(Database& db)
                 if (i == j)
                     continue;
                 distances.push_back(mmr::FeatureVector::distance(
+                    db.m_entries[i].features.histograms,
+                    db.m_entries[j].features.histograms,
                     db.m_entries[i].features.features,
                     db.m_entries[j].features.features));
             }
