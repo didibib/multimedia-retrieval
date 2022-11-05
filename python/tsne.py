@@ -12,8 +12,8 @@
 #  Created by Laurens van der Maaten on 20-12-08.
 #  Copyright (c) 2008 Tilburg University. All rights reserved.
 
+import matplotlib.pyplot as plt
 import numpy as np
-import pylab
 import os
 
 def Hbeta(D=np.array([]), beta=1.0):
@@ -186,24 +186,75 @@ data_path = os.path.join(export_dir, "tsne_data.txt")
 labels_path = os.path.join(export_dir, "tsne_labels.txt")
 names_path = os.path.join(export_dir, "tsne_names.txt")
 
+# Collect all names
+names = []
+with open(names_path) as file:
+    names = [line.rstrip() for line in file]
+names = np.array(names)
+
 # Collect all labels
 labels_str = []
 with open(labels_path) as file:
     labels_str = [line.rstrip() for line in file]
+labels_str = np.array(labels_str)
 
 # Create dictionary of {label, index}
 labels_dict = dict()
+i = 0
 for label in labels_str:
-    i = 0
     if(label not in labels_dict):
         labels_dict[label] = i
         i = i + 1
 
 labels_int = []
 for label in labels_str:
-    labels_int = labels_dict[label]
+    labels_int.append(labels_dict[label])
+labels_int = np.array(labels_int)
 
+
+# Execute TSNE
 X = np.loadtxt(data_path)
-Y = tsne(X, 2, 50, 20.0)
-pylab.scatter(Y[:, 0], Y[:, 1], 20, labels_int)
-pylab.show()
+initial_dim = len(X[0])
+Y = tsne(X, 2, initial_dim, 20.0)
+
+
+# Plot result
+norm = plt.Normalize(1, len(X))
+cmap = plt.cm.RdYlGn
+
+fig, ax = plt.subplots()
+sc = plt.scatter(Y[:, 0], Y[:, 1],  20, labels_int)
+
+annot = ax.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
+                    bbox=dict(boxstyle="round", fc="w"),
+                    arrowprops=dict(arrowstyle="->"))
+annot.set_visible(False)
+
+def update_annot(info):
+    index = info["ind"]
+    pos = sc.get_offsets()[index[0]]
+    annot.xy = pos
+    text = "{}, {}".format(" ".join(labels_str[index]), 
+                           " ".join(names[index]))
+    annot.set_text(text)
+    annot.get_bbox_patch().set_facecolor(cmap(norm(labels_int[index[0]])))
+    annot.get_bbox_patch().set_alpha(0.8)
+    annot.get_bbox_patch().set_edgecolor("white")
+
+def hover(event):
+    vis = annot.get_visible()
+    if event.inaxes == ax:
+        cont, info = sc.contains(event)
+        if cont:
+            update_annot(info)
+            annot.set_visible(True)
+            fig.canvas.draw_idle()
+        else:
+            if vis:
+                annot.set_visible(False)
+                fig.canvas.draw_idle()
+
+fig.canvas.mpl_connect("motion_notify_event", hover)
+
+plt.show()
+
