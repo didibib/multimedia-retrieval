@@ -285,20 +285,25 @@ void Database::scoring()
     for (int cl = 0; cl < labelsAccuracy.labels.size(); cl++)
     {
         result << "Class acurracy of: " << std::left << std::setw(10)
-               << labelsAccuracy.labels[cl] << "is " << std::left
-               << std::setw(4)
+               << labelsAccuracy.labels[cl] << "is" << std::setw(7)
+               << std::setiosflags(std::ios::fixed | std::ios::right)
+               << std::setprecision(2)
                << 100.0f * labelsAccuracy.scores[cl] /
                       (float)labelsAccuracy.counts[cl]
                << std::endl;
     }
-    result << std::left << std::setw(29) << "Final accuracy   :" << std::setw(3)
-           << "is" << std::setw(5)
+    result << std::left << std::setw(29) << "Final accuracy   :"
+           << "is" << std::setw(7)
+           << std::setiosflags(std::ios::fixed | std::ios::right)
+           << std::setprecision(2)
            << 100.0f * globalScore / (float)m_entries.size() << std::endl;
 
     auto end = std::chrono::system_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     result << std::left << std::setw(17) << "time used"
            << ": " << std::setw(10)
+           << std::setiosflags(std::ios::fixed | std::ios::left)
+           << std::setprecision(4)
            << double(duration.count()) *
                   std::chrono::microseconds::period::num /
                   std::chrono::microseconds::period::den
