@@ -162,7 +162,7 @@ void Database::scoring()
                 kIndices = Database::ANN(0, m_entries[i], *this)["knn"];
                 break;
             case ANN_RNN:
-                kIndices = Database::ANN(0.1f, m_entries[i], *this)["rnn"];
+                kIndices = Database::ANN(0.3f, m_entries[i], *this)["rnn"];
                 break;
             case KNN_HANDMADE:
                 kIndices = Database::KNN(i, m_entries[i], *this);
@@ -263,22 +263,28 @@ void Database::scoring()
         globalScore += score;
         //printf("Score is %f\n", score / (float)kIndices.size());
     }
-    printf("Final accuracy is: %f\n",
-           100.0f * globalScore / (float)m_entries.size());
+    
     for (int cl = 0; cl < labelsAccuracy.labels.size(); cl++)
     {
-        printf("Class acurracy of: %s is %f\n", labelsAccuracy.labels[cl],
-               100.0f * labelsAccuracy.scores[cl] /
-                   (float)labelsAccuracy.counts[cl]);
+        std::cout << "Class acurracy of: " << std::left << std::setw(10)
+                  << labelsAccuracy.labels[cl] << "is " << std::left
+                  << std::setw(4)
+                  << 100.0f * labelsAccuracy.scores[cl] /
+                         (float)labelsAccuracy.counts[cl]
+                  << std::endl;
     }
+    std::cout << std::left << std::setw(29) << "Final accuracy   :" << std::setw(3)
+              << "is" << std::setw(5)
+              << 100.0f * globalScore / (float)m_entries.size() << std::endl;
+
     auto end = std::chrono::system_clock::now();
-    auto duration =
-        std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "cost "
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << std::left << std::setw(17) << "time used"
+              << ": " << std::setw(10)
               << double(duration.count()) *
                      std::chrono::microseconds::period::num /
                      std::chrono::microseconds::period::den
-              << " seconds" << std::endl;
+              << "seconds" << std::endl;
 }
 
 // KNN =======================================================================================
