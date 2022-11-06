@@ -32,15 +32,27 @@ public:
     size_t getAvgFaces() { return m_avgFaces; }
     std::string name;
 
-    static std::map<std::string, std::vector<int>> ANN(int k, float R,
-                                                          mmr::Entry& target,
-                                                          mmr::Database& db);
+    void scoring();
+
+    static std::map<std::string, std::vector<int>> ANN(float R,
+                                                       mmr::Entry& target,
+                                                       mmr::Database& db);
+    static std::vector<int> Database::KNN(int i, mmr::Entry& target,
+                                          mmr::Database& db);
+
 
 private:
     std::vector<Entry> m_entries;
     std::vector<Entry> m_queries;
     std::vector<std::string> m_labels;
     std::vector<std::string> m_unique_labels;
+
+    enum NNmethod
+    {
+        ANN_KNN,
+        ANN_RNN,
+        KNN_HANDMADE
+    } scoring_flag;
 
     size_t m_avgVerts = 0;
     size_t m_avgFaces = 0;
@@ -54,5 +66,7 @@ private:
     bool m_columnSelected[16] = {false};
     size_t m_columns = 0;
     static void readPt(std::vector<float>& features, ANNpoint p);
+    static std::vector<int> kMeansIndices(int index, std::vector<float>& distances,
+                                   int size);
 };
 } // namespace mmr

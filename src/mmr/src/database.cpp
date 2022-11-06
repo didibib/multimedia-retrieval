@@ -134,6 +134,138 @@ void Database::exportMeshes(std::string extension, std::string folder)
         e.writeMesh(extension, folder);
 }
 
+// SCORE =====================================================================================
+// ===========================================================================================
+
+void Database::scoring() 
+{
+    auto start = std::chrono::system_clock::now();
+    float globalScore = 0.0f;
+    for (int i = 0; i < m_entries.size(); i++)
+    {
+        float score = 0;
+        std::vector<int> kIndices;
+        switch (scoring_flag)
+        {
+            case ANN_KNN:
+                kIndices = Database::ANN(0, m_entries[i], *this)["knn"];
+                break;
+            case ANN_RNN:
+                kIndices = Database::ANN(0.1f, m_entries[i], *this)["rnn"];
+                break;
+            case KNN_HANDMADE:
+                kIndices = Database::KNN(i, m_entries[i], *this);
+                break;
+            default:
+                break;
+        }
+
+        // helpful struct to find the most occured label
+        struct decisionClass
+        {
+            std::vector<::std::string> labels;
+            std::vector<int> counts;
+            int end;
+        } classes;
+        classes.end = 0;
+
+        // search through the helpful label container and increment the occurance
+        for (int k = 0; k < kIndices.size(); k++)
+        {
+            bool isFound = false;
+            for (int c = 0; c < classes.end; c++)
+            {
+                if (!classes.labels[c].compare(m_labels[kIndices[k]]))
+                {
+                    classes.counts[c]++;
+                    isFound = true;
+                }
+                if (isFound)
+                    break;
+            }
+
+            // add the label if not found
+            if (!isFound)
+            {
+                classes.labels.push_back(m_labels[kIndices[k]]);
+                classes.counts.push_back(1);
+                classes.end++;
+            }
+        }
+        int max = 0;
+        int cIndex;
+        for (int c = 0; c < classes.end; c++)
+        {
+            if (classes.counts[c] > max)
+            {
+                max = classes.counts[c];
+                cIndex = c;
+            }
+        }
+
+        if (!m_labels[i].compare(classes.labels[cIndex]))
+        {
+            score++;
+        }
+        globalScore += score;
+        //printf("Score is %f\n", score / (float)kIndices.size());
+    }
+    printf("Final accuracy is: %f\n",
+           100.0f * globalScore / (float)m_entries.size());
+    auto end = std::chrono::system_clock::now();
+    auto duration =
+        std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "cost "
+              << double(duration.count()) *
+                     std::chrono::microseconds::period::num /
+                     std::chrono::microseconds::period::den
+              << " seconds" << std::endl;
+}
+
+// KNN =======================================================================================
+// ===========================================================================================
+
+std::vector<int> Database::kMeansIndices(int index,
+                                              std::vector<float>& distances,
+                                              int size)
+{
+    int const k(5);
+    std::vector<int> indices;
+    for (int i = 0; i < size - 1; i++)
+    {
+        indices.push_back(i);
+    }
+    std::stable_sort(
+        indices.begin(), indices.end(),
+        [&distances](int i1, int i2) { return distances[i1] < distances[i2]; });
+    std::vector<int> kIndices;
+    for (int i = 0; i < size - 1; i++)
+    {
+        indices[i] = indices[i] >= index ? indices[i] + 1 : indices[i];
+    }
+    for (int i = 0; i < k; i++)
+    {
+        kIndices.push_back(indices[i]);
+    }
+    return kIndices;
+}
+
+std::vector<int> Database::KNN(int i, mmr::Entry& target, mmr::Database& db)
+{
+    auto entries(db.m_entries);
+    std::vector<float> distances;
+    for (int j = 0; j < db.m_entries.size(); j++)
+    {
+        if (i == j)
+            continue;
+        distances.push_back(mmr::FeatureVector::distance(
+            entries[i].features.histograms, entries[j].features.histograms,
+            entries[i].features.features, entries[j].features.features));
+    }
+    std::vector<int> kIndices = kMeansIndices(i, distances, entries.size());
+    return kIndices;
+}
+
 // ANN =======================================================================================
 // ===========================================================================================
 
@@ -147,15 +279,16 @@ void Database::readPt(std::vector<float>& features, ANNpoint p)
     }
 }
 
-std::map<std::string, std::vector<int>> Database::ANN(int k, float R,
+std::map<std::string, std::vector<int>> Database::ANN(float R,
                                                       mmr::Entry& target,
                                                       mmr::Database& db)
 {
-    std::map<std::string, std::vector<int>> Idx;
-    std::vector<int> kIdx(k), RIdx;
-
     auto entries(db.m_entries);
     auto query(target.features);
+    int const k(5);
+
+    std::map<std::string, std::vector<int>> Idx;
+    std::vector<int> kIdx(k), RIdx;
 
     int dim(query.allfeatures.size());
     double eps(0);

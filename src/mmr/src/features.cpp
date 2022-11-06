@@ -117,31 +117,6 @@ Scalar FeatureVector::distance(std::map<std::string, Scalar>& data1,
     return (f1 - f2).norm();
 }
 
-std::vector<int> FeatureVector::kMeansIndices(int index,
-                                              std::vector<float>& distances,
-                                              int size)
-{
-    int const k = 5;
-    std::vector<int> indices;
-    for (int i = 0; i < size - 1; i++)
-    {
-        indices.push_back(i);
-    }
-    std::stable_sort(
-        indices.begin(), indices.end(),
-        [&distances](int i1, int i2) { return distances[i1] < distances[i2]; });
-    std::vector<int> kIndices;
-    for (int i = 0; i < size - 1; i++)
-    {
-        indices[i] = indices[i] >= index ? indices[i] + 1 : indices[i];
-    }
-    for (int i = 0; i < k; i++)
-    {
-        kIndices.push_back(indices[i]);
-    }
-    return kIndices;
-}
-
 void FeatureVector::exportStatistics(std::ofstream& file) const
 {
     for (auto const& [key, val] : m_statistics)

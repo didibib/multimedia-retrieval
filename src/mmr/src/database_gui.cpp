@@ -10,6 +10,8 @@
 #include "normalization.h"
 #include "entry.h"
 
+using std::chrono::system_clock;
+
 namespace mmr {
 void DbGui::beginGui(Database& db)
 {
@@ -62,7 +64,7 @@ void DbGui::beginGui(Database& db)
         }
     }
 
-     if (ImGui::MenuItem("Print kNN list of every shapes"))
+    if (ImGui::MenuItem("Print kNN list of every shapes"))
     {
         int qi = 0;
         for (auto& q : db.m_entries)
@@ -76,7 +78,7 @@ void DbGui::beginGui(Database& db)
                 q.isNormalized = true;
             }
             
-            auto mi = Database::ANN(6, 0, q, db);
+            auto mi = Database::ANN(0, q, db);
             std::vector<int> e = mi["knn"];
             std::cout
                 << "nearest neighbour of" << std::setw(4) << qi << std::setw(10)
@@ -96,89 +98,36 @@ void DbGui::beginGui(Database& db)
             {
                 ei++;
                 printf("Distance function between %i and %i is %f\n", qi, ei,
-                       mmr::FeatureVector::distance(
-                           q.features.histograms, e.features.histograms,
-                           q.features.features, e.features.features));
+                        mmr::FeatureVector::distance(
+                            q.features.histograms, e.features.histograms,
+                            q.features.features, e.features.features));
                 
             }*/
             
         }
      }
-    if (ImGui::MenuItem("Print Accuracy"))
+    if (ImGui::BeginMenu("Print Accuracy"))
     {
-        
-        float globalScore = 0.0f;
-        for (int i = 0; i < db.m_entries.size(); i++)
+        if (ImGui::MenuItem("ANN_KNN"))
         {
-            printf("Entry: %i\n", i);
-            float score = 0;
-            std::vector<float> distances;
-            for (int j = 0; j < db.m_entries.size(); j++)
-            {
-                if (i == j)
-                    continue;
-                distances.push_back(mmr::FeatureVector::distance(
-                    db.m_entries[i].features.histograms,
-                    db.m_entries[j].features.histograms,
-                    db.m_entries[i].features.features,
-                    db.m_entries[j].features.features));
-            }
-            std::vector<int> kIndices = mmr::FeatureVector::kMeansIndices(
-                i, distances, db.m_entries.size());
-
-            // helpful struct to find the most occured label
-            struct decisionClass
-            {
-                std::vector<::std::string> labels;
-                std::vector<int> counts;
-                int end;
-            } classes;
-            classes.end = 0;
-
-            // search through the helpful label container and increment the occurance
-            for (int k = 0; k < kIndices.size(); k++)
-            {
-                bool isFound = false;
-                for (int c = 0; c < classes.end; c++)
-                {
-                    if (!classes.labels[c].compare(db.m_labels[kIndices[k]]))
-                    {
-                        classes.counts[c]++;
-                        isFound = true;
-                    }
-                    if (isFound)
-                        break;
-                }
-
-                // add the label if not found
-                if (!isFound)
-                {
-                    classes.labels.push_back(db.m_labels[kIndices[k]]);
-                    classes.counts.push_back(1);
-                    classes.end++;
-                }
-            }
-            int max = 0;
-            int cIndex;
-            for (int c = 0; c < classes.end; c++)
-            {
-                if (classes.counts[c] > max)
-                {
-                    max = classes.counts[c];
-                    cIndex = c;
-                }
-            }
-
-            if (!db.m_labels[i].compare(classes.labels[cIndex]))
-            {
-                score++;
-            }
-            globalScore += score;
-            //printf("Score is %f\n", score / (float)kIndices.size());
-
+            db.scoring_flag = mmr::Database::NNmethod::ANN_KNN;
+            std::cout << std::endl << std::left << std::setw(16) << "ANN_KNN:";
+            db.scoring();
         }
-        printf("Final accuracy is: %f\n",
-               100.0f * globalScore / (float)db.m_entries.size());     
+        //if (ImGui::MenuItem("ANN_RNN"))
+        //{
+        //    // not prepared
+        //    db.scoring_flag = mmr::Database::NNmethod::ANN_RNN;
+        //    std::cout << std::endl << std::left << std::setw(16) << "ANN_RNN:";
+        //    db.scoring();
+        //}
+        if (ImGui::MenuItem("KNN_handmade"))
+        {
+            db.scoring_flag = mmr::Database::NNmethod::KNN_HANDMADE;
+            std::cout << std::endl << std::left << std::setw(16) << "ANN_handmade:";
+            db.scoring();
+        }
+        ImGui::EndMenu();
     }
 }
 

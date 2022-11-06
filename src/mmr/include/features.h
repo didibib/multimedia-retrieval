@@ -85,7 +85,6 @@ public:
         Eigen::VectorXf v = featuresA - featuresB;
         return v.norm();
     }
-    static std::vector<int> kMeansIndices(int index, std::vector<float>& distances, int size);
 
     void updateHistograms();
     void updateAllFeatures();
