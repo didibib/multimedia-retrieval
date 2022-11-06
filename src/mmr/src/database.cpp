@@ -327,12 +327,12 @@ std::map<std::string, std::vector<int>> Database::ANN(float R,
 
     RIdx.resize(n);
     if (k > 0)
-        for (size_t i = 0; i < k; i++)
-            kIdx[i] = nnIdx[i];
+        for (size_t i = 1; i < k; i++)
+            kIdx[i-1] = nnIdx[i];
 
     if (R > 0)
-        for (size_t i = 0; nnRIdx[i] != ANN_NULL_IDX && i < nPts; i++)
-            RIdx[i] = nnRIdx[i];
+        for (size_t i = 1; nnRIdx[i] != ANN_NULL_IDX && i < nPts; i++)
+            RIdx[i-1] = nnRIdx[i];
 
     delete[] nnIdx;
     delete[] nnRIdx;

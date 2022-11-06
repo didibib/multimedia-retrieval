@@ -10,8 +10,6 @@
 #include "normalization.h"
 #include "entry.h"
 
-using std::chrono::system_clock;
-
 namespace mmr {
 void DbGui::beginGui(Database& db)
 {
