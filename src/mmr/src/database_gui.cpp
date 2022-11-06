@@ -1,7 +1,6 @@
 #include "database_gui.h"
 #include "util.h"
 #include "descriptors.h"
-#include <imgui.h>
 #include <implot.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <pmp/algorithms/Subdivision.h>
@@ -23,6 +22,9 @@ void DbGui::beginGui(Database& db)
             {
                 db.import(util::getDataDir("LabeledDB_new"));
                 m_showStatistics = true;
+                k = db.knn_k;
+                r = db.rnn_r;
+                entries_size = db.m_entries.size();
             }
             if (ImGui::MenuItem("Normalized"))
             {
@@ -32,6 +34,9 @@ void DbGui::beginGui(Database& db)
                 { 
                     e.isNormalized = true;
                 }
+                k = db.knn_k;
+                r = db.rnn_r;
+                entries_size = db.m_entries.size();
             }
             ImGui::EndMenu();
         }
@@ -62,70 +67,69 @@ void DbGui::beginGui(Database& db)
         }
     }
 
-    if (ImGui::MenuItem("Print kNN list of every shapes"))
+    if (ImGui::MenuItem("Set up K and R"))
     {
-        int qi = 0;
-        for (auto& q : db.m_entries)
+        k = db.knn_k;
+        r = db.rnn_r;
+        ImGui::OpenPopup("NNSetting");
+    }
+        
+    if (ImGui::BeginPopupModal("NNSetting"))
+    {
+        ImGui::InputInt("K",&k);
+        if (k >= entries_size)
+            k = entries_size;
+        ImGui::InputFloat("R", &r);
+        if (ImGui::Button("SAVE", ImVec2(100,0)))
         {
-            qi++;
-            int ei = 0;
-            if (!q.isNormalized)
-            {
-                Normalize::all_steps(q.getMesh());
-                Normalize::remesh(q.getMesh());
-                q.isNormalized = true;
-            }
-            
-            auto mi = Database::ANN(0, q, db);
-            std::vector<int> e = mi["knn"];
-            std::cout
-                << "nearest neighbour of" << std::setw(4) << qi << std::setw(10)
-                << FeatureVector::toString(q.features["label"]) << " is"
-                << std::setw(4) << e[1] + 1 << std::setw(10)
-                << FeatureVector::toString(db.m_entries[e[1]].features["label"])
-                << std::setw(4) << e[2] + 1 << std::setw(10)
-                << FeatureVector::toString(db.m_entries[e[2]].features["label"])
-                << std::setw(4) << e[3] + 1 << std::setw(10)
-                << FeatureVector::toString(db.m_entries[e[3]].features["label"])
-                << std::setw(4) << e[4] + 1 << std::setw(10)
-                << FeatureVector::toString(db.m_entries[e[4]].features["label"])
-                << std::setw(4) << e[5] + 1 << std::setw(10)
-                << FeatureVector::toString(db.m_entries[e[5]].features["label"])
-                << std::endl;
-            /*for (auto& e : db.m_entries)
-            {
-                ei++;
-                printf("Distance function between %i and %i is %f\n", qi, ei,
-                        mmr::FeatureVector::distance(
-                            q.features.histograms, e.features.histograms,
-                            q.features.features, e.features.features));
-                
-            }*/
-            
+            db.knn_k = k;
+            db.rnn_r = r;
+            ImGui::CloseCurrentPopup();
         }
-     }
+        if (ImGui::Button("CANCEL", ImVec2(100, 0)))
+            ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+    }
+
     if (ImGui::BeginMenu("Print Accuracy"))
     {
         if (ImGui::MenuItem("ANN_KNN"))
         {
             db.scoring_flag = mmr::Database::NNmethod::ANN_KNN;
-            std::cout << std::endl << "ANN_KNN:" << std::endl;
             db.scoring();
+            std::cout << "scoring end" << std::endl;
+            m_scoring = true;
         }
         if (ImGui::MenuItem("ANN_RNN"))
         {
             // not prepared
             db.scoring_flag = mmr::Database::NNmethod::ANN_RNN;
-            std::cout << std::endl << "ANN_RNN:" << std::endl;
             db.scoring();
+            std::cout << "scoring end" << std::endl;
+            m_scoring = true;
         }
         if (ImGui::MenuItem("KNN_handmade"))
         {
             db.scoring_flag = mmr::Database::NNmethod::KNN_HANDMADE;
-            std::cout << std::endl << "ANN_handmade:" << std::endl;
             db.scoring();
+            std::cout << "scoring end" << std::endl;
+            m_scoring = true;
         }
         ImGui::EndMenu();
+    }
+
+    if (m_scoring)
+        ImGui::OpenPopup("Scoring");
+
+    if (ImGui::BeginPopupModal("Scoring"))
+    {
+        m_scoring = false;
+        ImGui::PushFont(font);
+        ImGui::Text(db.scoring_result.c_str());
+        ImGui::PopFont();
+        if (ImGui::Button("CLOSE", ImVec2(275, 0)))
+            ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
     }
 }
 

@@ -2,6 +2,7 @@
 
 #include "database.h"
 #include <vector>
+#include <imgui.h>
 
 namespace mmr {
 class DbGui
@@ -20,6 +21,13 @@ class DbGui
     std::vector<int> m_selectedEntries;
     bool m_newSelectedEntry = false;
     Database& m_db;
+
+    int k = 0;
+    float r = 0;
+    int entries_size = 0;
+    bool m_scoring = false;
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* font = io.Fonts->AddFontDefault();
 
 public:
     DbGui(Database& db) : m_db(db) { m_selectedEntries.resize(m_maxEntries, -1); }

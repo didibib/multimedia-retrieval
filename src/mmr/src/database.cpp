@@ -151,6 +151,24 @@ void Database::scoring()
 
     } labelsAccuracy;
     labelsAccuracy.end = 0;
+    std::ostringstream result;
+    switch (scoring_flag)
+    {
+        case ANN_KNN:
+            result << std::left << std::setw(17) << "ANN_KNN"
+                   << ": (k = " << this->knn_k << ")" << std::endl;
+            break;
+        case ANN_RNN:
+            result << std::left << std::setw(17) << "ANN_RNN"
+                   << ": (R = " << this->rnn_r << ")" << std::endl;
+            break;
+        case KNN_HANDMADE:
+            result << std::left << std::setw(17) << "KNN_handmade"
+                   << ": (k = " << this->knn_k << ")" << std::endl;
+            break;
+        default:
+            break;
+    }
 
     for (int i = 0; i < m_entries.size(); i++)
     {
@@ -159,13 +177,13 @@ void Database::scoring()
         switch (scoring_flag)
         {
             case ANN_KNN:
-                kIndices = Database::ANN(0, m_entries[i], *this)["knn"];
+                kIndices = Database::ANN(knn_k, 0, m_entries[i], *this)["knn"];
                 break;
             case ANN_RNN:
-                kIndices = Database::ANN(0.3f, m_entries[i], *this)["rnn"];
+                kIndices = Database::ANN(0, rnn_r, m_entries[i], *this)["rnn"];
                 break;
             case KNN_HANDMADE:
-                kIndices = Database::KNN(i, m_entries[i], *this);
+                kIndices = Database::KNN(knn_k, i, m_entries[i], *this);
                 break;
             default:
                 break;
@@ -266,35 +284,35 @@ void Database::scoring()
     
     for (int cl = 0; cl < labelsAccuracy.labels.size(); cl++)
     {
-        std::cout << "Class acurracy of: " << std::left << std::setw(10)
-                  << labelsAccuracy.labels[cl] << "is " << std::left
-                  << std::setw(4)
-                  << 100.0f * labelsAccuracy.scores[cl] /
-                         (float)labelsAccuracy.counts[cl]
-                  << std::endl;
+        result << "Class acurracy of: " << std::left << std::setw(10)
+               << labelsAccuracy.labels[cl] << "is " << std::left
+               << std::setw(4)
+               << 100.0f * labelsAccuracy.scores[cl] /
+                      (float)labelsAccuracy.counts[cl]
+               << std::endl;
     }
-    std::cout << std::left << std::setw(29) << "Final accuracy   :" << std::setw(3)
-              << "is" << std::setw(5)
-              << 100.0f * globalScore / (float)m_entries.size() << std::endl;
+    result << std::left << std::setw(29) << "Final accuracy   :" << std::setw(3)
+           << "is" << std::setw(5)
+           << 100.0f * globalScore / (float)m_entries.size() << std::endl;
 
     auto end = std::chrono::system_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << std::left << std::setw(17) << "time used"
-              << ": " << std::setw(10)
-              << double(duration.count()) *
-                     std::chrono::microseconds::period::num /
-                     std::chrono::microseconds::period::den
-              << "seconds" << std::endl;
+    result << std::left << std::setw(17) << "time used"
+           << ": " << std::setw(10)
+           << double(duration.count()) *
+                  std::chrono::microseconds::period::num /
+                  std::chrono::microseconds::period::den
+           << "seconds" << std::endl;
+    this->scoring_result = result.str();
 }
 
 // KNN =======================================================================================
 // ===========================================================================================
 
-std::vector<int> Database::kMeansIndices(int index,
-                                              std::vector<float>& distances,
-                                              int size)
+std::vector<int> Database::kMeansIndices(int k, int index,
+                                         std::vector<float>& distances,
+                                         int size)
 {
-    int const k(5);
     std::vector<int> indices;
     for (int i = 0; i < size - 1; i++)
     {
@@ -315,7 +333,8 @@ std::vector<int> Database::kMeansIndices(int index,
     return kIndices;
 }
 
-std::vector<int> Database::KNN(int i, mmr::Entry& target, mmr::Database& db)
+std::vector<int> Database::KNN(int k, int i, mmr::Entry& target,
+                               mmr::Database& db)
 {
     auto entries(db.m_entries);
     std::vector<float> distances;
@@ -327,7 +346,7 @@ std::vector<int> Database::KNN(int i, mmr::Entry& target, mmr::Database& db)
             entries[i].features.histograms, entries[j].features.histograms,
             entries[i].features.features, entries[j].features.features));
     }
-    std::vector<int> kIndices = kMeansIndices(i, distances, entries.size());
+    std::vector<int> kIndices = kMeansIndices(k, i, distances, entries.size());
     return kIndices;
 }
 
@@ -344,13 +363,15 @@ void Database::readPt(std::vector<float>& features, ANNpoint p)
     }
 }
 
-std::map<std::string, std::vector<int>> Database::ANN(float R,
+std::map<std::string, std::vector<int>> Database::ANN(int k, float R,
                                                       mmr::Entry& target,
                                                       mmr::Database& db)
 {
     auto entries(db.m_entries);
     auto query(target.features);
-    int const k(5);
+
+    if (k)
+        k += 1;
 
     std::map<std::string, std::vector<int>> Idx;
     std::vector<int> kIdx(k), RIdx;
@@ -385,19 +406,22 @@ std::map<std::string, std::vector<int>> Database::ANN(float R,
 
     kdTree = new ANNkd_tree(dataPts, nPts, dim);
 
-    kdTree->annkSearch(queryPt, k, nnIdx, kdists, eps);
-
-    R *= R;
-    int n = kdTree->annkFRSearch(queryPt, R, nPts, nnRIdx, Rdists, eps);
-
-    RIdx.resize(n);
     if (k > 0)
+    {
+        kdTree->annkSearch(queryPt, k, nnIdx, kdists, eps);
         for (size_t i = 1; i < k; i++)
-            kIdx[i-1] = nnIdx[i];
+            kIdx[i - 1] = nnIdx[i];
+    }
+        
 
     if (R > 0)
+    {
+        R *= R;
+        int n = kdTree->annkFRSearch(queryPt, R, nPts, nnRIdx, Rdists, eps);
+        RIdx.resize(n);
         for (size_t i = 1; nnRIdx[i] != ANN_NULL_IDX && i < nPts; i++)
-            RIdx[i-1] = nnRIdx[i];
+            RIdx[i - 1] = nnRIdx[i];
+    }
 
     delete[] nnIdx;
     delete[] nnRIdx;

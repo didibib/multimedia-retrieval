@@ -34,10 +34,10 @@ public:
 
     void scoring();
 
-    static std::map<std::string, std::vector<int>> ANN(float R,
+    static std::map<std::string, std::vector<int>> ANN(int k, float R,
                                                        mmr::Entry& target,
                                                        mmr::Database& db);
-    static std::vector<int> Database::KNN(int i, mmr::Entry& target,
+    static std::vector<int> Database::KNN(int k, int i, mmr::Entry& target,
                                           mmr::Database& db);
 
 
@@ -46,6 +46,10 @@ private:
     std::vector<Entry> m_queries;
     std::vector<std::string> m_labels;
     std::vector<std::string> m_unique_labels;
+
+    int knn_k = 5;
+    float rnn_r = 0.25f;
+    std::string scoring_result = "";
 
     enum NNmethod
     {
@@ -66,7 +70,8 @@ private:
     bool m_columnSelected[16] = {false};
     size_t m_columns = 0;
     static void readPt(std::vector<float>& features, ANNpoint p);
-    static std::vector<int> kMeansIndices(int index, std::vector<float>& distances,
-                                   int size);
+    static std::vector<int> kMeansIndices(int k, int index,
+                                          std::vector<float>& distances,
+                                          int size);
 };
 } // namespace mmr
