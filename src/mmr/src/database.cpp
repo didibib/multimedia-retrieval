@@ -141,6 +141,17 @@ void Database::scoring()
 {
     auto start = std::chrono::system_clock::now();
     float globalScore = 0.0f;
+    // helpful struct to aggregiate label accuracy
+    struct labelAccuracy
+    {
+        std::vector<::std::string> labels;
+        std::vector<float> scores;
+        std::vector<int> counts;
+        int end;
+
+    } labelsAccuracy;
+    labelsAccuracy.end = 0;
+
     for (int i = 0; i < m_entries.size(); i++)
     {
         float score = 0;
@@ -168,6 +179,8 @@ void Database::scoring()
             int end;
         } classes;
         classes.end = 0;
+
+        
 
         // search through the helpful label container and increment the occurance
         for (int k = 0; k < kIndices.size(); k++)
@@ -203,15 +216,61 @@ void Database::scoring()
             }
         }
 
+
+        bool isFound = false;
+        int lIndex;
+        for (int l = 0; l < labelsAccuracy.end; l++)
+        {
+            if (!labelsAccuracy.labels[l].compare(m_labels[i]))
+            {
+                isFound = true;
+                lIndex = l;
+            }
+            if (isFound)
+                break;
+        }
         if (!m_labels[i].compare(classes.labels[cIndex]))
         {
             score++;
+            if (isFound)
+            {
+                labelsAccuracy.counts[lIndex]++;
+                labelsAccuracy.scores[lIndex]++;
+            }
+            else
+            {
+                labelsAccuracy.counts.push_back(1);
+                labelsAccuracy.scores.push_back(1);
+                labelsAccuracy.labels.push_back(m_labels[i]);
+                labelsAccuracy.end++;
+            }
+        }
+        else
+        {
+            if (isFound)
+            {
+                labelsAccuracy.counts[lIndex]++;
+               
+            }
+            else
+            {
+                labelsAccuracy.counts.push_back(1);
+                labelsAccuracy.scores.push_back(0);
+                labelsAccuracy.labels.push_back(m_labels[i]);
+                labelsAccuracy.end++;
+            }
         }
         globalScore += score;
         //printf("Score is %f\n", score / (float)kIndices.size());
     }
     printf("Final accuracy is: %f\n",
            100.0f * globalScore / (float)m_entries.size());
+    for (int cl = 0; cl < labelsAccuracy.labels.size(); cl++)
+    {
+        printf("Class acurracy of: %s is %f\n", labelsAccuracy.labels[cl],
+               100.0f * labelsAccuracy.scores[cl] /
+                   (float)labelsAccuracy.counts[cl]);
+    }
     auto end = std::chrono::system_clock::now();
     auto duration =
         std::chrono::duration_cast<std::chrono::microseconds>(end - start);
