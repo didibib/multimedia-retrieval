@@ -31,8 +31,6 @@ void MmrViewer::draw(const std::string& drawMode)
 
         for (auto& i : m_dbGui.getSelectedEntries())
         {
-            if (i == -1)
-                continue;
             Entry* e = db.get(i);
             e->reload();
             entries.push_back(e);

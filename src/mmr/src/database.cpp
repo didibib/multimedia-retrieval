@@ -30,7 +30,10 @@ void Database::import(const std::string& path_)
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
 
+#ifndef NDEBUG
     int maxModels = 10;
+#endif // DEBUG
+
     int nQueries = 1;
 
     std::filesystem::path p = path_;
@@ -47,8 +50,10 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-         /*if (nModels > maxModels)
-            break;*/
+#ifndef NDEBUG
+        if (nModels > maxModels)
+            break;
+#endif // DEBUG
 
         // Create entry
         Entry entry(filename, label, path, name);

@@ -14,13 +14,12 @@ class DbGui
     void normalizeAll(Database& db);
     int columnIndex(std::string key);
     void exportMenu(Database& db);
+    void results(Database& db);
 
     bool m_showHistogram = false;
     bool m_showStatistics = false;
-    static const int m_maxEntries = 5;
     std::vector<int> m_selectedEntries;
     bool m_newSelectedEntry = false;
-    bool m_querying = false;
 
     Database& m_db;
 
@@ -29,7 +28,7 @@ class DbGui
     ImFont* font = io.Fonts->AddFontDefault();
 
 public:
-    DbGui(Database& db) : m_db(db) { m_selectedEntries.resize(m_maxEntries, -1); }
+    DbGui(Database& db) : m_db(db) { }
     std::vector<int> getSelectedEntries() { return m_selectedEntries; }
     void beginGui(Database& db);
     bool newSelectedEntry( )

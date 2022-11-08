@@ -14,6 +14,7 @@ namespace mmr {
 void DbGui::beginGui(Database& db)
 {
     window(db);
+    results(db);
 
     if (ImGui::BeginMenu("Database"))
     {
@@ -261,6 +262,26 @@ void DbGui::exportMenu(Database& db)
     }
 }
 
+void DbGui::results(Database& db)
+{
+    if (m_selectedEntries.empty())
+        return;
+
+    if (ImGui::Begin("Results"))
+    {
+        ImGui::PushFont(font);
+        for (size_t i = 0; i < m_selectedEntries.size(); i++)
+        {
+            Entry& entry = db.m_entries[m_selectedEntries[i]];
+            std::ostringstream text;
+            text << i << ": " << Feature::toString(entry.features["filename"]);
+            ImGui::Text(text.str().c_str());
+        }
+        ImGui::PopFont();
+        ImGui::End();
+    }
+}
+
 void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
 {
     if (ImGui::BeginPopupContextItem())
@@ -271,48 +292,39 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
         {
             if (ImGui::MenuItem("ANN_KNN"))
             {
+                m_selectedEntries.clear();
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::ANN_KNN);
                 m_newSelectedEntry = true;
-                m_querying = true;
             }
             if (ImGui::MenuItem("ANN_RNN"))
             {
+                m_selectedEntries.clear();
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::ANN_RNN);
                 m_newSelectedEntry = true;
-                m_querying = true;
             }
             if (ImGui::MenuItem("KNN_HANDMADE"))
             {
+                m_selectedEntries.clear();
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::KNN_HANDMADE);
                 m_newSelectedEntry = true;
-                m_querying = true;
             }
             if (ImGui::MenuItem("RNN_HANDMADE"))
             {
+                m_selectedEntries.clear();
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::RNN_HANDMADE);
                 m_newSelectedEntry = true;
-                m_querying = true;
             }
             ImGui::EndMenu();
         }
 
         if (ImGui::MenuItem("View"))
         {
-            if (m_querying)
-            {
-                m_selectedEntries.clear();
-                m_selectedEntries.resize(m_maxEntries);
-                m_querying = false;
-            }
-
-            static int i = 0;
-            m_selectedEntries[i++] = index;
-            if (i >= m_maxEntries)
-                i = 0;
+            m_selectedEntries.clear();
+            m_selectedEntries.push_back(index);
             m_newSelectedEntry = true;
         }
         if (ImGui::MenuItem("Reload"))
