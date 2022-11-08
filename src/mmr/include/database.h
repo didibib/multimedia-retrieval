@@ -40,16 +40,13 @@ public:
     size_t getAvgFaces() { return m_avgFaces; }
     std::string name;
 
-    void scoring(NNmethod scoring_flag);
+    std::vector<int> scoring(NNmethod scoring_flag);
+    std::vector<int> query(int i, Database::NNmethod method);
 
-    static std::map<std::string, std::vector<int>> ANN(int k, float R,
-                                                       mmr::Entry& target,
+    static std::map<std::string, std::vector<int>> ANN(int k, float R, int i,
                                                        mmr::Database& db);
-    static std::vector<int> KNN(int k, int i, mmr::Entry& target,
-                                          mmr::Database& db);
-    static std::vector<int> RNN(int k, int i, mmr::Entry& target,
-                                          mmr::Database& db);
-
+    static std::vector<int> KNN(int k, int i, mmr::Database& db);
+    static std::vector<int> RNN(int k, int i, mmr::Database& db);
 
 private:
     std::vector<Entry> m_entries;

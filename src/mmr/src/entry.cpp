@@ -33,8 +33,8 @@ void Entry::updateStatistics()
         ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
          (bb.max()[2] - bb.min()[2]));
     float rectangularity = (volume(m_mesh) / ((bb.max()[0] - bb.min()[0]) *
-                                                  (bb.max()[1] - bb.min()[1]) *
-                                                  (bb.max()[2] - bb.min()[2])));
+                                              (bb.max()[1] - bb.min()[1]) *
+                                              (bb.max()[2] - bb.min()[2])));
     features["rectangularity"] = rectangularity;
     float area = surface_area(m_mesh);
     features["area"] = area;
@@ -49,14 +49,6 @@ void Entry::updateStatistics()
     features.features.resize(5);
     features.features << area, (float)compactness, rectangularity, diameter,
         eccentricity;
-    
-    
-  /*  float x0 = features.features(0);
-    float x1 = features.features(1);
-    float x2 = features.features(2);
-    float x3 = features.features(3);
-    float x4 = features.features(4);*/
-    //features.updateFeatureVector();
 }
 
 void Entry::reload()
@@ -106,7 +98,6 @@ void Entry::deserialize()
     {
         m_mesh.read(mesh_path);
         updateStatistics();
-
     }
 }
 

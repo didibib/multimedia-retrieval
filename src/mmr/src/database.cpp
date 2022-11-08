@@ -30,16 +30,11 @@ void Database::import(const std::string& path_)
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
 
-    int maxModels = 1;
+    int maxModels = 10;
     int nQueries = 1;
 
     std::filesystem::path p = path_;
     name = p.filename().string();
-    std::vector<int> qIndices;
-    /*for (int i = 0; i < nQueries; i++)
-    {
-        qIndices.push_back(random());
-    }*/
     for (const auto& file_entry : recursive_directory_iterator(path_))
     {
         std::string path = file_entry.path().string();
@@ -52,13 +47,11 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-       /* if (nModels > maxModels)
+         /*if (nModels > maxModels)
             break;*/
 
         // Create entry
         Entry entry(filename, label, path, name);
-        /*m_avgVerts += entry.getMesh().n_vertices();
-        m_avgFaces += entry.getMesh().n_faces();*/
 
         m_labels.push_back(label);
 
@@ -68,11 +61,6 @@ void Database::import(const std::string& path_)
 
     if ((nModels - nQueries) == 0 || nModels == 0)
         return;
-
-    m_avgVerts /= (nModels - nQueries);
-    m_avgFaces /= (nModels - nQueries);
-    std::cout << "Average Vertices: " << m_avgVerts << std::endl;
-    std::cout << "Average Faces: " << m_avgFaces << std::endl;
 
     m_imported = true;
     m_columns = m_entries[0].features.n_statistics();
@@ -137,7 +125,7 @@ void Database::exportMeshes(std::string extension, std::string folder)
 // SCORE =====================================================================================
 // ===========================================================================================
 
-void Database::scoring(NNmethod scoring_flag) 
+std::vector<int> Database::scoring(NNmethod scoring_flag)
 {
     auto start = std::chrono::system_clock::now();
     float globalScore = 0.0f;
@@ -147,10 +135,10 @@ void Database::scoring(NNmethod scoring_flag)
         std::vector<::std::string> labels;
         std::vector<float> scores;
         std::vector<int> counts;
-        int end;
+        int end = 0;
 
     } labelsAccuracy;
-    labelsAccuracy.end = 0;
+
     std::ostringstream result;
     switch (scoring_flag)
     {
@@ -170,36 +158,19 @@ void Database::scoring(NNmethod scoring_flag)
             break;
     }
 
+    std::vector<int> kIndices;
     for (int i = 0; i < m_entries.size(); i++)
     {
         float score = 0;
-        std::vector<int> kIndices;
-        switch (scoring_flag)
-        {
-            case NNmethod::ANN_KNN:
-                kIndices = Database::ANN(knn_k, 0, m_entries[i], *this)["knn"];
-                break;
-            case NNmethod::ANN_RNN:
-                kIndices = Database::ANN(0, rnn_r, m_entries[i], *this)["rnn"];
-                break;
-            case NNmethod::KNN_HANDMADE:
-                kIndices = Database::KNN(knn_k, i, m_entries[i], *this);
-                break;
-            case NNmethod::RNN_HANDMADE:
-                kIndices = Database::RNN(knn_k, i, m_entries[i], *this);
-                break;
-            default:
-                break;
-        }
+        kIndices = query(i, scoring_flag);
 
         // helpful struct to find the most occured label
         struct decisionClass
         {
             std::vector<::std::string> labels;
             std::vector<int> counts;
-            int end;
+            int end = 0;
         } classes;
-        classes.end = 0;        
 
         // search through the helpful label container and increment the occurance
         for (int k = 0; k < kIndices.size(); k++)
@@ -235,7 +206,6 @@ void Database::scoring(NNmethod scoring_flag)
             }
         }
 
-
         bool isFound = false;
         int lIndex = 0;
         for (int l = 0; l < labelsAccuracy.end; l++)
@@ -269,7 +239,6 @@ void Database::scoring(NNmethod scoring_flag)
             if (isFound)
             {
                 labelsAccuracy.counts[lIndex]++;
-               
             }
             else
             {
@@ -282,7 +251,7 @@ void Database::scoring(NNmethod scoring_flag)
         globalScore += score;
         //printf("Score is %f\n", score / (float)kIndices.size());
     }
-    
+
     for (int cl = 0; cl < labelsAccuracy.labels.size(); cl++)
     {
         result << "Class acurracy of: " << std::left << std::setw(10)
@@ -300,7 +269,8 @@ void Database::scoring(NNmethod scoring_flag)
            << 100.0f * globalScore / (float)m_entries.size() << std::endl;
 
     auto end = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    auto duration =
+        std::chrono::duration_cast<std::chrono::microseconds>(end - start);
     result << std::left << std::setw(17) << "time used"
            << ": " << std::setw(10)
            << std::setiosflags(std::ios::fixed | std::ios::left)
@@ -310,6 +280,22 @@ void Database::scoring(NNmethod scoring_flag)
                   std::chrono::microseconds::period::den
            << "seconds" << std::endl;
     this->scoring_result = result.str();
+    return kIndices;
+}
+
+std::vector<int> Database::query(int i, Database::NNmethod method)
+{
+    switch (method)
+    {
+        case NNmethod::ANN_KNN:
+            return Database::ANN(knn_k, 0, i, *this)["knn"];
+        case NNmethod::ANN_RNN:
+            return Database::ANN(0, rnn_r, i, *this)["rnn"];
+        case NNmethod::KNN_HANDMADE:
+            return Database::KNN(knn_k, i, *this);
+        case NNmethod::RNN_HANDMADE:
+            return Database::RNN(knn_k, i, *this);
+    }
 }
 
 // KNN =======================================================================================
@@ -339,8 +325,7 @@ std::vector<int> Database::kMeansIndices(int k, int index,
     return kIndices;
 }
 
-std::vector<int> Database::KNN(int k, int i, mmr::Entry& target,
-                               mmr::Database& db)
+std::vector<int> Database::KNN(int k, int i, mmr::Database& db)
 {
     auto entries(db.m_entries);
     std::vector<float> distances;
@@ -356,8 +341,7 @@ std::vector<int> Database::KNN(int k, int i, mmr::Entry& target,
     return kIndices;
 }
 
- std::vector<int> Database::RNN(int k, int i, mmr::Entry& target,
-                               mmr::Database& db)
+std::vector<int> Database::RNN(int k, int i, mmr::Database& db)
 {
     auto entries(db.m_entries);
     std::vector<float> distances;
@@ -389,12 +373,11 @@ void Database::readPt(std::vector<float>& features, ANNpoint p)
     }
 }
 
-std::map<std::string, std::vector<int>> Database::ANN(int k, float R,
-                                                      mmr::Entry& target,
+std::map<std::string, std::vector<int>> Database::ANN(int k, float R, int i,
                                                       mmr::Database& db)
 {
     auto entries(db.m_entries);
-    auto query(target.features);
+    auto query(db.m_entries[i].features);
 
     if (k)
         k += 1;
@@ -438,7 +421,6 @@ std::map<std::string, std::vector<int>> Database::ANN(int k, float R,
         for (size_t i = 1; i < k; i++)
             kIdx[i - 1] = nnIdx[i];
     }
-        
 
     if (R > 0)
     {

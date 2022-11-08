@@ -21,6 +21,7 @@ void MmrViewer::draw(const std::string& drawMode)
 {
     static std::vector<Entry*> entries;
     static const float step = 1.1f;
+    static int offset = 0;
 
     if (m_dbGui.newSelectedEntry())
     {
@@ -40,17 +41,16 @@ void MmrViewer::draw(const std::string& drawMode)
             radius += bb.size() * .5f;
             n += step;
         }
-        set_scene(vec3(n / 2 + step / 2, 0, 0), radius);
+        set_scene(vec3(0, 0, 0), radius);
+        offset = step * entries.size() * .5f;
     }
 
-    float popback = 0;
     for (size_t i = 0; i < entries.size(); i++)
     {
-        translate(vec3(step, 0, 0));
-        popback += step;
-        entries[i]->draw(projection_matrix_, modelview_matrix_, drawMode);
+        auto mv = translation_matrix(vec3(step * i - offset, 0, 0)) *
+             modelview_matrix_;
+        entries[i]->draw(projection_matrix_, mv, drawMode);
     }
-    translate(vec3(-popback, 0, 0));
 }
 
 void MmrViewer::keyboard(int key, int scancode, int action, int mods)

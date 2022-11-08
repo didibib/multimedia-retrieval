@@ -31,7 +31,7 @@ void DbGui::beginGui(Database& db)
                 db.import(util::getExportDir("normalized"));
                 m_showStatistics = true;
                 for (auto& e : db.m_entries)
-                { 
+                {
                     e.isNormalized = true;
                 }
                 k = db.knn_k;
@@ -73,14 +73,14 @@ void DbGui::beginGui(Database& db)
         r = db.rnn_r;
         ImGui::OpenPopup("NNSetting");
     }
-        
+
     if (ImGui::BeginPopupModal("NNSetting"))
     {
-        ImGui::InputInt("K",&k);
+        ImGui::InputInt("K", &k);
         if (k >= entries_size)
             k = entries_size;
         ImGui::InputFloat("R", &r);
-        if (ImGui::Button("SAVE", ImVec2(100,0)))
+        if (ImGui::Button("SAVE", ImVec2(100, 0)))
         {
             db.knn_k = k;
             db.rnn_r = r;
@@ -155,7 +155,7 @@ void DbGui::window(Database& db)
     if (ImGui::BeginMenuBar())
     {
         exportMenu(db);
-        normalizeAll(db);        
+        normalizeAll(db);
 
         if (ImGui::MenuItem("Histograms..."))
         {
@@ -237,20 +237,20 @@ void DbGui::exportMenu(Database& db)
         if (ImGui::MenuItem("Statistics..."))
         {
             db.exportStatistics();
-            printf("Finished exporting statistics!\n");        
+            printf("Finished exporting statistics!\n");
         }
         if (ImGui::BeginMenu("Meshes"))
         {
             if (ImGui::MenuItem("As .off"))
             {
-                for (auto& entry : db.m_entries)                
-                    entry.writeMesh(".off", "Meshes");                
+                for (auto& entry : db.m_entries)
+                    entry.writeMesh(".off", "Meshes");
                 printf("Finished exporting meshes!\n");
             }
             if (ImGui::MenuItem("As .ply"))
             {
-                for (auto& entry : db.m_entries)                
-                    entry.writeMesh(".ply", "Meshes");                
+                for (auto& entry : db.m_entries)
+                    entry.writeMesh(".ply", "Meshes");
                 printf("Finished exporting meshes!\n");
             }
             ImGui::EndMenu();
@@ -279,8 +279,48 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
     {
         Entry& entry = db.m_entries[index];
 
+        if (ImGui::BeginMenu("Query"))
+        {
+            if (ImGui::MenuItem("ANN_KNN"))
+            {
+                m_selectedEntries =
+                    db.query(index, Database::NNmethod::ANN_KNN);
+                m_newSelectedEntry = true;
+                m_querying = true;
+            }
+            if (ImGui::MenuItem("ANN_RNN"))
+            {
+                m_selectedEntries =
+                    db.query(index, Database::NNmethod::ANN_RNN);
+                m_newSelectedEntry = true;
+                m_querying = true;
+            }
+            if (ImGui::MenuItem("KNN_HANDMADE"))
+            {
+                m_selectedEntries =
+                    db.query(index, Database::NNmethod::KNN_HANDMADE);
+                m_newSelectedEntry = true;
+                m_querying = true;
+            }
+            if (ImGui::MenuItem("RNN_HANDMADE"))
+            {
+                m_selectedEntries =
+                    db.query(index, Database::NNmethod::RNN_HANDMADE);
+                m_newSelectedEntry = true;
+                m_querying = true;
+            }
+            ImGui::EndMenu();
+        }
+
         if (ImGui::MenuItem("View"))
         {
+            if (m_querying)
+            {
+                m_selectedEntries.clear();
+                m_selectedEntries.resize(m_maxEntries);
+                m_querying = false;
+            }
+
             static int i = 0;
             m_selectedEntries[i++] = index;
             if (i >= m_maxEntries)
