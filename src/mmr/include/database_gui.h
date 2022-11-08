@@ -21,7 +21,6 @@ class DbGui
     std::vector<int> m_selectedEntries;
     bool m_newSelectedEntry = false;
     bool m_querying = false;
-    int m_queryIndex = 0;
 
     Database& m_db;
 
