@@ -76,7 +76,5 @@ void MmrViewer::process_imgui()
         m_dbGui.beginGui(db);
         ImGui::EndMainMenuBar();
     }
-
-    ImGui::ShowDemoWindow();
 }
 } // namespace mmr
