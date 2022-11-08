@@ -115,6 +115,14 @@ void DbGui::beginGui(Database& db)
             std::cout << "scoring end" << std::endl;
             m_scoring = true;
         }
+        if (ImGui::MenuItem("RNN_handmade"))
+        {
+            db.scoring_flag = mmr::Database::NNmethod::RNN_HANDMADE;
+            db.scoring();
+            std::cout << "scoring end" << std::endl;
+            m_scoring = true;
+        }
+
         ImGui::EndMenu();
     }
 

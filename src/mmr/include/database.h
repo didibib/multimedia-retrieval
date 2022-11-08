@@ -37,7 +37,9 @@ public:
     static std::map<std::string, std::vector<int>> ANN(int k, float R,
                                                        mmr::Entry& target,
                                                        mmr::Database& db);
-    static std::vector<int> Database::KNN(int k, int i, mmr::Entry& target,
+    static std::vector<int> KNN(int k, int i, mmr::Entry& target,
+                                          mmr::Database& db);
+    static std::vector<int> RNN(int k, int i, mmr::Entry& target,
                                           mmr::Database& db);
 
 
@@ -55,7 +57,8 @@ private:
     {
         ANN_KNN,
         ANN_RNN,
-        KNN_HANDMADE
+        KNN_HANDMADE,
+        RNN_HANDMADE
     } scoring_flag;
 
     size_t m_avgVerts = 0;

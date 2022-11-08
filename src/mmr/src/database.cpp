@@ -185,6 +185,9 @@ void Database::scoring()
             case KNN_HANDMADE:
                 kIndices = Database::KNN(knn_k, i, m_entries[i], *this);
                 break;
+            case RNN_HANDMADE:
+                kIndices = Database::RNN(knn_k, i, m_entries[i], *this);
+                break;
             default:
                 break;
         }
@@ -352,6 +355,26 @@ std::vector<int> Database::KNN(int k, int i, mmr::Entry& target,
             entries[i].features.features, entries[j].features.features));
     }
     std::vector<int> kIndices = kMeansIndices(k, i, distances, entries.size());
+    return kIndices;
+}
+
+ std::vector<int> Database::RNN(int k, int i, mmr::Entry& target,
+                               mmr::Database& db)
+{
+    auto entries(db.m_entries);
+    std::vector<float> distances;
+    std::vector<int> kIndices;
+    const float R = 1.0f;
+    for (int j = 0; j < db.m_entries.size(); j++)
+    {
+        if (i == j)
+            continue;
+        float distance = mmr::FeatureVector::distance(
+            entries[i].features.histograms, entries[j].features.histograms,
+            entries[i].features.features, entries[j].features.features);
+        if (distance <= R)
+            kIndices.push_back(j);
+    }
     return kIndices;
 }
 
