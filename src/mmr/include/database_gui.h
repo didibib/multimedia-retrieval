@@ -24,9 +24,6 @@ class DbGui
 
     Database& m_db;
 
-    int k = 0;
-    float r = 0;
-    int entries_size = 0;
     bool m_scoring = false;
     ImGuiIO& io = ImGui::GetIO();
     ImFont* font = io.Fonts->AddFontDefault();

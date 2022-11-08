@@ -10,6 +10,7 @@
 #include "entry.h"
 
 namespace mmr {
+
 void DbGui::beginGui(Database& db)
 {
     window(db);
@@ -22,9 +23,6 @@ void DbGui::beginGui(Database& db)
             {
                 db.import(util::getDataDir("LabeledDB_new"));
                 m_showStatistics = true;
-                k = db.knn_k;
-                r = db.rnn_r;
-                entries_size = db.m_entries.size();
             }
             if (ImGui::MenuItem("Normalized"))
             {
@@ -34,9 +32,6 @@ void DbGui::beginGui(Database& db)
                 {
                     e.isNormalized = true;
                 }
-                k = db.knn_k;
-                r = db.rnn_r;
-                entries_size = db.m_entries.size();
             }
             ImGui::EndMenu();
         }
@@ -69,24 +64,17 @@ void DbGui::beginGui(Database& db)
 
     if (ImGui::MenuItem("Set up K and R"))
     {
-        k = db.knn_k;
-        r = db.rnn_r;
         ImGui::OpenPopup("NNSetting");
     }
 
     if (ImGui::BeginPopupModal("NNSetting"))
     {
-        ImGui::InputInt("K", &k);
-        if (k >= entries_size)
-            k = entries_size;
-        ImGui::InputFloat("R", &r);
+        ImGui::InputInt("K", &db.knn_k);
+        if (db.knn_k >= db.m_entries.size())
+            db.knn_k = db.m_entries.size();
+
+        ImGui::InputFloat("R", &db.rnn_r);
         if (ImGui::Button("SAVE", ImVec2(100, 0)))
-        {
-            db.knn_k = k;
-            db.rnn_r = r;
-            ImGui::CloseCurrentPopup();
-        }
-        if (ImGui::Button("CANCEL", ImVec2(100, 0)))
             ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
     }
