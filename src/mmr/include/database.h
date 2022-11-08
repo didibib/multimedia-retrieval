@@ -18,6 +18,14 @@ class Database
     friend class DbGui;
     friend class Descriptor;
 
+    enum class NNmethod
+    {
+        ANN_KNN,
+        ANN_RNN,
+        KNN_HANDMADE,
+        RNN_HANDMADE
+    };
+
 public:
     Database() = default;
     Database(const std::string path);
@@ -32,7 +40,7 @@ public:
     size_t getAvgFaces() { return m_avgFaces; }
     std::string name;
 
-    void scoring();
+    void scoring(NNmethod scoring_flag);
 
     static std::map<std::string, std::vector<int>> ANN(int k, float R,
                                                        mmr::Entry& target,
@@ -52,14 +60,6 @@ private:
     int knn_k = 5;
     float rnn_r = 0.25f;
     std::string scoring_result = "";
-
-    enum NNmethod
-    {
-        ANN_KNN,
-        ANN_RNN,
-        KNN_HANDMADE,
-        RNN_HANDMADE
-    } scoring_flag;
 
     size_t m_avgVerts = 0;
     size_t m_avgFaces = 0;

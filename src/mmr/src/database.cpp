@@ -137,7 +137,7 @@ void Database::exportMeshes(std::string extension, std::string folder)
 // SCORE =====================================================================================
 // ===========================================================================================
 
-void Database::scoring() 
+void Database::scoring(NNmethod scoring_flag) 
 {
     auto start = std::chrono::system_clock::now();
     float globalScore = 0.0f;
@@ -154,15 +154,15 @@ void Database::scoring()
     std::ostringstream result;
     switch (scoring_flag)
     {
-        case ANN_KNN:
+        case NNmethod::ANN_KNN:
             result << std::left << std::setw(17) << "ANN_KNN"
                    << ": (k = " << this->knn_k << ")" << std::endl;
             break;
-        case ANN_RNN:
+        case NNmethod::ANN_RNN:
             result << std::left << std::setw(17) << "ANN_RNN"
                    << ": (R = " << this->rnn_r << ")" << std::endl;
             break;
-        case KNN_HANDMADE:
+        case NNmethod::KNN_HANDMADE:
             result << std::left << std::setw(17) << "KNN_handmade"
                    << ": (k = " << this->knn_k << ")" << std::endl;
             break;
@@ -176,16 +176,16 @@ void Database::scoring()
         std::vector<int> kIndices;
         switch (scoring_flag)
         {
-            case ANN_KNN:
+            case NNmethod::ANN_KNN:
                 kIndices = Database::ANN(knn_k, 0, m_entries[i], *this)["knn"];
                 break;
-            case ANN_RNN:
+            case NNmethod::ANN_RNN:
                 kIndices = Database::ANN(0, rnn_r, m_entries[i], *this)["rnn"];
                 break;
-            case KNN_HANDMADE:
+            case NNmethod::KNN_HANDMADE:
                 kIndices = Database::KNN(knn_k, i, m_entries[i], *this);
                 break;
-            case RNN_HANDMADE:
+            case NNmethod::RNN_HANDMADE:
                 kIndices = Database::RNN(knn_k, i, m_entries[i], *this);
                 break;
             default:
@@ -199,9 +199,7 @@ void Database::scoring()
             std::vector<int> counts;
             int end;
         } classes;
-        classes.end = 0;
-
-        
+        classes.end = 0;        
 
         // search through the helpful label container and increment the occurance
         for (int k = 0; k < kIndices.size(); k++)
@@ -227,7 +225,7 @@ void Database::scoring()
             }
         }
         int max = 0;
-        int cIndex;
+        int cIndex = 0;
         for (int c = 0; c < classes.end; c++)
         {
             if (classes.counts[c] > max)
@@ -239,7 +237,7 @@ void Database::scoring()
 
 
         bool isFound = false;
-        int lIndex;
+        int lIndex = 0;
         for (int l = 0; l < labelsAccuracy.end; l++)
         {
             if (!labelsAccuracy.labels[l].compare(m_labels[i]))

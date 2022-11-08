@@ -95,30 +95,26 @@ void DbGui::beginGui(Database& db)
     {
         if (ImGui::MenuItem("ANN_KNN"))
         {
-            db.scoring_flag = mmr::Database::NNmethod::ANN_KNN;
-            db.scoring();
+            db.scoring(mmr::Database::NNmethod::ANN_KNN);
             std::cout << "scoring end" << std::endl;
             m_scoring = true;
         }
         if (ImGui::MenuItem("ANN_RNN"))
         {
             // not prepared
-            db.scoring_flag = mmr::Database::NNmethod::ANN_RNN;
-            db.scoring();
+            db.scoring(mmr::Database::NNmethod::ANN_RNN);
             std::cout << "scoring end" << std::endl;
             m_scoring = true;
         }
         if (ImGui::MenuItem("KNN_handmade"))
         {
-            db.scoring_flag = mmr::Database::NNmethod::KNN_HANDMADE;
-            db.scoring();
+            db.scoring(mmr::Database::NNmethod::KNN_HANDMADE);
             std::cout << "scoring end" << std::endl;
             m_scoring = true;
         }
         if (ImGui::MenuItem("RNN_handmade"))
         {
-            db.scoring_flag = mmr::Database::NNmethod::RNN_HANDMADE;
-            db.scoring();
+            db.scoring(mmr::Database::NNmethod::RNN_HANDMADE);
             std::cout << "scoring end" << std::endl;
             m_scoring = true;
         }
