@@ -19,7 +19,7 @@ MmrViewer::MmrViewer(const char* title, int width, int height)
 
 void MmrViewer::draw(const std::string& drawMode)
 {
-    static std::vector<Entry*> entries;
+    static std::vector<Entry> entries;
     static const float step = 1.1f;
     static int offset = 0;
 
@@ -31,11 +31,10 @@ void MmrViewer::draw(const std::string& drawMode)
 
         for (auto& i : m_dbGui.getSelectedEntries())
         {
-            Entry* e = db.get(i);
-            e->reload();
+            Entry e = *db.get(i);
             entries.push_back(e);
 
-            BoundingBox& bb = e->getMesh().bounds();
+            BoundingBox& bb = e.getMesh().bounds();
             radius += bb.size() * .5f;
             n += step;
         }
@@ -47,7 +46,7 @@ void MmrViewer::draw(const std::string& drawMode)
     {
         auto mv = translation_matrix(vec3(step * i - offset, 0, 0)) *
              modelview_matrix_;
-        entries[i]->draw(projection_matrix_, mv, drawMode);
+        entries[i].draw(projection_matrix_, mv, drawMode);
     }
 }
 
@@ -74,5 +73,7 @@ void MmrViewer::process_imgui()
         m_dbGui.beginGui(db);
         ImGui::EndMainMenuBar();
     }
+
+    //ImGui::ShowDemoWindow();
 }
 } // namespace mmr

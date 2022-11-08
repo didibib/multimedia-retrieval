@@ -67,7 +67,7 @@ private:
 
     bool m_imported = false;
     // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
-    bool m_columnSelected[16] = {false};
+    bool m_columnSelected[20] = {false};
     size_t m_columns = 0;
     static void readPt(std::vector<float>& features, ANNpoint p);
     static std::vector<int> kMeansIndices(int k, int index,

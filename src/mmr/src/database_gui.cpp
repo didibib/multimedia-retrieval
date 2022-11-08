@@ -67,6 +67,8 @@ void DbGui::beginGui(Database& db)
     {
         ImGui::OpenPopup("NNSetting");
     }
+        
+    queryMenu(db);
 
     if (ImGui::BeginPopupModal("NNSetting"))
     {
@@ -172,7 +174,8 @@ void DbGui::statisticsTable(Database& db)
         ImGuiTableFlags_RowBg;
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(5, 5));
 
-    if (!ImGui::BeginTable("Statistics", static_cast<int>(db.m_columns), flags))
+    if (!ImGui::BeginTable("Statistics", static_cast<int>(db.m_columns) + 1,
+                           flags))
         return;
 
     // Setup headers
@@ -180,7 +183,7 @@ void DbGui::statisticsTable(Database& db)
     const auto& stats = db.m_entries[0].features.statistics();
     for (auto it = stats.cbegin(); it != stats.cend(); ++it)
     {
-        int index = columnIndex(it->first);
+        int index = columnIndex(it->first) + 1;
         ImGui::TableSetColumnIndex(index);
         ImGui::TableHeader((it->first).c_str());
     }
@@ -190,10 +193,13 @@ void DbGui::statisticsTable(Database& db)
     {
         ImGui::TableNextRow();
 
+        ImGui::TableSetColumnIndex(0);
+        ImGui::Text(std::to_string(row).c_str());
+
         const auto& stats = db.m_entries[row].features.statistics();
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
         {
-            int col = columnIndex(it->first);
+            int col = columnIndex(it->first) + 1;
             ImGui::TableSetColumnIndex(col);
 
             ImGui::Selectable(Feature::toString(it->second).c_str(),
@@ -282,6 +288,57 @@ void DbGui::results(Database& db)
     }
 }
 
+void DbGui::queryMenu(Database& db)
+{
+    if (db.m_entries.size() == 0)
+        return;
+
+    if (ImGui::BeginMenu("Query"))
+    {
+        static int index = 0;
+        ImGui::InputInt("Entry index: ", &index);
+
+        const char* items[] = {"ANN_KNN", "ANN_RNN", "KNN_HANDMADE",
+                               "RNN_HANDMADE"};
+        static int item = 0;
+        ImGui::Combo("Method", &item, items, IM_ARRAYSIZE(items));
+
+        if (ImGui::Button("Search..."))
+        {
+            m_selectedEntries.clear();
+            m_newSelectedEntry = true;
+            switch (item)
+            {
+                case 0:
+                {
+                    m_selectedEntries =
+                        db.query(index, Database::NNmethod::ANN_KNN);
+                }
+                break;
+                case 1:
+                {
+                    m_selectedEntries =
+                        db.query(index, Database::NNmethod::ANN_RNN);
+                }
+                break;
+                case 2:
+                {
+                    m_selectedEntries =
+                        db.query(index, Database::NNmethod::KNN_HANDMADE);
+                }
+                break;
+                case 3:
+                {
+                    m_selectedEntries =
+                        db.query(index, Database::NNmethod::RNN_HANDMADE);
+                }
+                break;
+            }
+        }
+        ImGui::EndMenu();
+    }
+}
+
 void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
 {
     if (ImGui::BeginPopupContextItem())
@@ -293,30 +350,30 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
             if (ImGui::MenuItem("ANN_KNN"))
             {
                 m_selectedEntries.clear();
+                m_newSelectedEntry = true;
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::ANN_KNN);
-                m_newSelectedEntry = true;
             }
             if (ImGui::MenuItem("ANN_RNN"))
             {
                 m_selectedEntries.clear();
+                m_newSelectedEntry = true;
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::ANN_RNN);
-                m_newSelectedEntry = true;
             }
             if (ImGui::MenuItem("KNN_HANDMADE"))
             {
                 m_selectedEntries.clear();
+                m_newSelectedEntry = true;
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::KNN_HANDMADE);
-                m_newSelectedEntry = true;
             }
             if (ImGui::MenuItem("RNN_HANDMADE"))
             {
                 m_selectedEntries.clear();
+                m_newSelectedEntry = true;
                 m_selectedEntries =
                     db.query(index, Database::NNmethod::RNN_HANDMADE);
-                m_newSelectedEntry = true;
             }
             ImGui::EndMenu();
         }

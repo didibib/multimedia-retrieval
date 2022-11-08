@@ -15,6 +15,7 @@ class DbGui
     int columnIndex(std::string key);
     void exportMenu(Database& db);
     void results(Database& db);
+    void queryMenu(Database& db);
 
     bool m_showHistogram = false;
     bool m_showStatistics = false;
