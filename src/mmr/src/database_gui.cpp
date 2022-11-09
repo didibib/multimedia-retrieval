@@ -329,6 +329,7 @@ void DbGui::KRmenu(Database& db) {
         if (db.knn_k >= db.m_entries.size())
             db.knn_k = db.m_entries.size();
         ImGui::InputFloat("R", &db.rnn_r);
+        ImGui::EndMenu();
     }
 }
 

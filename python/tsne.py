@@ -104,7 +104,7 @@ def pca(X=np.array([]), no_dims=50):
     return Y
 
 
-def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
+def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0, max_iter = 1000):
     """
         Runs t-SNE on the dataset in the NxD array X to reduce its
         dimensionality to no_dims dimensions. The syntaxis of the function is
@@ -122,7 +122,6 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
     # Initialize variables
     X = pca(X, initial_dims).real
     (n, d) = X.shape
-    max_iter = 1000
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
@@ -215,15 +214,16 @@ labels_int = np.array(labels_int)
 # Execute TSNE
 X = np.loadtxt(data_path)
 initial_dim = len(X[0])
-Y = tsne(X, 2, initial_dim, 20.0)
+Y = tsne(X, 2, initial_dim, 20.0, 10)
 
 
 # Plot result
-norm = plt.Normalize(1, len(X))
+norm = plt.Normalize(0, i)
+print(i)
 cmap = plt.cm.RdYlGn
 
 fig, ax = plt.subplots()
-sc = plt.scatter(Y[:, 0], Y[:, 1],  20, labels_int)
+sc = ax.scatter(Y[:, 0], Y[:, 1], c=labels_int,  s=20, cmap=cmap, norm=norm)
 
 annot = ax.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
                     bbox=dict(boxstyle="round", fc="w"),
@@ -255,6 +255,9 @@ def hover(event):
                 fig.canvas.draw_idle()
 
 fig.canvas.mpl_connect("motion_notify_event", hover)
+
+legend1 = ax.legend(*sc.legend_elements(), title="Classes")
+ax.add_artist(legend1)
 
 plt.show()
 
