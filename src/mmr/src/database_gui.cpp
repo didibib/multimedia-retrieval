@@ -146,15 +146,17 @@ void DbGui::statisticsTable(Database& db)
         return;
 
     static ImGuiTableFlags flags =
-        ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable |
-        ImGuiTableFlags_Borders | ImGuiTableFlags_BordersOuter |
+        ImGuiTableFlags_Resizable |ImGuiTableFlags_BordersOuter |
         ImGuiTableFlags_BordersV | ImGuiTableFlags_Hideable |
-        ImGuiTableFlags_RowBg;
+        ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollX |
+        ImGuiTableFlags_ScrollY;
     ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(5, 5));
 
     if (!ImGui::BeginTable("Statistics", static_cast<int>(db.m_columns) + 1,
                            flags))
         return;
+
+    ImGui::TableSetupScrollFreeze(2, 0);
 
     // Setup headers
     ImGui::TableNextRow(ImGuiTableRowFlags_Headers);

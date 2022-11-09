@@ -73,6 +73,6 @@ void MmrViewer::process_imgui()
         ImGui::EndMainMenuBar();
     }
 
-    //ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
 }
 } // namespace mmr
