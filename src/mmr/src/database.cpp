@@ -423,6 +423,7 @@ std::map<std::string, std::vector<int>> Database::ANN(int k, float R, int i,
     if (k > 0)
     {
         kdTree->annkSearch(queryPt, k, nnIdx, kdists, eps);
+        kIdx.resize(k - 1);
         for (size_t i = 1; i < k; i++)
             kIdx[i - 1] = nnIdx[i];
     }
