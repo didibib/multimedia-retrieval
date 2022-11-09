@@ -12,18 +12,6 @@ class FeatureVector;
 class Entry
 {
 private:
-    std::string checkFaceType()
-    {
-        if (m_mesh.is_triangle_mesh())
-        {
-            return "tri";
-        }
-        if (m_mesh.is_quad_mesh())
-        {
-            return "quad";
-        }
-        return "tri/quad";
-    }
     bool m_meshLoaded = false;
     pmp::SurfaceMeshGL m_mesh;
 
@@ -31,7 +19,6 @@ public:
     Entry(std::string filename, std::string label, std::string path,
           std::string db);
 
-    static std::vector<std::string> getHeaders();
 
     void updateStatistics();
 
@@ -44,7 +31,7 @@ public:
 
     void serialize();
     void deserialize();
-    pmp::SurfaceMeshGL getMesh()
+    pmp::SurfaceMeshGL& getMesh()
     {
         if (m_mesh.n_vertices() == 0)
             m_mesh.read(mesh_path);
@@ -52,7 +39,7 @@ public:
     }   
 
 public:
-    FeatureVector features;
+    FeatureVector fv;
     std::string mesh_path;
     std::string db_name;
     bool isNormalized = false;

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
+#include <pmp/algorithms/DifferentialGeometry.h>
 
 using pmp::Scalar;
 
@@ -126,7 +127,7 @@ void FeatureVector::exportStatistics(std::ofstream& file) const
 
 void FeatureVector::exportTsneFormat(std::ofstream& data)
 {
-    for (auto val: features)
+    for (auto val : features)
         data << std::to_string(val) << SPACE;
     for (auto& h : m_histograms)
         h.second.exportTsneFormat(data);
@@ -145,6 +146,54 @@ void FeatureVector::serialize(std::string dir, std::string filename)
 
     for (auto& h : m_histograms)
         h.second.serialize(dir);
+}
+
+void FeatureVector::updateStatistics(pmp::SurfaceMesh mesh)
+{
+    m_statistics["n_vertices"] = static_cast<int>(mesh.n_vertices());
+    m_statistics["n_faces"] = static_cast<int>(mesh.n_faces());
+    m_statistics["face_type"] = checkFaceType(mesh);
+    m_statistics["distance_to_origin"] =
+        pmp::distance(pmp::centroid(mesh), pmp::vec3(0, 0, 0));
+
+    pmp::BoundingBox bb = mesh.bounds();
+
+    m_statistics["bb_distance"] = pmp::distance(bb.max(), bb.min());
+    m_statistics["surface_area"] = pmp::surface_area(mesh);
+
+    m_statistics["bb_volume"] =
+        ((bb.max()[0] - bb.min()[0]) * (bb.max()[1] - bb.min()[1]) *
+         (bb.max()[2] - bb.min()[2]));
+    float rectangularity = (volume(mesh) / ((bb.max()[0] - bb.min()[0]) *
+                                            (bb.max()[1] - bb.min()[1]) *
+                                            (bb.max()[2] - bb.min()[2])));
+    m_statistics["rectangularity"] = rectangularity;
+    float area = pmp::surface_area(mesh);
+    m_statistics["area"] = area;
+    m_statistics["volume"] = pmp::volume(mesh);
+    Scalar compactness = Descriptor::compactness(mesh);
+    m_statistics["compactness"] = compactness;
+    m_statistics["sphericity"] = (1 / compactness);
+    float eccentricity = Descriptor::eccentricity(mesh);
+    m_statistics["eccentricity"] = eccentricity;
+    float diameter = Descriptor::diameter(mesh);
+    m_statistics["diameter"] = diameter;
+
+    features.resize(5);
+    features << area, (float)compactness, rectangularity, diameter,
+        eccentricity;
+}
+
+std::vector<std::string> FeatureVector::getHeaders()
+{
+    static std::vector<std::string> headers = {
+        "filename",       "label",      "n_vertices",
+        "n_faces",        "face_type",  "distance_to_origin",
+        "bb_distance",    "bb_volume",  "surface_area",
+        "rectangularity", "area",       "volume",
+        "compactness",    "sphericity", "eccentricity",
+        "diameter"};
+    return headers;
 }
 
 bool FeatureVector::deserialize(std::string folder)

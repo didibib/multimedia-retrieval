@@ -68,7 +68,7 @@ void Database::import(const std::string& path_)
         return;
 
     m_imported = true;
-    m_columns = m_entries[0].features.n_statistics();
+    m_columns = m_entries[0].fv.n_statistics();
 }
 
 void Database::clear()
@@ -89,13 +89,13 @@ void Database::exportStatistics(std::string suffix) const
     statistics.open(util::getExportDir() + filename + ".csv");
 
     // Headers
-    for (auto const& [key, val] : m_entries[0].features.statistics())
+    for (auto const& [key, val] : m_entries[0].fv.statistics())
         statistics << key << ",";
     statistics << "\n";
 
     // Rows
     for (unsigned int i = 0; i < m_entries.size(); i++)
-        m_entries[i].features.exportStatistics(statistics);
+        m_entries[i].fv.exportStatistics(statistics);
 
     statistics.close();
 }
@@ -111,9 +111,9 @@ void Database::exportTsneFormat()
     names.open(util::getExportDir() + "tsne_names" + ".txt");
     for (auto& e : m_entries)
     {
-        labels << Feature::toString(e.features["label"]) << "\n";
-        names << Feature::toString(e.features["filename"]) << "\n";
-        e.features.exportTsneFormat(data);
+        labels << Feature::toString(e.fv["label"]) << "\n";
+        names << Feature::toString(e.fv["filename"]) << "\n";
+        e.fv.exportTsneFormat(data);
     }
 
     data.close();
@@ -339,8 +339,8 @@ std::vector<int> Database::KNN(int k, int i, mmr::Database& db)
         if (i == j)
             continue;
         distances.push_back(mmr::FeatureVector::distance(
-            entries[i].features.histograms, entries[j].features.histograms,
-            entries[i].features.features, entries[j].features.features));
+            entries[i].fv.histograms, entries[j].fv.histograms,
+            entries[i].fv.features, entries[j].fv.features));
     }
     std::vector<int> kIndices = kMeansIndices(k, i, distances, entries.size());
     return kIndices;
@@ -357,8 +357,8 @@ std::vector<int> Database::RNN(int k, int i, mmr::Database& db)
         if (i == j)
             continue;
         float distance = mmr::FeatureVector::distance(
-            entries[i].features.histograms, entries[j].features.histograms,
-            entries[i].features.features, entries[j].features.features);
+            entries[i].fv.histograms, entries[j].fv.histograms,
+            entries[i].fv.features, entries[j].fv.features);
         if (distance <= R)
             kIndices.push_back(j);
     }
@@ -382,7 +382,7 @@ std::map<std::string, std::vector<int>> Database::ANN(int k, float R, int i,
                                                       mmr::Database& db)
 {
     auto entries(db.m_entries);
-    auto query(db.m_entries[i].features);
+    auto query(db.m_entries[i].fv);
 
     if (k)
         k += 1;
@@ -412,7 +412,7 @@ std::map<std::string, std::vector<int>> Database::ANN(int k, float R, int i,
 
     for (auto& iter1 : entries)
     {
-        readPt(iter1.features.allfeatures, dataPts[nPts]);
+        readPt(iter1.fv.allfeatures, dataPts[nPts]);
         nPts++;
     }
 

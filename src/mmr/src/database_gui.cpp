@@ -180,7 +180,7 @@ void DbGui::statisticsTable(Database& db)
 
     // Setup headers
     ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
-    const auto& stats = db.m_entries[0].features.statistics();
+    const auto& stats = db.m_entries[0].fv.statistics();
     for (auto it = stats.cbegin(); it != stats.cend(); ++it)
     {
         int index = columnIndex(it->first) + 1;
@@ -196,7 +196,7 @@ void DbGui::statisticsTable(Database& db)
         ImGui::TableSetColumnIndex(0);
         ImGui::Text(std::to_string(row).c_str());
 
-        const auto& stats = db.m_entries[row].features.statistics();
+        const auto& stats = db.m_entries[row].fv.statistics();
         for (auto it = stats.cbegin(); it != stats.cend(); ++it)
         {
             int col = columnIndex(it->first) + 1;
@@ -216,7 +216,7 @@ void DbGui::statisticsTable(Database& db)
 
 int DbGui::columnIndex(std::string key)
 {
-    auto headers = Entry::getHeaders();
+    auto headers = FeatureVector::getHeaders();
     for (int i = 0; i < headers.size(); i++)
     {
         if (headers[i] == key)
@@ -280,7 +280,7 @@ void DbGui::results(Database& db)
         {
             Entry& entry = db.m_entries[m_selectedEntries[i]];
             std::ostringstream text;
-            text << i << ": " << Feature::toString(entry.features["filename"]);
+            text << i << ": " << Feature::toString(entry.fv["filename"]);
             ImGui::Text(text.str().c_str());
         }
         ImGui::PopFont();

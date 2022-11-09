@@ -18,7 +18,7 @@ Histogram::Histogram(Entry* entry, std::string descriptor,
     : m_entry(entry)
 {
     m_filename =
-        Feature::toString(entry->features["filename"]) + "_" + descriptor;
+        Feature::toString(entry->fv["filename"]) + "_" + descriptor;
     m_descriptor = descriptor;
     m_minValue = min_value;
     m_maxValue = max_value;
@@ -37,7 +37,7 @@ Histogram::Histogram(Entry* entry, std::string descriptor,
 
 void Histogram::save()
 {
-    std::string label = Feature::toString(m_entry->features["label"]);
+    std::string label = Feature::toString(m_entry->fv["label"]);
     std::ofstream fout;
     fout.open(util::getExportDir("histogram/data/" + m_entry->db_name + "/" +
                                  label + "/" + m_descriptor + "/") +
@@ -149,23 +149,23 @@ void Descriptor::histograms(Database* db)
         Entry& entry = db->m_entries[i];
         Histogram h = A3(&entry);
         h.save();
-        entry.features.addHistogram(h);
+        entry.fv.addHistogram(h);
 
         h = D1(&entry);
         h.save();
-        entry.features.addHistogram(h);
+        entry.fv.addHistogram(h);
 
         h = D2(&entry);
         h.save();
-        entry.features.addHistogram(h);
+        entry.fv.addHistogram(h);
 
         h = D3(&entry);
         h.save();
-        entry.features.addHistogram(h);
+        entry.fv.addHistogram(h);
 
         h = D4(&entry);
         h.save();
-        entry.features.addHistogram(h);
+        entry.fv.addHistogram(h);
     }
     printf("Histograms saved!\n");
 }

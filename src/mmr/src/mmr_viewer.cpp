@@ -5,7 +5,6 @@
 #include "mmr_viewer.h"
 #include "database_gui.h"
 #include "entry.h"
-#include "ANN/ANN.h"
 
 using namespace pmp;
 using namespace std;

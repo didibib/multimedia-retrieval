@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pmp/SurfaceMesh.h>
+#include <pmp/visualization/SurfaceMeshGL.h>
 #include <vector>
 #include <variant>
 #include <map>
@@ -62,6 +62,19 @@ public:
 
 class FeatureVector : public Feature
 {
+    std::string checkFaceType(pmp::SurfaceMesh mesh)
+    {
+        if (mesh.is_triangle_mesh())
+        {
+            return "tri";
+        }
+        if (mesh.is_quad_mesh())
+        {
+            return "quad";
+        }
+        return "tri/quad";
+    }
+
     std::map<std::string, AnyType> m_statistics;
     std::map<std::string, Histogram> m_histograms;
 
@@ -74,11 +87,10 @@ public:
     std::vector<Histogram> histograms;
     std::vector<float> allfeatures;
 
-    void updateFeatureVector();
-
     static pmp::Scalar distance(std::map<std::string, pmp::Scalar>& data1,
                                 std::map<std::string, pmp::Scalar>& data2,
                                 std::vector<std::string>& index);
+
     inline static pmp::Scalar distance(Eigen::VectorXf& featuresA,
                                        Eigen::VectorXf& featuresB)
     {
@@ -86,13 +98,16 @@ public:
         return v.norm();
     }
 
-    void updateHistograms();
-    void updateAllFeatures();
-    
     static pmp::Scalar distance(std::vector<Histogram> h1,
                                 std::vector<Histogram> h2,
                                 Eigen::VectorXf& featuresA,
                                 Eigen::VectorXf& featuresB);
+
+    void updateHistograms();
+    void updateAllFeatures();
+
+    void updateFeatureVector();
+    void updateStatistics(pmp::SurfaceMesh);
 
 
     AnyType& operator[](std::string key) { return m_statistics[key]; }
@@ -108,6 +123,8 @@ public:
     void exportTsneFormat(std::ofstream& data);
     void serialize(std::string dir, std::string filename);
     bool deserialize(std::string dir);
+
+    static std::vector<std::string> getHeaders();
 };
 
 } // namespace mmr
