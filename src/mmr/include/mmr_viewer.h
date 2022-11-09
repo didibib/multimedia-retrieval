@@ -3,6 +3,7 @@
 #include <pmp/visualization/MeshViewer.h>
 #include "database.h"
 #include "database_gui.h"
+#include <vector>
 
 namespace mmr {
 class MmrViewer : public pmp::MeshViewer
@@ -21,6 +22,9 @@ protected:
 private:
     DbGui m_dbGui;
     bool m_retrieved_db = false;
-    int m_selectedEntry = -1;
+
+    pmp::SurfaceMeshGL axisx;
+    pmp::SurfaceMeshGL axisy;
+    pmp::SurfaceMeshGL axisz;
 };
 } // namespace mmr
