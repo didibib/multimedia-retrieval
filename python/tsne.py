@@ -192,38 +192,38 @@ with open(names_path) as file:
 names = np.array(names)
 
 # Collect all labels
-labels_str = []
+labels_src = []
 with open(labels_path) as file:
-    labels_str = [line.rstrip() for line in file]
-labels_str = np.array(labels_str)
+    labels_src = [line.rstrip() for line in file]
+labels_src = np.array(labels_src)
 
 # Create dictionary of {label, index}
 labels_dict = dict()
+labels_str = []
 i = 0
-for label in labels_str:
+for label in labels_src:
     if(label not in labels_dict):
         labels_dict[label] = i
+        labels_str.append(label)
         i = i + 1
+labels_str = np.array(labels_str)
 
 labels_int = []
-for label in labels_str:
+for label in labels_src:
     labels_int.append(labels_dict[label])
 labels_int = np.array(labels_int)
-
 
 # Execute TSNE
 X = np.loadtxt(data_path)
 initial_dim = len(X[0])
-Y = tsne(X, 2, initial_dim, 20.0, 10)
-
+Y = tsne(X, 2, initial_dim, 50.0, 1000)
 
 # Plot result
-norm = plt.Normalize(0, i)
-print(i)
+norm = plt.Normalize(1, i)
 cmap = plt.cm.RdYlGn
 
 fig, ax = plt.subplots()
-sc = ax.scatter(Y[:, 0], Y[:, 1], c=labels_int,  s=20, cmap=cmap, norm=norm)
+sc = ax.scatter(Y[:, 0], Y[:, 1], c=labels_int, s=20, cmap=cmap, norm=norm)
 
 annot = ax.annotate("", xy=(0,0), xytext=(20,20),textcoords="offset points",
                     bbox=dict(boxstyle="round", fc="w"),
@@ -234,7 +234,7 @@ def update_annot(info):
     index = info["ind"]
     pos = sc.get_offsets()[index[0]]
     annot.xy = pos
-    text = "{}, {}".format(" ".join(labels_str[index]), 
+    text = "{}, {}".format(" ".join(labels_src[index]), 
                            " ".join(names[index]))
     annot.set_text(text)
     annot.get_bbox_patch().set_facecolor(cmap(norm(labels_int[index[0]])))
@@ -256,8 +256,9 @@ def hover(event):
 
 fig.canvas.mpl_connect("motion_notify_event", hover)
 
-legend1 = ax.legend(*sc.legend_elements(), title="Classes")
+legend1 = ax.legend(*sc.legend_elements(), loc="upper right", title="Classes")
 ax.add_artist(legend1)
 
+plt.legend()
 plt.show()
 

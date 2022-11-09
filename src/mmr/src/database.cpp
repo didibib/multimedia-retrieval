@@ -146,20 +146,30 @@ std::vector<int> Database::scoring(NNmethod scoring_flag)
     } labelsAccuracy;
 
     std::ostringstream result;
+    std::string method;
     switch (scoring_flag)
     {
         case NNmethod::ANN_KNN:
-            result << std::left << std::setw(17) << "ANN_KNN"
+        {
+            method = "ANN_KNN";
+            result << std::left << std::setw(17) << method
                    << ": (k = " << this->knn_k << ")" << std::endl;
-            break;
+        }
+        break;
         case NNmethod::ANN_RNN:
-            result << std::left << std::setw(17) << "ANN_RNN"
+        {
+            method = "ANN_RNN";        
+            result << std::left << std::setw(17) << method
                    << ": (R = " << this->rnn_r << ")" << std::endl;
-            break;
+        }
+        break;
         case NNmethod::KNN_HANDMADE:
-            result << std::left << std::setw(17) << "KNN_handmade"
+        {
+            method = "KNN_handmade";          
+            result << std::left << std::setw(17) << method
                    << ": (k = " << this->knn_k << ")" << std::endl;
-            break;
+        }
+        break;
         default:
             break;
     }
@@ -258,16 +268,30 @@ std::vector<int> Database::scoring(NNmethod scoring_flag)
         //printf("Score is %f\n", score / (float)kIndices.size());
     }
 
+    std::ofstream result_labels;
+    std::ofstream result_data;
+    result_labels.open(util::getExportDir("results") + "result_labels_" + method +
+                       ".txt");
+    result_data.open(util::getExportDir("results") + "result_data_" + method +
+                     ".txt");
+
     for (int cl = 0; cl < labelsAccuracy.labels.size(); cl++)
     {
-        result << "Class acurracy of: " << std::left << std::setw(10)
-               << labelsAccuracy.labels[cl] << "is" << std::setw(7)
+        std::string label = labelsAccuracy.labels[cl];
+        float data = 100.0f * labelsAccuracy.scores[cl] /
+                     (float)labelsAccuracy.counts[cl];
+
+        result_labels << label << "\n";
+        result_data << data << "\n";
+
+        result << "Class acurracy of: " << std::left << std::setw(10) << label
+               << "is" << std::setw(7)
                << std::setiosflags(std::ios::fixed | std::ios::right)
-               << std::setprecision(2)
-               << 100.0f * labelsAccuracy.scores[cl] /
-                      (float)labelsAccuracy.counts[cl]
-               << std::endl;
+               << std::setprecision(2) << data << std::endl;
     }
+    result_labels.close();
+    result_data.close();
+
     result << std::left << std::setw(29) << "Final accuracy   :"
            << "is" << std::setw(7)
            << std::setiosflags(std::ios::fixed | std::ios::right)

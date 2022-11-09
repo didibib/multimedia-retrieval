@@ -16,12 +16,18 @@ class DbGui
     void exportMenu(Database& db);
     void results(Database& db);
     void queryMenu(Database& db);
+    void makeQuery(Database& db, int index, Database::NNmethod method);
     void KRmenu(Database& db);
 
     bool m_showHistogram = false;
     bool m_showStatistics = false;
     std::vector<int> m_selectedEntries;
-    bool m_newSelectedEntry = false;
+    bool m_newSelection = false;
+    void makeNewSelection()
+    {
+        m_selectedEntries.clear();
+        m_newSelection = true;
+    }
 
     Database& m_db;
 
@@ -30,16 +36,17 @@ class DbGui
     ImFont* font = io.Fonts->AddFontDefault();
 
 public:
-    DbGui(Database& db) : m_db(db) { }
+    DbGui(Database& db) : m_db(db) {}
     std::vector<int> getSelectedEntries() { return m_selectedEntries; }
     void beginGui(Database& db);
-    bool newSelectedEntry( )
+
+    bool newSelection()
     {
         bool r = false;
-        if (m_newSelectedEntry)
+        if (m_newSelection)
         {
             r = true;
-            m_newSelectedEntry = false;
+            m_newSelection = false;
         }
         return r;
     }

@@ -58,7 +58,7 @@ void DbGui::beginGui(Database& db)
     }
 
     KRmenu(db);
-    queryMenu(db);    
+    //queryMenu(db);
 
     if (ImGui::BeginMenu("Print Accuracy"))
     {
@@ -146,7 +146,7 @@ void DbGui::statisticsTable(Database& db)
         return;
 
     static ImGuiTableFlags flags =
-        ImGuiTableFlags_Resizable |ImGuiTableFlags_BordersOuter |
+        ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersOuter |
         ImGuiTableFlags_BordersV | ImGuiTableFlags_Hideable |
         ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollX |
         ImGuiTableFlags_ScrollY;
@@ -285,8 +285,7 @@ void DbGui::queryMenu(Database& db)
 
         if (ImGui::Button("Search..."))
         {
-            m_selectedEntries.clear();
-            m_newSelectedEntry = true;
+            makeNewSelection();
             switch (item)
             {
                 case 0:
@@ -319,7 +318,9 @@ void DbGui::queryMenu(Database& db)
     }
 }
 
-void DbGui::KRmenu(Database& db) {
+
+void DbGui::KRmenu(Database& db)
+{
     if (db.m_entries.size() == 0)
         return;
 
@@ -333,6 +334,15 @@ void DbGui::KRmenu(Database& db) {
     }
 }
 
+void DbGui::makeQuery(Database& db, int index, Database::NNmethod method)
+{
+    makeNewSelection();
+    auto result = db.query(index, method);
+    m_selectedEntries.push_back(index);
+    m_selectedEntries.insert(std::end(m_selectedEntries), std::begin(result),
+                             std::end(result));
+}
+
 void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
 {
     if (ImGui::BeginPopupContextItem())
@@ -342,50 +352,44 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
         if (ImGui::BeginMenu("Query"))
         {
             if (ImGui::MenuItem("ANN_KNN"))
-            {
-                m_selectedEntries.clear();
-                m_newSelectedEntry = true;
-                m_selectedEntries =
-                    db.query(index, Database::NNmethod::ANN_KNN);
-            }
+                makeQuery(db, index, Database::NNmethod::ANN_KNN);   
             if (ImGui::MenuItem("ANN_RNN"))
-            {
-                m_selectedEntries.clear();
-                m_newSelectedEntry = true;
-                m_selectedEntries =
-                    db.query(index, Database::NNmethod::ANN_RNN);
-            }
+                makeQuery(db, index, Database::NNmethod::ANN_RNN);
             if (ImGui::MenuItem("KNN_HANDMADE"))
-            {
-                m_selectedEntries.clear();
-                m_newSelectedEntry = true;
-                m_selectedEntries =
-                    db.query(index, Database::NNmethod::KNN_HANDMADE);
-            }
+                makeQuery(db, index, Database::NNmethod::KNN_HANDMADE);
             if (ImGui::MenuItem("RNN_HANDMADE"))
-            {
-                m_selectedEntries.clear();
-                m_newSelectedEntry = true;
-                m_selectedEntries =
-                    db.query(index, Database::NNmethod::RNN_HANDMADE);
-            }
+                makeQuery(db, index, Database::NNmethod::RNN_HANDMADE);
             ImGui::EndMenu();
         }
 
         if (ImGui::MenuItem("View"))
         {
-            m_selectedEntries.clear();
+            makeNewSelection();
             m_selectedEntries.push_back(index);
-            m_newSelectedEntry = true;
         }
         if (ImGui::MenuItem("Reload"))
         {
             entry.reload();
         }
         ImGui::Separator();
+
         normalizeEntry(entry);
 
         ImGui::Separator();
+
+        if (ImGui::MenuItem("Retrieve class"))
+        {
+            makeNewSelection();
+            std::string label = Feature::toString(entry.fv["label"]);
+            for (int i = 0; i < db.m_entries.size(); i++)
+            {
+                Entry& e = db.m_entries[i];
+                std::string l = Feature::toString(e.fv["label"]);
+                if (l == label)
+                    m_selectedEntries.push_back(i);
+            }
+        }
+
         if (ImGui::BeginMenu("Export"))
         {
             if (ImGui::MenuItem("As .off"))

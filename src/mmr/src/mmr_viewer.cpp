@@ -37,7 +37,7 @@ void MmrViewer::draw(const std::string& drawMode)
     static const float step = 1.1f;
     static int offset = 0;
 
-    if (m_dbGui.newSelectedEntry())
+    if (m_dbGui.newSelection())
     {
         entries.clear();
         float radius = 0;
