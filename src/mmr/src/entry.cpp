@@ -16,6 +16,7 @@ Entry::Entry(std::string filename, std::string label, std::string path,
 
 void Entry::updateStatistics()
 {
+    m_mesh.update_opengl_buffers();
     fv.updateStatistics(m_mesh);
 }
 

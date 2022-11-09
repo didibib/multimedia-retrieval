@@ -1,11 +1,15 @@
-#include "database_gui.h"
-#include "util.h"
-#include "descriptors.h"
+
 #include <implot.h>
 #include <pmp/algorithms/DifferentialGeometry.h>
 #include <pmp/algorithms/Subdivision.h>
 #include <pmp/algorithms/Smoothing.h>
 #include <pmp/algorithms/Triangulation.h>
+#include <pmp/algorithms/Decimation.h>
+
+#include "database_gui.h"
+#include "util.h"
+#include "settings.h"
+#include "descriptors.h"
 #include "normalization.h"
 #include "entry.h"
 
@@ -53,34 +57,8 @@ void DbGui::beginGui(Database& db)
         ImGui::EndMenu();
     }
 
-    if (ImGui::MenuItem("Normalize and Remesh Query"))
-    {
-        for (auto& q : db.m_queries)
-        {
-            Normalize::all_steps(q.getMesh());
-            Normalize::remesh(q.getMesh());
-            q.isNormalized = true;
-        }
-    }
-
-    if (ImGui::MenuItem("Set up K and R"))
-    {
-        ImGui::OpenPopup("NNSetting");
-    }
-        
-    queryMenu(db);
-
-    if (ImGui::BeginPopupModal("NNSetting"))
-    {
-        ImGui::InputInt("K", &db.knn_k);
-        if (db.knn_k >= db.m_entries.size())
-            db.knn_k = db.m_entries.size();
-
-        ImGui::InputFloat("R", &db.rnn_r);
-        if (ImGui::Button("SAVE", ImVec2(100, 0)))
-            ImGui::CloseCurrentPopup();
-        ImGui::EndPopup();
-    }
+    KRmenu(db);
+    queryMenu(db);    
 
     if (ImGui::BeginMenu("Print Accuracy"))
     {
@@ -296,7 +274,7 @@ void DbGui::queryMenu(Database& db)
     if (ImGui::BeginMenu("Query"))
     {
         static int index = 0;
-        ImGui::InputInt("Entry index: ", &index);
+        ImGui::InputInt("Index ", &index);
 
         const char* items[] = {"ANN_KNN", "ANN_RNN", "KNN_HANDMADE",
                                "RNN_HANDMADE"};
@@ -336,6 +314,19 @@ void DbGui::queryMenu(Database& db)
             }
         }
         ImGui::EndMenu();
+    }
+}
+
+void DbGui::KRmenu(Database& db) {
+    if (db.m_entries.size() == 0)
+        return;
+
+    if (ImGui::BeginMenu("Set up K and R"))
+    {
+        ImGui::InputInt("K", &db.knn_k);
+        if (db.knn_k >= db.m_entries.size())
+            db.knn_k = db.m_entries.size();
+        ImGui::InputFloat("R", &db.rnn_r);
     }
 }
 
@@ -444,6 +435,13 @@ void DbGui::normalizeEntry(Entry& entry)
             Normalize::scale(entry.getMesh());
             entry.updateStatistics();
         }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Decimate"))
+        {
+            auto d = pmp::Decimation(entry.getMesh());
+            d.decimate(param::TARGET_VALUE);
+            entry.updateStatistics();
+        }
 
         ImGui::EndMenu();
     }
@@ -464,14 +462,6 @@ void DbGui::normalizeAll(Database& db)
             e.isNormalized = true;
             printf("%i\n", i++);
         }
-
-        int j = 0;
-        for (auto& q : db.m_queries)
-        {
-            Normalize::all_steps(q.getMesh());
-            q.isNormalized = true;
-            printf("Query:  %i\n", j++);
-        }
         printf("Finished normalizing!\n");
     }
 
@@ -483,13 +473,6 @@ void DbGui::normalizeAll(Database& db)
             Normalize::remesh(e.getMesh());
             e.updateStatistics();
             printf("%i\n", i++);
-        }
-
-        int j = 0;
-        for (auto& q : db.m_queries)
-        {
-            Normalize::remesh(q.getMesh());
-            printf("Query:  %i\n", j++);
         }
         printf("Finished remeshing!\n");
     }

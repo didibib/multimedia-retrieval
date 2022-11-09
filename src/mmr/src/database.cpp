@@ -31,7 +31,7 @@ void Database::import(const std::string& path_)
     int nModels = 0;
 
 #ifndef NDEBUG
-    int maxModels = 10;
+    int maxModels = 5;
 #endif // DEBUG
 
     int nQueries = 1;
@@ -69,6 +69,7 @@ void Database::import(const std::string& path_)
 
     m_imported = true;
     m_columns = m_entries[0].fv.n_statistics();
+    assert(m_columns <= MAX_COLUMNS);
 }
 
 void Database::clear()

@@ -31,8 +31,6 @@ public:
     Database(const std::string path);
     void import(const std::string& path);
     Entry* get(int index);
-    /*void draw(int index, const pmp::mat4& projectionMatrix,
-              const pmp::mat4& modelviewMatrix, const std::string& drawMode);*/
     void clear();
 
     size_t getDbSize() { return m_entries.size(); }
@@ -50,7 +48,6 @@ public:
 
 private:
     std::vector<Entry> m_entries;
-    std::vector<Entry> m_queries;
     std::vector<std::string> m_labels;
     std::vector<std::string> m_unique_labels;
 
@@ -67,7 +64,8 @@ private:
 
     bool m_imported = false;
     // Sadly cannot make this dynamic, since vector<bool> is stored as bits.
-    bool m_columnSelected[20] = {false};
+    #define MAX_COLUMNS 20
+    bool m_columnSelected[MAX_COLUMNS] = {false};
     size_t m_columns = 0;
     static void readPt(std::vector<float>& features, ANNpoint p);
     static std::vector<int> kMeansIndices(int k, int index,

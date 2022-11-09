@@ -16,6 +16,7 @@ class DbGui
     void exportMenu(Database& db);
     void results(Database& db);
     void queryMenu(Database& db);
+    void KRmenu(Database& db);
 
     bool m_showHistogram = false;
     bool m_showStatistics = false;
