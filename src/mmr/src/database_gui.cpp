@@ -60,6 +60,43 @@ void DbGui::beginGui(Database& db)
     KRmenu(db);
     //queryMenu(db);
 
+    if (ImGui::BeginMenu("Standardize Features"))
+    {
+        float means[5];
+        float standardDeviation[5];
+        for ( int i =0; i < 5; i++)
+        {
+            // calculate mean
+            means[i] = 0.0f;
+            for (int e = 0; e < db.m_entries.size(); e++)
+            {
+                means[i] += db.m_entries[e].fv.allfeatures[i];
+            }
+            means[i] /= (float)db.m_entries.size(); 
+
+            // calcualte standard deviation
+            standardDeviation[i] = 0.0f;
+            for (int e = 0; e < db.m_entries.size(); e++)
+            {
+                standardDeviation[i] +=
+                    (db.m_entries[e].fv.allfeatures[i] - means[i]) *
+                    (db.m_entries[e].fv.allfeatures[i] - means[i]);
+            }
+            standardDeviation[i] =
+                sqrtf(standardDeviation[i] / (float)db.m_entries.size());
+
+            for (int ei = 0; ei < db.m_entries.size(); ei++)
+            {
+
+                db.m_entries[ei].fv.allfeatures[i] =
+                    (db.m_entries[ei].fv.allfeatures[i] - means[i]) /
+                        (6.0f * standardDeviation[i]) +
+                    0.5f;
+            }
+        }
+        ImGui::EndMenu();
+    }
+
     if (ImGui::BeginMenu("Print Accuracy"))
     {
         if (ImGui::MenuItem("ANN_KNN"))

@@ -31,7 +31,7 @@ void Database::import(const std::string& path_)
     int nModels = 0;
 
 #ifndef NDEBUG
-    int maxModels = 5;
+    int maxModels = 380;
 #endif // DEBUG
 
     int nQueries = 1;
