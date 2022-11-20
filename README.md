@@ -1,8 +1,10 @@
-# MMR
-
 ## Installation
     git clone --recursive https://github.com/didibib/multimedia-retrieval.git
     git submodule update --init --recursive
+
+If a .zip file is downloaded then do:
+    
+    git submodule update --init --recursive    
 
 Configure and build:
 
