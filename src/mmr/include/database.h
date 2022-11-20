@@ -40,6 +40,7 @@ public:
 
     std::vector<int> scoring(NNmethod scoring_flag);
     std::vector<int> query(int i, Database::NNmethod method);
+    void standardizeFeatures();
 
     static std::map<std::string, std::vector<int>> ANN(int k, float R, int i,
                                                        mmr::Database& db);

@@ -30,9 +30,7 @@ void Database::import(const std::string& path_)
     using std::filesystem::recursive_directory_iterator;
     int nModels = 0;
 
-#ifndef NDEBUG
-    int maxModels = 380;
-#endif // DEBUG
+    int maxModels = 20;
 
     int nQueries = 1;
 
@@ -50,10 +48,8 @@ void Database::import(const std::string& path_)
         if (extension != ".off" && extension != ".ply")
             continue;
 
-#ifndef NDEBUG
-        if (nModels > maxModels)
-            break;
-#endif // DEBUG
+        //if (nModels >= maxModels)
+        //    break;
 
         // Create entry
         Entry entry(filename, label, path, name);
@@ -158,14 +154,14 @@ std::vector<int> Database::scoring(NNmethod scoring_flag)
         break;
         case NNmethod::ANN_RNN:
         {
-            method = "ANN_RNN";        
+            method = "ANN_RNN";
             result << std::left << std::setw(17) << method
                    << ": (R = " << this->rnn_r << ")" << std::endl;
         }
         break;
         case NNmethod::KNN_HANDMADE:
         {
-            method = "KNN_handmade";          
+            method = "KNN_handmade";
             result << std::left << std::setw(17) << method
                    << ": (k = " << this->knn_k << ")" << std::endl;
         }
@@ -270,8 +266,8 @@ std::vector<int> Database::scoring(NNmethod scoring_flag)
 
     std::ofstream result_labels;
     std::ofstream result_data;
-    result_labels.open(util::getExportDir("results") + "result_labels_" + method +
-                       ".txt");
+    result_labels.open(util::getExportDir("results") + "result_labels_" +
+                       method + ".txt");
     result_data.open(util::getExportDir("results") + "result_data_" + method +
                      ".txt");
 
@@ -325,6 +321,41 @@ std::vector<int> Database::query(int i, Database::NNmethod method)
             return Database::KNN(knn_k, i, *this);
         case NNmethod::RNN_HANDMADE:
             return Database::RNN(knn_k, i, *this);
+    }
+}
+
+void Database::standardizeFeatures()
+{
+    float means[5];
+    float standardDeviation[5];
+    for (int i = 0; i < 5; i++)
+    {
+        // calculate mean
+        means[i] = 0.0f;
+        for (int e = 0; e < m_entries.size(); e++)
+        {
+            means[i] += m_entries[e].fv.allfeatures[i];
+        }
+        means[i] /= (float)m_entries.size();
+
+        // calcualte standard deviation
+        standardDeviation[i] = 0.0f;
+        for (int e = 0; e < m_entries.size(); e++)
+        {
+            standardDeviation[i] +=
+                (m_entries[e].fv.allfeatures[i] - means[i]) *
+                (m_entries[e].fv.allfeatures[i] - means[i]);
+        }
+        standardDeviation[i] =
+            sqrtf(standardDeviation[i] / (float)m_entries.size());
+
+        for (int ei = 0; ei < m_entries.size(); ei++)
+        {
+            m_entries[ei].fv.allfeatures[i] =
+                (m_entries[ei].fv.allfeatures[i] - means[i]) /
+                    (6.0f * standardDeviation[i]) +
+                0.5f;
+        }
     }
 }
 

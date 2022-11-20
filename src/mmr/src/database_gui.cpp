@@ -38,6 +38,27 @@ void DbGui::beginGui(Database& db)
                     e.isNormalized = true;
                 }
             }
+            if (ImGui::MenuItem("Recently exported"))
+            {
+                db.import(util::getExportDir("recently_exported_meshes"));
+                m_showStatistics = true;
+            }
+
+            ImGui::Separator();
+
+            static char str0[128] = "";
+            ImGui::Text("export/");
+            ImGui::SameLine();
+            ImGui::PushItemWidth(100);
+            ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
+            ImGui::PopItemWidth();
+            ImGui::SameLine();
+            if (ImGui::Button("Load"))
+            {
+                db.import(util::getExportDir(str0));
+                m_showStatistics = true;
+            }
+
             ImGui::EndMenu();
         }
 
@@ -62,38 +83,7 @@ void DbGui::beginGui(Database& db)
 
     if (ImGui::BeginMenu("Standardize Features"))
     {
-        float means[5];
-        float standardDeviation[5];
-        for ( int i =0; i < 5; i++)
-        {
-            // calculate mean
-            means[i] = 0.0f;
-            for (int e = 0; e < db.m_entries.size(); e++)
-            {
-                means[i] += db.m_entries[e].fv.allfeatures[i];
-            }
-            means[i] /= (float)db.m_entries.size(); 
-
-            // calcualte standard deviation
-            standardDeviation[i] = 0.0f;
-            for (int e = 0; e < db.m_entries.size(); e++)
-            {
-                standardDeviation[i] +=
-                    (db.m_entries[e].fv.allfeatures[i] - means[i]) *
-                    (db.m_entries[e].fv.allfeatures[i] - means[i]);
-            }
-            standardDeviation[i] =
-                sqrtf(standardDeviation[i] / (float)db.m_entries.size());
-
-            for (int ei = 0; ei < db.m_entries.size(); ei++)
-            {
-
-                db.m_entries[ei].fv.allfeatures[i] =
-                    (db.m_entries[ei].fv.allfeatures[i] - means[i]) /
-                        (6.0f * standardDeviation[i]) +
-                    0.5f;
-            }
-        }
+        db.standardizeFeatures();
         ImGui::EndMenu();
     }
 
@@ -256,13 +246,13 @@ void DbGui::exportMenu(Database& db)
             if (ImGui::MenuItem("As .off"))
             {
                 for (auto& entry : db.m_entries)
-                    entry.writeMesh(".off", "Meshes");
+                    entry.writeMesh(".off", "recently_exported_meshes");
                 printf("Finished exporting meshes!\n");
             }
             if (ImGui::MenuItem("As .ply"))
             {
                 for (auto& entry : db.m_entries)
-                    entry.writeMesh(".ply", "Meshes");
+                    entry.writeMesh(".ply", "recently_exported_meshes");
                 printf("Finished exporting meshes!\n");
             }
             ImGui::EndMenu();
@@ -355,7 +345,6 @@ void DbGui::queryMenu(Database& db)
     }
 }
 
-
 void DbGui::KRmenu(Database& db)
 {
     if (db.m_entries.size() == 0)
@@ -389,7 +378,7 @@ void DbGui::rightClickEntry(Database& db, const int& index, const int& column)
         if (ImGui::BeginMenu("Query"))
         {
             if (ImGui::MenuItem("ANN_KNN"))
-                makeQuery(db, index, Database::NNmethod::ANN_KNN);   
+                makeQuery(db, index, Database::NNmethod::ANN_KNN);
             if (ImGui::MenuItem("ANN_RNN"))
                 makeQuery(db, index, Database::NNmethod::ANN_RNN);
             if (ImGui::MenuItem("KNN_HANDMADE"))

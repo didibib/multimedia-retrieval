@@ -17,6 +17,7 @@ void Normalize::all_steps(SurfaceMesh& mesh)
     pca_pose(mesh);
     flip(mesh);
     scale(mesh);
+    translate(mesh);
 }
 
 void Normalize::remesh( SurfaceMesh& mesh )
@@ -34,7 +35,7 @@ void Normalize::translate(SurfaceMesh& mesh)
     Point center = centroid(mesh);
     Point translation = origin - center;
 
-    auto points = mesh.get_vertex_property<Point>("v:point");
+    auto& points = mesh.get_vertex_property<Point>("v:point");
 
     for (auto v : mesh.vertices())
     {
@@ -48,7 +49,7 @@ void Normalize::pca_pose(SurfaceMesh& mesh)
     size_t n_vertices = mesh.n_vertices();
     Point center = centroid(mesh);
     MatrixXf input(3, n_vertices);
-    auto points = mesh.get_vertex_property<Point>("v:point");
+    auto& points = mesh.get_vertex_property<Point>("v:point");
     unsigned int i = 0;
     for (auto v : mesh.vertices())
     {
@@ -75,11 +76,12 @@ void Normalize::pca_pose(SurfaceMesh& mesh)
     mat3 T = transfer.transpose();
     for (auto v : mesh.vertices())
         points[v] = T * points[v];
+
 }
 
 void Normalize::flip(SurfaceMesh& mesh)
 {
-    auto points = mesh.get_vertex_property<Point>("v:point");
+    auto& points = mesh.get_vertex_property<Point>("v:point");
 
     // Sum f_i
     float flip_x = 0;
@@ -126,7 +128,7 @@ void Normalize::scale(SurfaceMesh& mesh)
     T.scale(Vector3f(scale[0], scale[1], scale[2]));
     T.translate(Vector3f(center[0], center[1], center[2]));
 
-    auto points = mesh.get_vertex_property<Point>("v:point");
+    auto& points = mesh.get_vertex_property<Point>("v:point");
     for (auto v : mesh.vertices())
     {
         Vector3f p(points[v][0], points[v][1], points[v][2]);

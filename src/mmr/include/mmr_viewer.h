@@ -22,6 +22,7 @@ protected:
 private:
     DbGui m_dbGui;
     bool m_retrieved_db = false;
+    pmp::mat4 m_front_view;
 
     pmp::SurfaceMeshGL axisx;
     pmp::SurfaceMeshGL axisy;

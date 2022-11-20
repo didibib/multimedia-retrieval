@@ -22,6 +22,7 @@ void Entry::updateStatistics()
 
 void Entry::reload()
 {
+    m_mesh.update_opengl_buffers();
     if (!m_meshLoaded)
     {
         m_mesh.read(mesh_path);

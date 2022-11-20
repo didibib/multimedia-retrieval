@@ -25,42 +25,51 @@ MmrViewer::MmrViewer(const char* title, int width, int height)
     axisz.read(util::getDataDir() + "axis_z.ply", flags);
     axisz.set_front_color(vec3(0, 0, 1));
     set_scene(vec3(0, 0, 0), 1);
+
+    m_front_view = modelview_matrix_;
 }
 
 void MmrViewer::draw(const std::string& drawMode)
 {
-    axisx.draw(projection_matrix_, modelview_matrix_, "Smooth Shading");
-    axisy.draw(projection_matrix_, modelview_matrix_, "Smooth Shading");
-    axisz.draw(projection_matrix_, modelview_matrix_, "Smooth Shading");
-
     static std::vector<Entry> entries;
-    static const float step = 1.1f;
-    static int offset = 0;
 
     if (m_dbGui.newSelection())
     {
         entries.clear();
         float radius = 0;
-        float n = 0;
 
         for (auto& i : m_dbGui.getSelectedEntries())
         {
-            Entry e = *db.get(i);
-            entries.push_back(e);
+            Entry* e = db.get(i);
+            if (e == nullptr)
+                continue;
 
-            BoundingBox& bb = e.getMesh().bounds();
+            entries.push_back(*e);
+
+            BoundingBox& bb = e->getMesh().bounds();
             radius += bb.size() * .5f;
-            n += step;
         }
         set_scene(vec3(0, 0, 0), radius);
-        offset = step * entries.size() * .5f;
     }
 
+    static const float step = 2;
+    int row = -1;
+    int col = 0;
     for (size_t i = 0; i < entries.size(); i++)
     {
-        auto mv = translation_matrix(vec3(step * i - offset, 0, 0)) *
+        if (i % 6 == 0)
+        {
+            row++;
+            col = 0;
+        }
+        auto mv = translation_matrix(vec3(step * col, row * -step, 0)) *
                   modelview_matrix_;
+
         entries[i].draw(projection_matrix_, mv, drawMode);
+        axisx.draw(projection_matrix_, mv, "Smooth Shading");
+        axisy.draw(projection_matrix_, mv, "Smooth Shading");
+        axisz.draw(projection_matrix_, mv, "Smooth Shading");
+        col++;
     }
 }
 
@@ -71,7 +80,12 @@ void MmrViewer::keyboard(int key, int scancode, int action, int mods)
 
     switch (key)
     {
-        // add your own keyboard action here
+        case GLFW_KEY_Z:
+            modelview_matrix_ = m_front_view;
+            break;
+        case GLFW_KEY_O:
+            rotate(pmp::vec3(1, 1, 0), -45);
+            break;
         default:
         {
             MeshViewer::keyboard(key, scancode, action, mods);
