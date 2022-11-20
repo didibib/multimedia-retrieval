@@ -81,12 +81,6 @@ void DbGui::beginGui(Database& db)
     KRmenu(db);
     //queryMenu(db);
 
-    if (ImGui::BeginMenu("Standardize Features"))
-    {
-        db.standardizeFeatures();
-        ImGui::EndMenu();
-    }
-
     if (ImGui::BeginMenu("Print Accuracy"))
     {
         if (ImGui::MenuItem("ANN_KNN"))
@@ -152,6 +146,12 @@ void DbGui::window(Database& db)
     {
         exportMenu(db);
         normalizeAll(db);
+
+        if (ImGui::MenuItem("Standardize Features..."))
+        {
+            db.standardizeFeatures();
+            printf("Finished standardizing features!\n");
+        }
 
         if (ImGui::MenuItem("Histograms..."))
         {
