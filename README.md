@@ -1,8 +1,8 @@
-## Installation
+## Cloning
     git clone --recursive https://github.com/didibib/multimedia-retrieval.git
     git submodule update --init --recursive
 
-## Zip file
+## Zip
 Go to releases for a zip file: https://github.com/didibib/multimedia-retrieval/releases/tag/mmr. This will contain the submodules
 
 Configure and build:
