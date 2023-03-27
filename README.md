@@ -1,5 +1,5 @@
 ## About
-Multimedia retrieval consists of the theory, techniques, and tools that enable end users to search content of interest in large data collections consisting of (hyper)text, images, videos, audio, and 2D and 3D shapes. In our app we focussed on 3D shape retrieval.
+Multimedia retrieval consists of the theory, techniques, and tools that enable end users to search content of interest in large data collections consisting of (hyper)text, images, videos, audio, and 2D and 3D shapes. In our app we focussed on 3D shape retrieval. See [the report](https://github.com/didibib/multimedia-retrieval/blob/main/report.pdf) for more details.
 
 ## Cloning
     git clone --recursive https://github.com/didibib/multimedia-retrieval.git
